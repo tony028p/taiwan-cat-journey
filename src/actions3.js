@@ -12,6 +12,7 @@ function exSeq(lt, seq, d = 0.25) {
 }
 /* comic marks: [[t0, t1, kind, scale?], …] */
 function emo(q, lt, list) { for (const [t0, t1, k, sc] of list) if (lt >= t0 && lt < t1) q.emote = { k, u: clamp((lt - t0) / 0.35), a: 1 - sm((lt - t1 + 0.3) / 0.3), s: sc || 1 }; }
+function emoAt(lt, list) { const q = {}; emo(q, lt, list); return q.emote; }
 const mirrored = () => c.getTransform().d < 0;
 /* world position of the nose tip (for props that land on the cat) */
 function noseW(q) { const p = q.pose, f = q.face || 1, hs = p.sit ? HSS : HSR, h = p.sit ? [8, -82] : p.head, a = p.hr || 0;
@@ -230,7 +231,7 @@ function actCat(o) {
       const gy = x2 => 560 - (x2 + M) * 20 / (W + 2 * M), stopT = 2.0, mv = lt < stopT ? lt : lt < 4.6 ? stopT : lt - 2.6;
       q.x = 280 + mv * 28; q.y = gy(q.x);
       const hx = 280 + stopT * 28 + 112 * s, hy = gy(hx), rise = sm((lt - 1.7) / 0.4) * (1 - sm((lt - 3.9) / 0.35));
-      q.after = () => { if (mirrored()) return; oval(hx, hy + 1, 8, 2.2, 0, 'rgba(20,10,20,0.8)'); if (rise > 0) { c.save(); c.beginPath(); c.rect(hx - 30, 0, 60, hy + 1); c.clip(); crab(hx, hy + 14 * (1 - rise), 0.95, lt, { face: -1, col: '#3a2430', wave: lt > 2.4 && lt < 3.6 ? 0.5 + 0.5 * Math.sin(lt * 9) : 0 }); c.restore(); } };
+      q.after = () => { if (mirrored()) return; oval(hx, hy + 1, 8, 2.2, 0, 'rgba(20,10,20,0.8)'); if (rise > 0) { c.save(); c.beginPath(); c.rect(hx - 45, 0, 90, hy + 1); c.clip(); crab(hx, hy + 22 * (1 - rise), 1.6, lt, { face: -1, col: '#4a2c3a', wave: lt > 2.4 && lt < 3.6 ? 0.5 + 0.5 * Math.sin(lt * 9) : 0 }); c.restore(); } };
       emo(q, lt, [[2.0, 2.8, '!'], [2.9, 3.8, '?'], [3.95, 4.5, '!']]);
       if (lt < stopT || lt >= 4.6) { q.pose = walkPose3(walkCyc3(mv * 28, s)); Object.assign(q.pose, ex(lt < stopT ? 'neutral' : 'happy', 0.7)); }
       else { const back = sm((lt - 2.0) / 0.2) * (1 - sm((lt - 2.8) / 0.4)), sniff = sm((lt - 2.9) / 0.4) * (1 - sm((lt - 3.9) / 0.15)), hop = bumpT(lt, 3.9, 4.2);
