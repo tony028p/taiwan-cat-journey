@@ -14,6 +14,10 @@ const LEAP3 = { ...STAND3, hip: [-36, -48], sh: [32, -56], arch: 3, head: [58, -
 const LAND3 = { ...STAND3, hip: [-34, -54], sh: [30, -40], arch: 1, head: [56, -56], fn: [40, 0, 0], ff: [34, 0, 0], hn: [-44, -12, 0.8], hf: [-40, -8, 0.8], sb: 4 };
 const STRETCH3 = { ...STAND3, hip: [-30, -54], sh: [26, -22], arch: -8, head: [58, -28], hr: -0.2, fn: [74, 0, -1], ff: [66, 0, -1], hn: [-28, 0, 0], hf: [-34, 0, 0], tail: [-2.0, 0.1, 0.05, 1.2, 0], eye: 0.2, ear: 0.3, sb: 3.5 };
 const LOAF3 = { ...STAND3, g: 1.12, hip: [-30, -17], sh: [24, -19], arch: 5, head: [46, -42], hr: 0.05, fn: [40, 0, -1], ff: [34, 0, -1], hn: [-10, 0, 2], hf: [-14, 0, 2], tail: [2.9, -0.32, 0.05, 1, 1], sb: 1, hb: 1 };
+/* startled "Halloween cat": back arched high, on tiptoe, tail straight up and bushy */
+const SCARED3 = { ...STAND3, g: 1.14, hip: [-28, -60], sh: [26, -58], arch: 15, head: [50, -60], hr: 0.12, fn: [24, 0, -0.3], ff: [18, 0, -0.3], hn: [-22, 0, 0], hf: [-28, 0, 0], tail: [-1.62, 0.02, 0.03, 9, 0], tailW: 1.7, sb: 1, hb: 1 };
+/* reared up on the hind legs, forepaws raised */
+const REAR3 = { ...STAND3, hip: [-24, -40], sh: [10, -84], arch: -3, head: [26, -108], hr: -0.35, fn: [40, -112, -1], ff: [34, -104, -1], hn: [-14, 0, 0.9], hf: [-20, 0, 0.9], tail: [-2.8, -0.12, 0.08, 3, 0], sb: 1, hb: 1 };
 const SLEEP3 = { ...LOAF3, head: [44, -28], hr: 0.25, eye: 0, ear: 0.15, tail: [2.95, -0.36, 0.03, 0.7, 1] };
 
 /* Walk (lateral sequence) and trot (diagonal pairs). Stance feet move back at exactly the body speed (walkCyc3), so
@@ -78,10 +82,10 @@ function bodyGeom3(p) {
   const sp = u => { const a = 4 * u * (1 - u) * (p.arch || 0); return [H[0] + dx * u + n[0] * a, H[1] + dy * u + n[1] * a]; };
   const at = (u, k) => { const q = sp(u); return [q[0] + n[0] * k, q[1] + n[1] * k]; };
   const top = u => (11 + 2 * Math.sin(clamp(u) * Math.PI)) * g0 + sb * Math.exp(-Math.pow((u - 0.86) / 0.09, 2)) + hb * Math.exp(-Math.pow((u - 0.06) / 0.1, 2));
-  const bot = u => (u < 0.5 ? lerp(15, 10.5, clamp(u / 0.5)) : lerp(10.5, 16.5, clamp((u - 0.5) / 0.5))) * br * g0;
+  const bot = u => (u < 0.5 ? lerp(17, 10.5, sm(clamp(u / 0.5))) : lerp(10.5, 16.5, clamp((u - 0.5) / 0.5))) * br * g0;
   const TP = [], BP = [];
   for (let u = -0.14; u <= 1.1001; u += 0.04) { TP.push(at(u, top(u))); BP.push(at(u, -bot(u))); }
-  const front = [at(1.19, 8), at(1.24, -3), at(1.17, -13)], rear = [at(-0.24, -8), at(-0.28, 2), at(-0.23, 10)];
+  const front = [at(1.19, 8), at(1.24, -3), at(1.17, -13)], rear = [at(-0.25, -10), at(-0.3, 1), at(-0.24, 11)];
   return { H, Sh, t, n, L, sp, at, top, bot, TP, BP, pts: [...TP, ...front, ...BP.slice().reverse(), ...rear] };
 }
 function taper(a, b, wa, wb) { const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
@@ -92,29 +96,31 @@ function limbSeg(a, b, wa, wb, bulge) { const dx = b[0] - a[0], dy = b[1] - a[1]
   c.beginPath(); c.moveTo(a[0] + nx * wa / 2, a[1] + ny * wa / 2); c.quadraticCurveTo(m[0] + nx * wm / 2 * 1.1, m[1] + ny * wm / 2 * 1.1, b[0] + nx * wb / 2, b[1] + ny * wb / 2);
   c.lineTo(b[0] - nx * wb / 2, b[1] - ny * wb / 2); c.quadraticCurveTo(m[0] - nx * wm / 2, m[1] - ny * wm / 2, a[0] - nx * wa / 2, a[1] - ny * wa / 2); c.closePath(); c.fill();
   c.beginPath(); c.arc(a[0], a[1], wa / 2, 0, TAU); c.fill(); c.beginPath(); c.arc(b[0], b[1], wb / 2, 0, TAU); c.fill(); }
-function fore3(B, tg) {
+function fore3(B, tg, part = 3) {
   const f = tg[2], toe = [tg[0], tg[1]];
   const pas = f >= 0 ? lp([3, 7], [-6, 4], Math.min(1, f)) : lp([3, 7], [9, 2], Math.min(1, -f));
   const root = [B.Sh[0] - B.t[0] * 3 - B.n[0] * 2, B.Sh[1] - B.t[1] * 3 - B.n[1] * 2];
   const W = reach(root, [toe[0] - pas[0], toe[1] - pas[1]], 40), el = ik(root, W, 19.5, 21, -1), T2 = [W[0] + pas[0], W[1] + pas[1]];
-  limbSeg(root, el, 15, 9.5, 2); limbSeg(el, W, 8.5, 6.2, 1.2); taper(W, T2, 6, 5.6);
   const pa = Math.atan2(pas[1], pas[0]) - Math.PI / 2 + 0.3;
-  c.beginPath(); c.ellipse(T2[0] + 1.2, T2[1] - 2.4, 5.2, 3.2, pa, 0, TAU); c.fill();
+  if (part & 1) limbSeg(root, el, 15, 9.5, 2);
+  if (part & 2) { limbSeg(el, W, 8.5, 6.2, 1.2); taper(W, T2, 6, 5.6); c.beginPath(); c.ellipse(T2[0] + 1.2, T2[1] - 2.4, 5.2, 3.2, pa, 0, TAU); c.fill(); }
   return { root, el, W, T2, pa };
 }
-function hind3(B, tg) {
+function hind3(B, tg, part = 3) {
   const f = tg[2], toe = [tg[0], tg[1]];
   const off = f <= 1 ? lp([-5, -14], [-12, -8], clamp(f)) : lp([-12, -8], [-19, -3], clamp(f - 1));
   const root = [B.H[0] + B.t[0] * 3 - B.n[0] * 1, B.H[1] + B.t[1] * 3 - B.n[1] * 1];
   const hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 42), kn = ik(root, hk, 20.5, 22, 1);
-  limbSeg(root, kn, 22, 11, 3); limbSeg(kn, hk, 8.5, 5.8, 1.5); taper(hk, toe, 5.8, 5.4);
-  c.beginPath(); c.ellipse(toe[0] + 1.5, toe[1] - 2.2, 5.6, 3, 0, 0, TAU); c.fill();
+  if (part & 1) limbSeg(root, kn, 15, 9.5, 1.5);
+  if (part & 2) { limbSeg(kn, hk, 8, 5.8, 1); taper(hk, toe, 5.8, 5.4); c.beginPath(); c.ellipse(toe[0] + 1.5, toe[1] - 2.2, 5.6, 3, 0, 0, TAU); c.fill(); }
   return { root, kn, hk, toe };
 }
+function hind3Geom(B, tg) { const f = tg[2], toe = [tg[0], tg[1]], off = f <= 1 ? lp([-5, -14], [-12, -8], clamp(f)) : lp([-12, -8], [-19, -3], clamp(f - 1));
+  const root = [B.H[0] + B.t[0] * 3 - B.n[0] * 1, B.H[1] + B.t[1] * 3 - B.n[1] * 1], hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 42); return { root, kn: ik(root, hk, 20.5, 22, 1), hk }; }
 function tail3(B, p) {
   const [ba, curl, amp, fq, ground] = p.tail, base = B.at(-0.18, 6), pts = [base], ph = p.tailPh != null ? p.tailPh : T * fq; let a = ba;
   for (let k = 0; k < 12; k++) { a += curl + amp * Math.sin(ph - k * 0.55) * (0.3 + k / 12); const q = pts[pts.length - 1]; let nx = q[0] + Math.cos(a) * 6.6, ny = q[1] + Math.sin(a) * 6.6; if (ground) ny = Math.min(ny, -3); pts.push([nx, ny]); }
-  for (let k = 0; k < pts.length - 1; k++) taper(pts[k], pts[k + 1], 8.5 - k * 0.38, 8.1 - k * 0.38);
+  const tw = p.tailW || 1; for (let k = 0; k < pts.length - 1; k++) taper(pts[k], pts[k + 1], (8.5 - k * 0.38) * tw, (8.1 - k * 0.38) * tw);
   return pts;
 }
 function headShape3() { return [[-13, -2], [-11, -9], [-3, -13], [6, -12], [12, -7], [15.5, -3], [16.5, 0.5], [14.5, 3.5], [9, 6.5], [0, 8.5], [-8, 6.5], [-13, 2]]; }
@@ -139,13 +145,17 @@ function drawRig(p, P, k, fx) {
     for (let j = 3; j < tp.length - 1; j += 2) { const q = tp[j], r = tp[j + 1], nx = -(r[1] - q[1]), ny = r[0] - q[0], l = Math.hypot(nx, ny) || 1; c.beginPath(); c.moveTo(q[0] + nx / l * 5, q[1] + ny / l * 5); c.lineTo(q[0] - nx / l * 5, q[1] - ny / l * 5); c.stroke(); }
     c.restore(); }
   c.fillStyle = P.base; smoothClosed(B.pts); c.fill();
+  // the haunch belongs to the body silhouette: a rounded rump that follows the near thigh, no separate outline
+  const hk0 = hind3Geom(B, p.hn), hc = [lerp(hk0.root[0], hk0.kn[0], 0.3), lerp(hk0.root[1], hk0.kn[1], 0.3)], ha = Math.atan2(hk0.kn[1] - hk0.root[1], hk0.kn[0] - hk0.root[0]);
+  const haunch = () => { c.beginPath(); c.ellipse(hc[0], hc[1], 15.5, 13, ha, 0, TAU); };
+  haunch(); c.fill(); hind3(B, p.hn, 1); fore3(B, p.fn, 1);
   c.save(); smoothClosed(B.pts); c.clip(); shadeBody3(B, p, P); c.restore();
+  if (P.stripe) { c.save(); haunch(); c.clip(); c.fillStyle = P.light; c.globalAlpha = 0.3; c.beginPath(); c.ellipse(hc[0] - 3, hc[1] - 7, 11, 5, ha, 0, TAU); c.fill(); c.restore(); }
   // near legs on their own layer
   const g3 = CB3.getContext('2d'); g3.setTransform(1, 0, 0, 1, 0, 0); g3.globalCompositeOperation = 'source-over'; g3.clearRect(0, 0, CBW, CBH); g3.setTransform(k * fx, 0, 0, k, COX, COY);
   c = g3; c.fillStyle = P.base;
-  const hl = hind3(B, p.hn), th = [lerp(hl.root[0], hl.kn[0], 0.38), lerp(hl.root[1], hl.kn[1], 0.38)];
-  c.beginPath(); c.ellipse(th[0], th[1], 15, 12.5, Math.atan2(hl.kn[1] - hl.root[1], hl.kn[0] - hl.root[0]), 0, TAU); c.fill();
-  const fl = fore3(B, p.fn);
+  const hl = hind3(B, p.hn, 2);
+  const fl = fore3(B, p.fn, 2);
   shadeLegs3(B, hl, fl, p, P);
   // inner contour: ring around the near legs, kept off the upper body so the legs still grow out of it seamlessly
   const g4 = CB4.getContext('2d'), iw = Math.max(0.8, 0.95 * S);
@@ -153,8 +163,7 @@ function drawRig(p, P, k, fx) {
   for (let a = 0; a < 8; a++) g4.drawImage(CB3, Math.cos(a * Math.PI / 4) * iw, Math.sin(a * Math.PI / 4) * iw);
   g4.globalCompositeOperation = 'source-in'; g4.fillStyle = P.inner; g4.fillRect(0, 0, CBW, CBH);
   g4.globalCompositeOperation = 'destination-out'; g4.drawImage(CB3, 0, 0);
-  g4.setTransform(k * fx, 0, 0, k, COX, COY); g4.beginPath(); B.TP.forEach((q, i) => i ? g4.lineTo(q[0], q[1]) : g4.moveTo(q[0], q[1]));
-  for (let u = 1.1; u >= -0.14; u -= 0.04) { const q = B.at(u, -B.bot(u) * 0.45); g4.lineTo(q[0], q[1]); } g4.closePath(); g4.fill();
+  g4.setTransform(k * fx, 0, 0, k, COX, COY); const pc = c; c = g4; smoothClosed(B.pts); c.fill(); haunch(); c.fill(); hind3(B, p.hn, 1); fore3(B, p.fn, 1); c = pc;
   c = main; c.save(); c.setTransform(1, 0, 0, 1, 0, 0);
   c.globalCompositeOperation = 'source-atop'; c.drawImage(CB4, 0, 0); c.globalCompositeOperation = 'source-over'; c.drawImage(CB3, 0, 0); c.restore();
   // neck + head
@@ -172,17 +181,17 @@ function drawRig(p, P, k, fx) {
 function shadeBody3(B, p, P) {
   if (P.stripe) {
     c.strokeStyle = P.stripe; c.lineCap = 'round';
-    [-0.1, 0.05, 0.2, 0.35, 0.5, 0.65, 0.8].forEach((u, i) => { const j = hash(i * 7.1) - 0.5, a = B.at(u + j * 0.03, B.top(u) + 1), b2 = B.at(u + 0.06, 2), d = B.at(u + 0.015 + j * 0.03, -5 - j * 6);
+    [-0.06, 0.16, 0.38, 0.6, 0.8].forEach((u, i) => { const j = hash(i * 7.1) - 0.5, a = B.at(u + j * 0.03, B.top(u) + 1), b2 = B.at(u + 0.06, 2), d = B.at(u + 0.015 + j * 0.03, -5 - j * 6);
       c.lineWidth = (i === 0 ? 4.6 : 3.4) + j * 1.4; c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(b2[0], b2[1], d[0], d[1]); c.stroke(); });
     c.lineWidth = 2.2; const a = B.at(0.95, 8), b = B.at(0.2, 9); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
   }
   // cream underside with a furry edge
   c.fillStyle = P.cream; c.beginPath(); let first = true;
-  for (let u = -0.3; u <= 1.32; u += 0.02) { const w = 5.5 + 4.5 * Math.sin(clamp(u + 0.05) * Math.PI) + (Math.floor(u * 50) % 2 ? 1.2 : -0.4) + (u > 0.95 ? (u - 0.95) * 30 : 0), q = B.at(u, -B.bot(clamp(u, -0.14, 1.1)) + w); first ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); first = false; }
+  for (let u = -0.3; u <= 1.32; u += 0.02) { const w = (5.5 + 4.5 * Math.sin(clamp(u + 0.05) * Math.PI) + (Math.floor(u * 50) % 2 ? 1.2 : -0.4) + (u > 0.95 ? (u - 0.95) * 30 : 0)) * sm((u - 0.12) / 0.22) - 0.5, q = B.at(u, -B.bot(clamp(u, -0.14, 1.1)) + w); first ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); first = false; }
   const e1 = B.at(1.35, -40), e0 = B.at(-0.35, -40); c.lineTo(e1[0], e1[1]); c.lineTo(e0[0], e0[1]); c.closePath(); c.fill();
   // underside turns away from the light
   c.fillStyle = P.creamS; c.globalAlpha = 0.7; c.beginPath(); first = true;
-  for (let u = -0.3; u <= 1.32; u += 0.04) { const q = B.at(u, -B.bot(clamp(u, -0.14, 1.1)) + 2.2); first ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); first = false; }
+  for (let u = -0.3; u <= 1.32; u += 0.04) { const q = B.at(u, -B.bot(clamp(u, -0.14, 1.1)) + 2.2 * sm((u - 0.1) / 0.2)); first ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); first = false; }
   c.lineTo(e1[0], e1[1]); c.lineTo(e0[0], e0[1]); c.closePath(); c.fill(); c.globalAlpha = 1;
   // chest ruff
   c.fillStyle = P.cream; const ch = B.at(1.15, -8); c.beginPath(); c.ellipse(ch[0], ch[1], 6.5, 9, 0.2, 0, TAU); c.fill();
@@ -192,12 +201,10 @@ function shadeBody3(B, p, P) {
 /* near-leg shading on CB3 (source-atop): stripes on thigh/forearm/shin, lighter paws, a shadow under the thigh */
 function shadeLegs3(B, hl, fl, p, P) {
   c.save(); c.globalCompositeOperation = 'source-atop';
-  c.fillStyle = P.shade; c.globalAlpha = 0.35; c.beginPath(); c.ellipse(hl.kn[0] - 3, hl.kn[1] + 1, 7, 10, 0.3, 0, TAU); c.fill(); c.globalAlpha = 1;
   if (P.stripe) {
-    c.strokeStyle = P.stripe; c.lineCap = 'round'; c.lineWidth = 3;
-    for (let j = 0; j < 2; j++) { const u = 0.35 + j * 0.25, q = [lerp(hl.root[0], hl.kn[0], u), lerp(hl.root[1], hl.kn[1], u)]; c.beginPath(); c.moveTo(q[0] - 7, q[1] - 2); c.quadraticCurveTo(q[0], q[1] + 1, q[0] + 7, q[1] - 3); c.stroke(); }
+    c.strokeStyle = P.stripe; c.lineCap = 'round'; c.globalAlpha = 0.6;
     const ring = (a, b, u, w) => { const q = [lerp(a[0], b[0], u), lerp(a[1], b[1], u)], dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L * w, ny = dx / L * w; c.beginPath(); c.moveTo(q[0] + nx, q[1] + ny); c.lineTo(q[0] - nx, q[1] - ny); c.stroke(); };
-    c.lineWidth = 2.4; ring(fl.el, fl.W, 0.3, 6); ring(fl.el, fl.W, 0.7, 5); ring(fl.root, fl.el, 0.75, 7); ring(hl.kn, hl.hk, 0.45, 6);
+    c.lineWidth = 2.2; ring(fl.el, fl.W, 0.35, 6); ring(fl.el, fl.W, 0.75, 5); ring(hl.kn, hl.hk, 0.5, 6); c.globalAlpha = 1;
   }
   c.fillStyle = P.cream; c.beginPath(); c.ellipse(fl.T2[0] + 1.2, fl.T2[1] - 2, 5.6, 3.4, fl.pa, 0, TAU); c.fill();
   c.beginPath(); c.ellipse(hl.toe[0] + 1.5, hl.toe[1] - 2, 6, 3.2, 0, 0, TAU); c.fill();
@@ -259,7 +266,7 @@ function ex(name, w = 1) { const e = { ...FACE0, ...EXPR3[name] }; return w >= 1
 function exMix(a, b, u) { return lp(ex(a), ex(b), clamp(u)); }
 /* face details drawn on top of the outlined silhouette (head-local coords, facing +x) */
 function face3(P, p, sil) {
-  const q = { ...FACE0, ...p }, open = Math.max(0, q.eye), m = q.mouth || 0, ES = 1.1;
+  const q = { ...FACE0 }; for (const k in p) if (p[k] != null) q[k] = p[k]; const open = Math.max(0, q.eye), m = q.mouth || 0, ES = 1.1;
   c.save(); earT(q); poly([[-3, 0.5], [3.8, -0.3], [0.2, -10]], P.ear); c.restore();
   if (!sil) { c.fillStyle = P.belly; c.beginPath(); c.ellipse(11.5, 2.6, 5.4, 3.8, 0, 0, TAU); c.fill(); c.lineCap = 'round'; c.strokeStyle = 'rgba(110,62,28,0.42)'; c.lineWidth = 1.4; [[-4, -12, -3, -8], [0, -12.5, 1, -8.8], [-10, -1, -3, 0]].forEach(([a, b, d, e]) => { c.beginPath(); c.moveTo(a, b); c.lineTo(d, e); c.stroke(); }); }
   if (q.blush > 0 && !sil) { c.fillStyle = `rgba(240,120,120,${0.42 * q.blush})`; c.beginPath(); c.ellipse(5.5, 1.8, 3.8, 1.7, -0.1, 0, TAU); c.fill(); }
@@ -277,6 +284,7 @@ function face3(P, p, sil) {
     const pw = 0.7 + 1.9 * q.pupil, ph = ry * (0.72 + 0.25 * Math.min(1, q.pupil)), lx = 0.7 + q.look[0] * 1.3, ly = q.look[1] * 0.9;
     c.fillStyle = '#140c08'; c.beginPath(); c.ellipse(lx, ly, Math.min(pw, rx * 0.95), ph, 0, 0, TAU); c.fill();
     c.fillStyle = 'rgba(255,255,255,0.95)'; c.beginPath(); c.arc(lx + 0.9, ly - ry * 0.38, 0.85 + q.sparkle * 0.35, 0, TAU); c.fill();
+    if (q.shine > 0) { const sg = c.createRadialGradient(lx, ly, 0, lx, ly, rx * 1.2); sg.addColorStop(0, `rgba(235,255,190,${q.shine})`); sg.addColorStop(1, `rgba(160,230,140,${q.shine * 0.5})`); c.globalCompositeOperation = 'lighter'; c.fillStyle = sg; c.fillRect(-rx, -ry, 2 * rx, 2 * ry); c.globalCompositeOperation = 'source-over'; }
     if (q.sparkle > 0) { c.globalAlpha = q.sparkle; c.beginPath(); c.arc(lx - 0.8, ly + ry * 0.35, 0.55, 0, TAU); c.fill(); c.globalAlpha = 1; }
     // upper lid: tilt > 0 = focused/cross (front corner low), < 0 = sad (back corner low)
     const lf = Math.max(0, q.lid) * ry * 0.9, lb = Math.max(0, -q.lid) * ry * 0.9;
@@ -331,13 +339,13 @@ function drawCat3(o) {
     g2.globalCompositeOperation = 'lighter'; g2.globalAlpha = 0.85; g2.drawImage(CB, 0, 0); g2.globalAlpha = 1; g2.globalCompositeOperation = 'source-over'; }
   // face on top
   g2.setTransform(k * (o.face || 1), 0, 0, k, COX, COY); c = g2;
-  const hp = p.sit ? [8, -82 - Math.sin(T * 1.7) * 0.6] : p.head, fp = (p.eye ?? 1) > 0.3 && !p.happy && o.blink !== false && blinkAt(T, (o.bseed || 0) + 0.37) ? { ...p, eye: 0 } : p;
+  const hp = p.sit ? [8, -82 - Math.sin(T * 1.7) * 0.6] : p.head, fp = (p.eye ?? 1) > 0.3 && !p.happy && !o.noBlink && blinkAt(T, (o.bseed || 0) + 0.37) ? { ...p, eye: 0 } : p;
   c.save(); c.translate(hp[0], hp[1]); c.rotate(p.hr || 0); c.scale(p.sit ? HSS : HSR, p.sit ? HSS : HSR); face3(P, fp, o.sil); c.restore();
   c = prev; g2.setTransform(1, 0, 0, 1, 0, 0);
   // composite into scene
   c.save(); c.translate(o.x, o.y);
   if (o.shadow !== false) { c.save(); c.scale(o.s, o.s); c.translate(p.hip ? (p.hip[0] + p.sh[0]) / 2 * (o.face || 1) : -8 * (o.face || 1), 0); catShadow(p.hip ? Math.max(30, Math.abs(p.sh[0] - p.hip[0]) * 0.8 + 18) : 44, o.shadowA ?? 0.32); c.restore(); }
   c.drawImage(CB2, -COX / S, -COY / S, CBW / S, CBH / S);
-  if (o.emote) { const e = o.emote; emote3(e.k, (hp[0] - 2) * o.s * fx, (hp[1] - 16) * o.s, o.s * (e.s || 1), e.u ?? 1, e.a ?? 1); }
+  if (o.emote && c.getTransform().d > 0) { const e = o.emote; emote3(e.k, (hp[0] - 2) * o.s * fx, (hp[1] - 16) * o.s, o.s * (e.s || 1), e.u ?? 1, e.a ?? 1); }
   c.restore();
 }

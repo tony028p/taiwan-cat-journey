@@ -17,7 +17,7 @@
     const cv = document.createElement('canvas'); cv.width = Wd * 1.5; cv.height = Hd * 1.5; const x = cv.getContext('2d');
     const prevS = S; S = 1.5; x.setTransform(1.5, 0, 0, 1.5, 0, 0); x.fillStyle = '#e8e4dc'; x.fillRect(0, 0, Wd, Hd);
     rows.forEach(([n, f], r) => { for (let i = 0; i < N; i++) { const u = i / N, pose = f(u); c = x; T = u; if (!pose) continue;
-      drawCat3({ x: 85 + i * cw, y: 150 + r * rh, s: n ? 1.05 : 1.5, pose, blink: false, emote: pose.emote && { k: pose.emote } });
+      drawCat3({ x: 85 + i * cw, y: 150 + r * rh, s: n ? 1.05 : 1.5, pose, noBlink: true, emote: pose.emote && { k: pose.emote } });
       c.fillStyle = '#333'; c.font = '12px sans-serif'; c.fillText(n + ' ' + (pose.name || u.toFixed(3)), 30 + i * cw, 172 + r * rh); } });
     S = prevS; return cv.toDataURL('image/png');
   }, N);

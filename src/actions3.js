@@ -1,95 +1,308 @@
-/* v3 per-scene cat choreography (landmark scenes L0–L22). Each scene strings 2–4 actions together. */
-function sit3(lt, o = {}) { return { ...SITP, ...o, eye: o.eye ?? (blinkAt(lt, o.seed || 0) ? 0 : 1) }; }
-function cross(qa, qb, u) { if (u <= 0) return drawCat3(qa); if (u >= 1) return drawCat3(qb); c.save(); c.globalAlpha *= 1 - u; drawCat3({ ...qa, shadow: false }); c.restore(); c.save(); c.globalAlpha *= u; drawCat3(qb); c.restore(); }
+/* v4 per-scene cat choreography (landmark scenes L0–L22). Each scene is a small story told in 3–5 beats: the cat
+   notices something in the scene, reacts (expression + optional comic mark), interacts with it, then settles.
+   Timing is in scene-local seconds (lt); props the cat touches are drawn here so they stay in sync with it. */
+function sit3(lt, o = {}) { return { ...SITP, ...o }; }
+function cross(qa, qb, u) { if (u <= 0) return drawCat3(qa); if (u >= 1) return drawCat3(qb); c.save(); c.globalAlpha *= 1 - u; drawCat3({ ...qa, shadow: false, emote: null }); c.restore(); c.save(); c.globalAlpha *= u; drawCat3(qb); c.restore(); }
 function seqWalk(q, x0, sp, t, o = {}) { q.x = x0 + t * sp; q.pose = walkPose3(walkCyc3(t * sp, q.s, o.trot), o); return q; }
+/* expression timeline: [[t0, 'name'], [t1, 'name2'], …] with short cross-fades */
+function exSeq(lt, seq, d = 0.25) {
+  let i = 0; while (i < seq.length - 1 && lt >= seq[i + 1][0]) i++;
+  const cur = ex(seq[i][1]);
+  return i > 0 && lt < seq[i][0] + d ? lp(ex(seq[i - 1][1]), cur, sm((lt - seq[i][0]) / d)) : cur;
+}
+/* comic marks: [[t0, t1, kind, scale?], …] */
+function emo(q, lt, list) { for (const [t0, t1, k, sc] of list) if (lt >= t0 && lt < t1) q.emote = { k, u: clamp((lt - t0) / 0.35), a: 1 - sm((lt - t1 + 0.3) / 0.3), s: sc || 1 }; }
+const mirrored = () => c.getTransform().d < 0;
+/* world position of the nose tip (for props that land on the cat) */
+function noseW(q) { const p = q.pose, f = q.face || 1, hs = p.sit ? HSS : HSR, h = p.sit ? [8, -82] : p.head, a = p.hr || 0;
+  return [q.x + f * q.s * (h[0] + hs * (Math.cos(a) * 16.5 - Math.sin(a) * 0.5)), q.y + q.s * (h[1] + hs * (Math.sin(a) * 16.5 + Math.cos(a) * 0.5))]; }
+function pawW(q, k = 'fn') { const p = q.pose, f = q.face || 1; return [q.x + f * q.s * p[k][0], q.y + q.s * p[k][1]]; }
+const bumpT = (t, a, b) => Math.sin(Math.PI * clamp((t - a) / (b - a)));
+
+/* ---------- props ---------- */
+function gull(x, y, s, o = {}) {
+  c.save(); c.translate(x, y); c.scale(s * (o.face || 1), s);
+  if (o.fly == null) {
+    const bob = Math.sin(T * 3) * 0.6; line(-2, 0, -2.5, -8, '#e4a54a', 1.4); line(2.5, 0, 2, -8, '#e4a54a', 1.4);
+    poly([[-11, -14], [-21, -17], [-20, -11]], '#2b2b2e'); oval(0, -14, 12.5, 7, -0.12, '#f5f4ef'); oval(-3, -15.5, 10.5, 4.6, -0.2, '#9aa4ad');
+    c.save(); c.translate(9.5, -21 + bob); disc(0, 0, 5.4, '#f8f8f4'); poly([[4, 0], [11, 1.5], [4, 2.4]], '#f0b030'); disc(1.6, -1.4, 0.9, '#222'); c.restore();
+  } else {
+    const f = Math.sin(o.fly); oval(0, 0, 12, 5, -0.2, '#f5f4ef'); disc(10, -4, 4.8, '#f8f8f4'); poly([[14, -4], [20, -2.5], [14, -2]], '#f0b030'); poly([[-10, 0], [-19, -3], [-17, 3]], '#2b2b2e');
+    c.fillStyle = '#c3cbd2'; c.beginPath(); c.moveTo(4, -3); c.quadraticCurveTo(-2, -3 - 16 * f, -18, -4 - 22 * f); c.quadraticCurveTo(-6, -2 - 6 * f, -6, -1); c.closePath(); c.fill();
+    poly([[-18, -4 - 22 * f], [-13, -3 - 16 * f], [-15, -1 - 19 * f]], '#2b2b2e');
+  }
+  c.restore();
+}
+function crab(x, y, s, t, o = {}) {
+  c.save(); c.translate(x, y); c.scale(s * (o.face || 1), s); const col = o.col || '#d9573a', wv = o.wave || 0;
+  c.strokeStyle = mix(col, '#000000', 0.25); c.lineWidth = 1.3; c.lineCap = 'round';
+  for (let k = 0; k < 3; k++) for (const sd of [-1, 1]) { const ph = Math.sin(t * 18 + k * 2 + sd) * 1.5; c.beginPath(); c.moveTo(sd * 4, -5); c.lineTo(sd * (9 + k * 2), -7 + ph); c.lineTo(sd * (11 + k * 2.5), 0); c.stroke(); }
+  oval(0, -6, 9, 5.5, 0, col); oval(-1, -8, 6, 2.5, 0, 'rgba(255,255,255,0.2)');
+  line(-3, -10, -3.5, -15, '#3a2a24', 1.1); line(3, -10, 3.5, -15, '#3a2a24', 1.1); disc(-3.5, -15.5, 1.4, '#1a1412'); disc(3.5, -15.5, 1.4, '#1a1412');
+  c.save(); c.translate(9, -9); c.rotate(-0.4 - wv * 0.9); oval(4, -1, 5, 3.4, 0, mix(col, '#ffffff', 0.15)); poly([[7, -3], [11, -5 - wv * 2], [9, -1]], mix(col, '#ffffff', 0.15)); c.restore();
+  c.restore();
+}
+function koi(x, y, s, ang, f = 1) {
+  c.save(); c.translate(x, y); c.scale(f, 1); c.rotate(ang); c.scale(s, s);
+  poly([[-14, 0], [-22, -6], [-20, 0], [-22, 6]], '#f08a3a'); oval(0, 0, 15, 5.5, 0, '#fbf3e8'); oval(3, -1.5, 7, 3.6, 0.2, '#ee6a2a'); oval(-7, 1, 4, 2.4, 0, '#ee6a2a');
+  poly([[-2, -5], [4, -9], [6, -4]], '#f4a060'); disc(11, -1.2, 0.9, '#222'); c.restore();
+}
+function dragonfly(x, y, s, t, f = 1) {
+  c.save(); c.translate(x, y); c.scale(s * f, s); const fl = 0.6 + 0.4 * Math.sin(t * 60);
+  c.fillStyle = 'rgba(220,240,255,0.55)'; c.strokeStyle = 'rgba(80,110,130,0.6)'; c.lineWidth = 0.5;
+  [[-1, -2, 9 * fl, -0.25], [-2.5, -2, 8 * fl, -0.5], [-1, 1, 8 * fl, 0.25], [-2.5, 1, 7 * fl, 0.5]].forEach(([wx, wy, l, a]) => { c.save(); c.translate(wx, wy); c.rotate(a + Math.PI / 2 * Math.sign(wy) * 0.9); c.beginPath(); c.ellipse(l / 2, 0, l / 2, 1.6, 0, 0, TAU); c.fill(); c.stroke(); c.restore(); });
+  line(-14, 0, 0, 0, '#2f7a8c', 1.6); disc(1.5, 0, 2.2, '#2f6070'); disc(2.6, -0.8, 0.9, '#9fe0ff'); c.restore();
+}
+function blossom(x, y, s, rot) {
+  c.save(); c.translate(x, y); c.rotate(rot); c.scale(s, s);
+  for (let k = 0; k < 5; k++) { c.save(); c.rotate(k * TAU / 5); oval(0, -3.2, 2.2, 3.2, 0, '#fffaf2'); c.restore(); }
+  disc(0, 0, 1.4, '#e8b04a'); disc(0, 0, 0.6, '#c0603a'); c.restore();
+}
+function persimmon(x, y, r, rot) {
+  c.save(); c.translate(x, y); c.rotate(rot);
+  const g = c.createRadialGradient(-r * 0.35, -r * 0.35, 0, 0, 0, r); g.addColorStop(0, '#f7b55a'); g.addColorStop(0.7, '#d9742a'); g.addColorStop(1, '#a24e1c');
+  c.fillStyle = g; c.beginPath(); c.ellipse(0, 0, r, r * 0.9, 0, 0, TAU); c.fill();
+  for (let k = 0; k < 4; k++) { c.save(); c.rotate(k * TAU / 4); poly([[0, -r * 0.75], [r * 0.25, -r * 1.05], [-r * 0.25, -r * 1.05]], '#6b5a2a'); c.restore(); }
+  disc(0, -r * 0.9, r * 0.18, '#4e3f1c'); c.restore();
+}
+function ripple(x, y, u, rgb, s = 1, n = 3) {
+  for (let k = 0; k < n; k++) { const v = u * 1.4 - k * 0.22; if (v <= 0 || v > 1) continue;
+    c.strokeStyle = `rgba(${rgb},${0.7 * (1 - v)})`; c.lineWidth = 1.4 * s; c.beginPath(); c.ellipse(x, y, (6 + 46 * v) * s, (1.5 + 9 * v) * s, 0, 0, TAU); c.stroke(); }
+}
+function puff(x, y, u, s = 1, col = '242,240,234') {
+  const r = rng(Math.floor(x));
+  for (let k = 0; k < 7; k++) { const v = clamp(u * 1.2 - k * 0.05), a = (1 - v) * 0.7; if (a <= 0) continue; const dx = (r() - 0.5) * 30 * v, dy = -60 * v - r() * 20 * v;
+    c.fillStyle = `rgba(${col},${a})`; c.beginPath(); c.arc(x + dx * s, y + dy * s, (6 + 18 * v) * s * (0.7 + r() * 0.5), 0, TAU); c.fill(); }
+}
+
 function actCat(o) {
   const id = SC.sc.id || ('L' + SC.i), lt = SC.lt, ld = +id.slice(1);
   const F = { 1: 1.2, 2: 1.15, 3: 1.05, 4: 1.15, 5: 1.25, 6: 1.15, 7: 1.3, 8: 1.15, 9: 1.15, 11: 1.15, 12: 1.2, 13: 1.15, 14: 1.1, 15: 1.15, 16: 1.2, 17: 1.15 }[ld] || 1;
-  let q = { ...o, s: o.s * F }; delete q.pose;
+  let q = { ...o, s: o.s * F, bseed: ld }; delete q.pose;
   const s = q.s;
   switch (ld) {
-    case 0: { // dawn on Xiangshan: sit, ear twitch, yawn, rise and stretch, walk off
-      if (lt < 5.4) { const y = sm((lt - 3.9) / 0.35) * (1 - sm((lt - 5.0) / 0.4)); q.pose = sit3(lt, { hr: lerp(-0.06, -0.55, y), mouth: y, eye: y > 0.3 ? 0 : undefined, ear: Math.sin(lt * 9) > 0.96 ? 0.3 : 0, ts: 1.1 }); return drawCat3(q); }
+    case 0: { // dawn on Xiangshan: dozing → ear twitch → wakes → yawn → stretch → walks off
+      emo(q, lt, [[0.4, 2.5, 'z']]);
+      if (lt < 5.4) { const y = sm((lt - 3.9) / 0.35) * (1 - sm((lt - 5.0) / 0.4)), wake = sm((lt - 2.5) / 0.5);
+        q.pose = sit3(lt, { ...exSeq(lt, [[0, 'sleepy'], [2.6, 'neutral'], [3.7, 'sleepy']]), eye: lt < 2.5 ? 0 : (y > 0.3 ? 0 : undefined), hr: lerp(0.2 + Math.sin(lt * 1.3) * 0.03, -0.06, wake) + lerp(0, -0.5, y), mouth: y, ear: lt > 2.2 && lt < 2.45 ? -0.35 : (lt < 2.5 ? 0.15 : 0), ts: 1.1 });
+        return drawCat3(q); }
       const u = sm((lt - 5.4) / 0.35), st = sm((lt - 5.7) / 0.7) * (1 - sm((lt - 6.9) / 0.6));
-      const qb = { ...q, x: q.x + 8, pose: lp(STAND3, STRETCH3, st) }; if (lt > 7.2) { seqWalk(qb, q.x + 8, 32, lt - 7.2); }
+      const qb = { ...q, x: q.x + 8, pose: { ...lp(STAND3, STRETCH3, st), ...ex('content') } }; if (lt > 7.2) { seqWalk(qb, q.x + 8, 32, lt - 7.2); Object.assign(qb.pose, ex('happy', 0.6)); }
       return cross({ ...q, pose: sit3(lt, { hr: -0.1 }) }, qb, u);
     }
-    case 1: { // Jiufen: trot through rain, stop under the eaves, shake off, look up at the lanterns
+    case 1: { // Jiufen: trots through the rain (grumpy), shakes off under the eaves, finds a puddle full of lanterns, pats it
       const stopT = 3.2, d = lt < stopT ? lt * 46 : stopT * 46 + (1 - Math.exp(-(lt - stopT) * 5)) * 9; q.x = 600 + d;
-      if (lt < stopT) q.pose = walkPose3(walkCyc3(lt * 46, s, true), { trot: 1, ear: 0.25 });
-      else { const u = lt - stopT - 0.4, sh = u > 0 && u < 0.8 ? Math.sin(u * 42) * 0.45 * (1 - u / 0.8) : 0, look = sm((lt - 4.7) / 0.5);
-        q.pose = { ...STAND3, hr: sh - look * 0.55, eye: Math.abs(sh) > 0.1 ? 0 : 1, ear: Math.abs(sh) * 0.8, hip: [-34, -50 + Math.abs(sh) * 4], tail: [-1.75, 0.12, 0.06 + Math.abs(sh) * 0.3, 8, 0] };
-        if (u > 0 && u < 1.3) { const xx = q.x, yy = q.y; q.after = () => shakeDrops(xx + 40 * s, yy - 58 * s, s, clamp(u / 1.3)); } }
+      const px = 600 + stopT * 46 + 9 + 74 * s, py = 614;
+      q.before = () => { if (mirrored()) return; c.save(); c.beginPath(); c.ellipse(px, py, 64, 9, 0, 0, TAU); c.fillStyle = vg(py - 9, py + 9, [[0, 'rgba(70,40,48,0.9)'], [1, 'rgba(30,22,30,0.9)']]); c.fill(); c.clip(); glow(px + 14, py, 46, '255,80,45', 0.85 + 0.1 * Math.sin(T * 5)); glow(px - 26, py, 30, '255,150,80', 0.6); glow(px + 40, py, 20, '255,190,120', 0.5); c.globalAlpha = 0.85; oval(px + 14 + Math.sin(T * 1.6) * 2, py + 1, 7, 4, 0, '#ff6a40'); oval(px - 26, py + 1, 6, 3.4, 0, '#ff8a50'); c.globalAlpha = 1;
+        c.strokeStyle = 'rgba(255,210,170,0.35)'; c.lineWidth = 1; line(px - 50, py - 4, px + 30, py - 4, 'rgba(255,210,170,0.3)', 1);
+        if (lt > 5.25) ripple(px - 14, py, (lt - 5.25) / 1.1, '255,200,150', 0.7, 4); c.restore(); };
+      if (lt < stopT) { q.pose = { ...walkPose3(walkCyc3(lt * 46, s, true), { trot: 1 }), ...ex('annoyed') }; break; }
+      const u = lt - stopT - 0.4, sh = u > 0 && u < 0.8 ? Math.sin(u * 42) * 0.45 * (1 - u / 0.8) : 0;
+      emo(q, lt, [[3.5, 4.5, 'drop'], [4.55, 5.2, '?'], [5.35, 6.4, 'spark']]);
+      if (lt < 4.4) q.pose = { ...STAND3, ...ex('annoyed'), hr: sh, eye: Math.abs(sh) > 0.1 ? 0 : 0.5, ear: 0.3 + Math.abs(sh) * 0.8, hip: [-34, -50 + Math.abs(sh) * 4], tail: [-1.75, 0.12, 0.06 + Math.abs(sh) * 0.3, 8, 0] };
+      else { const look = sm((lt - 4.4) / 0.3), tap = bumpT(lt, 4.95, 5.3), up = sm((lt - 5.7) / 0.4);
+        q.pose = { ...STAND3, ...exSeq(lt, [[4.4, 'curious'], [5.3, 'surprised'], [5.75, 'delighted']]), head: [56, lerp(-72, -60, look * (1 - up))], hr: lerp(0, 0.5, look) * (1 - up) - up * 0.55,
+          fn: [lerp(32, 52, tap), -tap * 12, tap * 0.8], sb: 2 + tap * 2 }; }
+      if (u > 0 && u < 1.3) { const xx = q.x, yy = q.y; q.after = () => shakeDrops(xx + 40 * s, yy - 58 * s, s, clamp(u / 1.3)); }
       break;
     }
-    case 2: { // Keelung: stalk the gull — crouch, butt-wiggle, pounce, miss, look around
-      q.x = 250; q.y = 594;
-      if (lt < 4.2) { const u = sm(lt / 0.8), wig = lt > 2.3 ? Math.sin(lt * 24) * 3 : 0; q.pose = lp(STAND3, CROUCH3, u); q.pose.hip = [q.pose.hip[0] + wig, q.pose.hip[1] - Math.abs(wig) * 0.5]; q.pose.hr = -0.25 - lt * 0.03; q.pose.tail = [-2.95, -0.02, 0.2, 7, 0]; }
-      else if (lt < 4.85) { const u = (lt - 4.2) / 0.65; q.pose = lp(CROUCH3, LEAP3, sm(u * 2)); q.x = 250 + u * 90; q.y = 594 - Math.sin(u * Math.PI) * 60; q.shadowA = 0.18; }
-      else { const u = sm((lt - 4.85) / 0.25); q.pose = lp(LAND3, { ...STAND3, hr: Math.sin((lt - 5) * 3) * 0.3 }, u); q.x = 340; }
+    case 2: { // Keelung: a gull on the bollard — stalk, wiggle, pounce… the gull simply flies off
+      q.x = 250; q.y = 594; const gx = 451, gy = 562, go = lt - 4.3;
+      q.after = () => { if (go < 0) gull(gx, gy, 0.95, { face: -1 }); else gull(gx + go * 150, gy - 14 - go * 120 + Math.sin(go * 3) * 6, 0.95, { fly: lt * 15 }); };
+      emo(q, lt, [[0.5, 1.6, '!'], [5.2, 6.4, '?']]);
+      if (lt < 4.2) { const u = sm(lt / 0.8), wig = lt > 2.3 ? Math.sin(lt * 24) * 3 : 0; q.pose = { ...lp(STAND3, CROUCH3, u), ...exSeq(lt, [[0, 'curious'], [1.4, 'focused']]) }; q.pose.hip = [q.pose.hip[0] + wig, q.pose.hip[1] - Math.abs(wig) * 0.5]; q.pose.hr = -0.15 - lt * 0.02; q.pose.tail = [-2.95, -0.02, 0.2, 7, 0]; }
+      else if (lt < 4.85) { const u = (lt - 4.2) / 0.65; q.pose = { ...lp(CROUCH3, LEAP3, sm(u * 2)), ...ex('focused'), ear: 0.3 }; q.x = 250 + u * 110; q.y = 594 - Math.sin(u * Math.PI) * 60; q.shadowA = 0.18; }
+      else { const u = sm((lt - 4.85) / 0.25), lk = sm((lt - 5.0) / 0.4); q.pose = { ...lp(LAND3, { ...STAND3, hr: -0.6 * lk, head: [56, -74] }, u), ...exSeq(lt, [[4.85, 'surprised'], [5.5, 'sad']]), look: [0.6, -0.8] }; q.x = 360; }
       break;
     }
-    case 3: { // Yilan: wash face, then watch the sunrise
-      const g = lt > 1.2 && lt < 4.2, ph = (lt - 1.2) * 5.5, a = g ? 0.5 + 0.5 * Math.sin(ph) : 0, wash = lt > 2.8;
-      q.pose = sit3(lt, g ? (wash ? { hr: 0.15 + a * 0.25, eye: 0, paw: [22 + a * 4, -86 + a * 8, 1] } : { hr: 0.45 + a * 0.1, tongue: a, eye: 0, paw: [24, -72 + a * 4, 1] }) : { hr: lt > 4.2 ? -0.12 : -0.05, ts: 1.4 });
+    case 3: { // Yilan: a crab wanders up; one curious pat and it bolts — then back to washing, facing the sunrise
+      const cx = lt < 2.2 ? lerp(640, 398, sm(lt / 2.2)) : lt < 2.85 ? 398 : 398 + (lt - 2.85) * 170, cy = 607 + (lt > 3.3 ? (lt - 3.3) * 14 : 0);
+      q.after = () => { if (lt < 4.2) { c.save(); c.beginPath(); c.rect(cx - 40, 0, 80, 607); c.clip(); crab(cx, cy, 1.5, lt, { face: -1, col: '#a8483a', wave: lt > 2.2 && lt < 2.85 ? 0.5 + 0.5 * Math.sin(lt * 14) : 0 }); c.restore(); } };
+      emo(q, lt, [[1.1, 2.2, '?'], [2.85, 3.6, '!']]);
+      const tap = bumpT(lt, 2.45, 2.85), g = lt > 3.7 && lt < 5.0, a = g ? 0.5 + 0.5 * Math.sin((lt - 3.7) * 6) : 0;
+      if (lt < 3.6) q.pose = sit3(lt, { ...exSeq(lt, [[0, 'neutral'], [1.0, 'curious'], [2.85, 'surprised']]), hr: lerp(-0.05, 0.42, sm((lt - 0.9) / 0.5)) * (1 - sm((lt - 3.0) / 0.5)), paw: tap > 0.02 ? [lerp(16, 33, tap), lerp(-6, -12, tap), 1] : null, look: [0.6, 0.5] });
+      else if (g) q.pose = sit3(lt, { ...ex('content'), eye: 0, hr: 0.15 + a * 0.25, paw: [22 + a * 4, -86 + a * 8, 1] });
+      else q.pose = sit3(lt, { ...ex('content'), hr: -0.12, ts: 1.4 });
       break;
     }
-    case 4: { // Qingshui: balance walk on the railing, pause to look down at the surf, carry on
+    case 4: { // Qingshui: tightrope along the railing, looks down — a long way down — wobbles, then carries on proudly
       const t = lt < 2.4 ? lt : lt < 3.8 ? 2.4 : lt - 1.4, d = t * 30; q.x = d; q.y = 498 + (q.x + 90) * 22 / 390 - 2;
-      q.pose = lt >= 2.4 && lt < 3.8 ? lp(walkPose3(walkCyc3(2.4 * 30, s)), { ...STAND3, hr: 0.55, head: [56, -60] }, sm((lt - 2.4) / 0.4) * (1 - sm((lt - 3.4) / 0.4)))
-        : walkPose3(walkCyc3(d, s), { tail: [-2.95, 0.04, 0.14, 1.4, 0], hr: 0.12 });
+      emo(q, lt, [[2.7, 3.7, 'drop'], [4.9, 6.2, 'note']]);
+      const look = sm((lt - 2.4) / 0.4) * (1 - sm((lt - 3.4) / 0.4)), wob = lt > 2.8 && lt < 3.6 ? Math.sin(lt * 20) * (1 - (lt - 2.8) / 0.8) : 0;
+      q.pose = lt >= 2.4 && lt < 3.8 ? { ...lp(walkPose3(walkCyc3(2.4 * 30, s)), { ...STAND3, hr: 0.55, head: [56, -60] }, look), ...exSeq(lt, [[2.4, 'surprised'], [2.75, 'scared']]), tail: [-1.75 + wob * 0.6, 0.12, 0.06, 1.6, 0] }
+        : { ...walkPose3(walkCyc3(d, s), { tail: [-2.95, 0.04, 0.14, 1.4, 0], hr: 0.12 }), ...exSeq(lt, [[0, 'focused'], [3.8, 'neutral'], [4.6, 'happy']]) };
+      q.x += wob * 2;
       break;
     }
-    case 5: { // Taitung: walk, spot butterfly, crouch, pounce, land and watch it flutter off
-      const bx = 640 + Math.sin(lt * 1.3) * 60 + lt * 22, by = 520 + Math.sin(lt * 2.7) * 25 - sm((lt - 4.2) / 1.5) * 110;
-      if (lt < 2.4) seqWalk(q, 250, 30, lt);
-      else if (lt < 3.8) { const u = sm((lt - 2.4) / 0.5); q.x = 250 + 72; q.pose = lp(STAND3, CROUCH3, u); q.pose.hip = [q.pose.hip[0] + (lt > 3 ? Math.sin(lt * 24) * 3 : 0), q.pose.hip[1]]; q.pose.hr = -0.3; }
-      else if (lt < 4.5) { const u = (lt - 3.8) / 0.7; q.pose = lp(CROUCH3, LEAP3, sm(u * 1.6)); q.x = 322 + u * 130; q.y = 582 - Math.sin(u * Math.PI) * 80; q.shadowA = 0.15; }
-      else { const u = sm((lt - 4.5) / 0.3); q.pose = lp(LAND3, { ...STAND3, hr: -0.55, head: [56, -76] }, u); q.x = 452; }
-      q.after = () => butterfly(bx, by, 1.3, lt); break;
+    case 5: { // Taitung: spots a butterfly, stalks, pounces, misses… and the butterfly lands on its nose
+      let bx = 640 + Math.sin(lt * 1.3) * 60 + lt * 22, by = 520 + Math.sin(lt * 2.7) * 25 - sm((lt - 4.2) / 1.5) * 110;
+      emo(q, lt, [[1.7, 2.6, '!'], [4.6, 5.2, '?'], [5.4, 6.6, 'heart']]);
+      if (lt < 2.4) { seqWalk(q, 250, 30, lt); Object.assign(q.pose, exSeq(lt, [[0, 'neutral'], [1.7, 'curious']])); }
+      else if (lt < 3.8) { const u = sm((lt - 2.4) / 0.5); q.x = 250 + 72; q.pose = { ...lp(STAND3, CROUCH3, u), ...ex('focused') }; q.pose.hip = [q.pose.hip[0] + (lt > 3 ? Math.sin(lt * 24) * 3 : 0), q.pose.hip[1]]; q.pose.hr = -0.3; }
+      else if (lt < 4.5) { const u = (lt - 3.8) / 0.7; q.pose = { ...lp(CROUCH3, LEAP3, sm(u * 1.6)), ...ex('focused') }; q.x = 322 + u * 130; q.y = 582 - Math.sin(u * Math.PI) * 80; q.shadowA = 0.15; }
+      else { const u = sm((lt - 4.5) / 0.3), dn = sm((lt - 4.9) / 0.5); q.pose = { ...lp(LAND3, { ...STAND3, hr: lerp(-0.55, -0.05, dn), head: [56, lerp(-76, -70, dn)] }, u), ...exSeq(lt, [[4.5, 'surprised'], [5.1, 'curious'], [5.4, 'delighted']]), look: [lerp(0.5, 1.1, dn), lerp(-0.8, 0.7, dn)] }; q.x = 452; }
+      if (lt > 4.6) { const n = noseW(q), v = sm((lt - 4.6) / 0.7); bx = lerp(bx, n[0] + 2, v); by = lerp(by, n[1] - 5, v); }
+      const bt = lt > 5.3 ? 5.3 + (lt - 5.3) * 0.15 : lt;
+      q.after = () => butterfly(bx, by, 1.3, bt); break;
     }
-    case 6: { // Eluanbi: walk the cape at sunset, then sit to watch
+    case 6: { // Eluanbi: walks the cape, the lighthouse beam catches it, then it turns and sits to watch the sun go down
       const f = x2 => 470 - 120 * sm((x2 - 520) / 500) - fbm1(x2 * 0.01 + 3) * 16;
-      if (lt < 3.6) { seqWalk(q, 500, 26, lt); q.y = Math.min(f(q.x), 560) + 2; return drawCat3(q); }
-      const x = 500 + 3.6 * 26, qa = { ...q, x, y: Math.min(f(x), 560) + 2, pose: { ...STAND3, hr: -0.2 } };
-      return cross(qa, { ...qa, x: x + 6, pose: sit3(lt, { hr: -0.15, ts: 1.0 }) }, sm((lt - 3.7) / 0.3));
+      emo(q, lt, [[3.05, 3.9, '!', 0.9]]);
+      if (lt < 3.0) { seqWalk(q, 500, 26, lt); q.y = Math.min(f(q.x), 560) + 2; return drawCat3(q); }
+      const x = 500 + 3.0 * 26, lk = sm((lt - 3.0) / 0.35), qa = { ...q, x, y: Math.min(f(x), 560) + 2, pose: { ...STAND3, ...ex('surprised'), hr: -0.45 * lk, head: [56, -74] } };
+      return cross(qa, { ...qa, x: x - 4, face: -1, emote: null, pose: sit3(lt, { ...ex('content'), hr: -0.15, ts: 1.0 }) }, sm((lt - 3.95) / 0.3));
     }
-    case 7: { // Lotus Pond: walk the zigzag bridge, stop, peer down at the koi
-      if (lt < 3.8) seqWalk(q, 330, 28, lt); else { q.x = 330 + 3.8 * 28; q.pose = lp(walkPose3(walkCyc3(3.8 * 28, s)), { ...STAND3, hr: 0.6, head: [56, -52], tail: [-1.6, 0.14, 0.12, 4, 0] }, sm((lt - 3.8) / 0.5)); }
-      q.y = 548 + (q.x - 300) / 460 * 42 - 1; break;
+    case 7: { // Lotus Pond: crosses the zigzag bridge, peers down — a koi leaps out right under its nose
+      q.y = 548; const x0 = 330, xs = x0 + 3.8 * 28;
+      emo(q, lt, [[3.9, 4.5, '?', 0.8], [4.6, 5.4, '!', 0.8], [5.5, 6.5, 'spark', 0.8]]);
+      if (lt < 3.8) { seqWalk(q, x0, 28, lt); Object.assign(q.pose, ex('content', 0.6)); }
+      else { const pr = sm((lt - 3.8) / 0.5), jump = bumpT(lt, 4.6, 5.05);
+        q.x = xs - jump * 8; q.pose = { ...lp(lp(walkPose3(walkCyc3(3.8 * 28, s)), { ...STAND3, hr: 0.6, head: [56, -52], tail: [-1.6, 0.14, 0.12, 4, 0] }, pr), SCARED3, jump * 0.7), ...exSeq(lt, [[3.8, 'curious'], [4.6, 'scared'], [5.2, 'delighted']]) };
+        q.y -= jump * 12; }
+      q.y += (q.x - 300) / 460 * 42 - 1;
+      const kt = (lt - 4.55) / 0.9;
+      q.after = () => { if (kt > 0 && kt < 1) { const kx = xs + 92 - kt * 34, ky = 614 - Math.sin(kt * Math.PI) * 100; koi(kx, ky, 1.05, -Math.cos(kt * Math.PI) * 1.2, -1); }
+        if (kt > 0) ripple(xs + 92, 614, kt * 0.8, '255,255,240', 0.8); if (kt > 1) ripple(xs + 58, 616, (kt - 1) * 0.9, '255,255,240', 0.8); };
+      break;
     }
-    case 8: { // Penghu: loafing in the breeze, ears flicking, dozing off
-      const doze = sm((lt - 3.5) / 1.5); const pp = lp(LOAF3, SLEEP3, doze); pp.eye = doze > 0.5 ? 0 : (blinkAt(lt, 8) ? 0 : 1); pp.ear = Math.max(0, Math.sin(lt * 3.3)) > 0.97 ? 0.45 : pp.ear; pp.hr = (pp.hr || 0) + Math.sin(lt * 0.5) * 0.05;
+    case 8: { // Penghu: loafs on the cliff gazing at the two stone hearts, ears flicking in the breeze, dozes off
+      const doze = sm((lt - 3.5) / 1.5), pp = { ...lp(LOAF3, SLEEP3, doze), ...exSeq(lt, [[0, 'content'], [3.4, 'sleepy']]) };
+      pp.eye = doze > 0.5 ? 0 : (lt < 3.4 ? 0.35 : 0.3); pp.ear = Math.max(0, Math.sin(lt * 3.3)) > 0.97 ? 0.45 : pp.ear; pp.hr = (pp.hr || 0) + Math.sin(lt * 0.5) * 0.05;
+      emo(q, lt, [[0.6, 2.6, 'heart'], [4.6, 7, 'z']]);
       q.pose = pp; q.y = 546; q.x = 220; break;
     }
-    case 9: { const tr = lt > 3.2; q.cyc = tr ? walkCyc3(3.2 * 26, s) + walkCyc3((lt - 3.2) * 44, s, true) : walkCyc3(lt * 26, s); q.pose = walkPose3(q.cyc, tr ? { trot: 1 } : {}); break; }
-    case 10: { const y = sm((lt - 2.4) / 0.4) * (1 - sm((lt - 3.7) / 0.5)); q.pose = sit3(lt, { hr: lerp(-0.1, -0.6, y), mouth: y, eye: y > 0.3 ? 0 : undefined, seed: 9 }); break; }
-    case 11: { // Hinoki: big stretch on the porch, then stroll off
-      if (lt < 2.6) { const u = sm(lt / 0.9) * (1 - sm((lt - 1.9) / 0.7)); q.pose = lp(STAND3, STRETCH3, u); q.pose.mouth = Math.max(0, u - 0.6) * 2; q.x = 230; }
-      else seqWalk(q, 230, 30, lt - 2.6);
+    case 9: { // Tainan: stops to look at its reflection in the salt pan, pats it, ripples — then trots off happy
+      const walkD = Math.min(lt, 2.2) * 26, trD = Math.max(0, lt - 4.0) * 44; q.x = 300 + walkD + trD;
+      emo(q, lt, [[2.4, 3.2, '?'], [3.4, 4.1, '!'], [4.4, 5.6, 'note']]);
+      if (lt < 2.2) q.pose = walkPose3(walkCyc3(walkD, s));
+      else if (lt < 4.0) { const lk = sm((lt - 2.2) / 0.4) * (1 - sm((lt - 3.7) / 0.3)), tap = bumpT(lt, 3.0, 3.4);
+        q.pose = { ...lp(walkPose3(walkCyc3(walkD, s)), { ...STAND3, head: [56, -60], hr: 0.5 }, lk), ...exSeq(lt, [[2.2, 'curious'], [3.4, 'surprised'], [3.8, 'happy']]) }; q.pose.fn = [lerp(32, 54, tap), -tap * 14, tap]; }
+      else { q.pose = { ...walkPose3(walkCyc3(walkD, s) + walkCyc3(trD, s, true), { trot: 1 }), ...ex('happy') }; }
+      const rx = 300 + 2.2 * 26 + 54 * s;
+      q.after = () => { if (!mirrored() && lt > 3.35) ripple(rx, q.y + 3, (lt - 3.35) / 1.6, '255,210,170', 1, 4); };
       break;
     }
-    case 12: { q.x = 300 + lt * 95; q.pose = gallopPose3(gallopCyc3(lt * 95, s)); q.y = 594; break; }
-    case 13: { seqWalk(q, 300, 22, lt, { tail: [-1.65, 0.15, 0.05, 1.2, 0] }); q.y = 598; break; }
-    case 14: { const ph = lt * 4.5, a = 0.5 + 0.5 * Math.sin(ph), wash = lt > 3.4;
-      q.pose = sit3(lt, wash ? { hr: 0.15 + a * 0.25, eye: 0, paw: [22 + a * 4, -86 + a * 8, 1] } : { hr: 0.5, tongue: a, eye: 0.15, paw: [24, -72 + a * 3, 1] }); break; }
-    case 15: { q.cyc = walkCyc3(lt * 28, s); q.pose = walkPose3(q.cyc); break; }
-    case 16: { const sw = Math.max(0, Math.sin(lt * 2.2 - 1)); q.pose = sit3(lt, { hr: -0.35 - sw * 0.1, paw: sw > 0.05 ? [30 + sw * 14, -50 - sw * 40, 1] : null, ts: 2.4 }); q.x = 470; q.y = 600; break; }
-    case 17: { seqWalk(q, 280, 22, lt, { low: 9, ear: 0.5, eye: 0.35, hr: 0.12, tail: [-2.9, 0.03, 0.16, 2.6, 0] }); break; }
-    case 18: { const look = lt < 2 ? -0.18 : lt < 3.5 ? lerp(-0.18, 0.25, sm((lt - 2) / 0.6)) : lerp(0.25, -0.1, sm((lt - 3.8) / 0.6)); q.pose = sit3(lt, { hr: look, ts: 2.0 }); break; }
-    case 19: { const u = clamp((lt - 0.5) / 5.5); q.pose = sit3(lt, { hr: -0.15 - u * 0.6, ts: 1.8 }); break; }
-    case 20: { q.pose = sit3(lt, { hr: lt < 3 ? 0.35 : lerp(0.35, -0.1, sm((lt - 3) / 0.8)), eye: lt > 4.5 && lt < 5.4 ? 0 : undefined }); break; }
-    case 21: { q.x = 150; q.y = 551;
-      if (lt < 4.3) { const tap = Math.max(0, Math.sin(lt * 2.6)); q.pose = lp(STAND3, CROUCH3, 0.8); q.pose.fn = [44 + tap * 20, -tap * 10, tap]; q.pose.hr = 0.35; q.pose.head = [56, -40]; }
-      else if (lt < 4.8) { const u = (lt - 4.3) / 0.5; q.pose = lp(CROUCH3, LEAP3, sm(u * 2)); q.face = -1; q.x = 150 - u * 40; q.y = 551 - Math.sin(u * Math.PI) * 40; }
-      else { q.pose = lp(LAND3, { ...STAND3, hr: 0.2 }, sm((lt - 4.8) / 0.3)); q.face = -1; q.x = 110; }
-      break; }
-    case 22: { // home: walk in, curl up, fall asleep
-      if (lt < 2.4) { seqWalk(q, 250, 30, lt); return drawCat3(q); }
-      const x = 250 + 2.4 * 30, sl = sm((lt - 3.2) / 2.5), pp = lp(LOAF3, SLEEP3, sl); pp.eye = lt > 5.6 ? 0 : (lt > 4.3 ? 0.35 : (blinkAt(lt, 20) ? 0 : 1));
-      return cross({ ...q, x, pose: { ...STAND3, hr: -0.1 } }, { ...q, x: x + 10, pose: pp }, sm((lt - 2.4) / 0.4));
+    case 10: { // Alishan: watching the sunrise; the forest train whistles below — ears up — then a big yawn
+      const tx = 1100 - lt * 40, y = sm((lt - 3.6) / 0.4) * (1 - sm((lt - 4.7) / 0.5)), turn = sm((lt - 2.1) / 0.3) * (1 - sm((lt - 3.3) / 0.4));
+      q.after = () => { if (lt > 1.9 && lt < 3.4) { puff(tx + 6, 520, (lt - 1.9) / 1.5, 0.8); emote3('note', tx + 30, 500, 0.9, clamp((lt - 2.0) / 0.35), 1 - sm((lt - 3.0) / 0.3)); } };
+      emo(q, lt, [[2.15, 2.9, '!', 0.9]]);
+      q.pose = sit3(lt, { ...exSeq(lt, [[0, 'content'], [2.1, 'surprised'], [3.3, 'neutral'], [4.8, 'content']]), hr: lerp(-0.1, 0.18, turn) + lerp(0, -0.6, y), mouth: y, eye: y > 0.3 ? 0 : undefined, ear: turn > 0.1 ? -0.3 : 0, seed: 9 }); break;
+    }
+    case 11: { // Hinoki village: big stretch, strolls to a cypress post, sniffs it — bliss — and rubs its cheek on it
+      const postX = 330;
+      q.before = () => { if (mirrored()) return; [postX, postX + 330, postX + 660].forEach(px => { c.fillStyle = hg(px - 8, px + 8, [[0, '#b98a58'], [0.5, '#a0703f'], [1, '#6e4a28']]); c.fillRect(px - 8, 262, 16, 256); c.strokeStyle = 'rgba(70,40,20,0.35)'; c.lineWidth = 0.8; for (let k = 0; k < 6; k++) line(px - 5 + k * 2, 262, px - 5 + k * 2 + Math.sin(k) * 1.5, 518, 'rgba(70,40,20,0.3)', 0.7); c.fillStyle = '#5a3b22'; c.fillRect(px - 11, 510, 22, 8); }); };
+      emo(q, lt, [[3.6, 4.8, 'spark'], [4.9, 5.8, 'heart']]);
+      if (lt < 2.6) { const u = sm(lt / 0.9) * (1 - sm((lt - 1.9) / 0.7)); q.pose = { ...lp(STAND3, STRETCH3, u), ...exSeq(lt, [[0, 'sleepy'], [1.9, 'content']]) }; q.pose.mouth = Math.max(0, u - 0.6) * 2; q.x = 230; }
+      else if (lt < 3.3) { seqWalk(q, 230, 30, lt - 2.6); Object.assign(q.pose, ex('curious')); }
+      else if (lt < 5.6) { const x = 230 + 0.7 * 30, sn = sm((lt - 3.3) / 0.4), rub = lt > 4.6 ? Math.sin((lt - 4.6) * 7) : 0, rb = sm((lt - 4.6) / 0.3);
+        q.x = x; q.pose = { ...lp(walkPose3(walkCyc3(0.7 * 30, s)), { ...STAND3, head: [58 + sn * 3, -66 - rub * 4 * rb], hr: lerp(0.1, -0.25 + rub * 0.12, rb) }, sn), ...exSeq(lt, [[3.3, 'curious'], [3.75, 'content'], [4.6, 'happy']]) }; }
+      else { seqWalk(q, 230 + 0.7 * 30, 30, lt - 5.6); Object.assign(q.pose, ex('happy', 0.7)); }
+      break;
+    }
+    case 12: { // Xiluo Bridge: a joyful gallop along the riverbank, ears back
+      q.x = -90 + lt * 200; q.pose = { ...gallopPose3(gallopCyc3(lt * 200, s)), ...ex('happy'), ear: 0.4 }; q.y = 594;
+      emo(q, lt, [[1.8, 3.4, 'note']]); break;
+    }
+    case 13: { // Roundhouse: strolling past the engines when one lets off steam — TOOT — Halloween-cat leap, then a huff
+      const loX = 640, wt = 3.2, wd = Math.min(lt, wt) * 30 + Math.max(0, lt - 5.2) * 30; q.x = 300 + wd;
+      q.after = () => { if (lt > 3.0 && lt < 5.2) { puff(loX, 320, (lt - 3.0) / 2, 1.2); emote3('note', loX + 30, 300, 1.2, clamp((lt - 3.05) / 0.3), 1 - sm((lt - 4.2) / 0.3)); } };
+      emo(q, lt, [[3.3, 4.4, '!'], [4.8, 5.8, 'drop']]);
+      if (lt < wt) { q.pose = walkPose3(walkCyc3(wd, s)); Object.assign(q.pose, ex('content', 0.6)); }
+      else if (lt < 5.2) { const jump = bumpT(lt, 3.25, 3.75), puffd = sm((lt - 3.25) / 0.15) * (1 - sm((lt - 4.5) / 0.6));
+        q.pose = { ...lp(STAND3, SCARED3, puffd), ...exSeq(lt, [[3.2, 'scared'], [4.5, 'annoyed']]) }; q.y -= jump * 26; q.shadowA = 0.32 - jump * 0.15; }
+      else { q.pose = walkPose3(walkCyc3(wd, s)); Object.assign(q.pose, exSeq(lt, [[5.2, 'annoyed'], [5.9, 'neutral']])); }
+      break;
+    }
+    case 14: { // Sun Moon Lake: a dragonfly hovers in front of its nose; cross-eyed, a swat, it's gone — pretend nothing happened
+      emo(q, lt, [[2.0, 3.0, '?'], [3.35, 4.0, '!']]);
+      const n0 = [230 + 31 * s, 580 - 81 * s]; let dx, dy;
+      if (lt < 2.0) { const v = sm((lt - 0.6) / 1.4); dx = lerp(820, n0[0] + 22, v); dy = lerp(380, n0[1] - 6, v) + Math.sin(lt * 5) * 6; }
+      else if (lt < 3.3) { dx = n0[0] + 22 + Math.sin(lt * 7) * 3; dy = n0[1] - 6 + Math.sin(lt * 11) * 2; }
+      else { const v = (lt - 3.3); dx = n0[0] + 22 + v * 320; dy = n0[1] - 6 - v * 200; }
+      q.after = () => { if (lt > 0.5 && lt < 5) dragonfly(dx, dy, 1.1, lt, lt < 2.0 || lt > 3.3 ? 1 : -1); };
+      const swat = bumpT(lt, 3.05, 3.45), ph = lt * 4.5, a = 0.5 + 0.5 * Math.sin(ph);
+      if (lt < 3.6) q.pose = sit3(lt, { ...exSeq(lt, [[0, 'content'], [1.2, 'curious'], [3.3, 'surprised']]), look: lt > 1.6 ? [1.2, 0.2] : [0.4, -0.2], hr: lt > 1.6 && lt < 3.3 ? -0.08 + Math.sin(lt * 2) * 0.05 : -0.05, paw: swat > 0.02 ? [lerp(16, 34, swat), lerp(-10, -84, swat), 1] : null });
+      else if (lt < 5.2) q.pose = sit3(lt, { ...ex('content'), eye: 0, hr: 0.15 + a * 0.25, paw: [22 + a * 4, -86 + a * 8, 1] });
+      else q.pose = sit3(lt, { ...ex('blep'), eye: 0.3 });
+      break;
+    }
+    case 15: { // Gaomei: a fiddler crab pops out of its hole — the cat jumps back, sniffs, gets waved at, crab ducks away
+      const gy = x2 => 560 - (x2 + M) * 20 / (W + 2 * M), stopT = 2.0, mv = lt < stopT ? lt : lt < 4.6 ? stopT : lt - 2.6;
+      q.x = 280 + mv * 28; q.y = gy(q.x);
+      const hx = 280 + stopT * 28 + 112 * s, hy = gy(hx), rise = sm((lt - 1.7) / 0.4) * (1 - sm((lt - 3.9) / 0.35));
+      q.after = () => { if (mirrored()) return; oval(hx, hy + 1, 8, 2.2, 0, 'rgba(20,10,20,0.8)'); if (rise > 0) { c.save(); c.beginPath(); c.rect(hx - 30, 0, 60, hy + 1); c.clip(); crab(hx, hy + 14 * (1 - rise), 0.95, lt, { face: -1, col: '#3a2430', wave: lt > 2.4 && lt < 3.6 ? 0.5 + 0.5 * Math.sin(lt * 9) : 0 }); c.restore(); } };
+      emo(q, lt, [[2.0, 2.8, '!'], [2.9, 3.8, '?'], [3.95, 4.5, '!']]);
+      if (lt < stopT || lt >= 4.6) { q.pose = walkPose3(walkCyc3(mv * 28, s)); Object.assign(q.pose, ex(lt < stopT ? 'neutral' : 'happy', 0.7)); }
+      else { const back = sm((lt - 2.0) / 0.2) * (1 - sm((lt - 2.8) / 0.4)), sniff = sm((lt - 2.9) / 0.4) * (1 - sm((lt - 3.9) / 0.15)), hop = bumpT(lt, 3.9, 4.2);
+        q.pose = { ...STAND3, ...exSeq(lt, [[2.0, 'surprised'], [2.8, 'curious'], [3.9, 'surprised'], [4.3, 'neutral']]), head: [lerp(lerp(54, 46, back), 64, sniff), lerp(-72, -58, sniff)], hip: [-34 + back * 3, -50], hr: sniff * 0.25 };
+        q.y -= hop * 10; q.x -= hop * 6; }
+      break;
+    }
+    case 16: { // Longteng: swatting falling tung blossoms; one lands on its nose — cross-eyed — sneeze!
+      const sw = lt < 2.6 ? Math.max(0, Math.sin(lt * 2.2 - 1)) : 0, sn = bumpT(lt, 3.9, 4.25);
+      q.x = 470; q.y = 600;
+      q.pose = sit3(lt, { ...exSeq(lt, [[0, 'delighted'], [2.6, 'curious'], [3.75, 'neutral'], [4.25, 'surprised'], [4.9, 'happy']]), look: lt > 2.9 && lt < 3.9 ? [1, 0.9] : [0.3, -0.3],
+        hr: lt < 2.6 ? -0.35 - sw * 0.1 : lt < 3.75 ? lerp(-0.35, 0.05, sm((lt - 2.6) / 0.5)) - sm((lt - 3.5) / 0.3) * 0.25 + sn * 0.6 : sn * 0.6 - 0.05, paw: sw > 0.05 ? [30 + sw * 14, -50 - sw * 40, 1] : null, ts: 2.4,
+        eye: lt > 3.6 && lt < 4.3 ? 0 : undefined, mouth: lt > 3.85 && lt < 4.3 ? sn * 0.7 : 0 });
+      emo(q, lt, [[4.25, 4.95, '!'], [5.0, 6.2, 'note']]);
+      const n = noseW(q), lv = sm((lt - 2.6) / 0.9), fly = clamp((lt - 4.0) / 0.8);
+      const bx = lt < 4.0 ? lerp(n[0] + 30, n[0] + 1, lv) + Math.sin(lt * 4) * 14 * (1 - lv) : n[0] + 2 + fly * 80, by = lt < 4.0 ? lerp(n[1] - 90, n[1] - 3, lv) : n[1] - 3 - Math.sin(fly * Math.PI) * 40 + fly * 50;
+      q.after = () => { if (lt > 2.4 && fly < 1) blossom(bx, by, 1.15, lt * (lt < 3.5 || lt > 4 ? 2 : 0)); };
+      break;
+    }
+    case 17: { // Xinpu: plodding into the autumn wind; a persimmon rolls up, gets a pat, rolls off — chase!
+      const stopT = 2.6, x0 = 280, sx = x0 + stopT * 22, chase = Math.max(0, lt - 4.3);
+      q.x = lt < stopT ? x0 + lt * 22 : sx + chase * 50;
+      const r = 9, pStop = sx + 86 * s, pin = sm((lt - 1.4) / 1.6), pout = lt > 3.75 ? (1 - Math.exp(-(lt - 3.75) * 1.4)) * 180 + chase * 10 : 0, pxx = lerp(1000, pStop, pin) + pout, pyy = 612 - r;
+      q.after = () => { if (lt > 1.4) persimmon(pxx, pyy, r, -(pxx - 1000) / r); };
+      emo(q, lt, [[2.3, 3.1, '!'], [3.8, 4.8, 'spark'], [4.9, 6.2, 'note']]);
+      if (lt < stopT) { q.pose = walkPose3(walkCyc3(lt * 22, s), { low: 9, ear: 0.5, eye: 0.35, hr: 0.12, tail: [-2.9, 0.03, 0.16, 2.6, 0] }); Object.assign(q.pose, exSeq(lt, [[0, 'annoyed'], [2.3, 'curious']]), { earDown: lt < 2.3 ? 1 : 0 }); }
+      else if (lt < 4.3) { const sniff = sm((lt - 2.9) / 0.4), tap = bumpT(lt, 3.45, 3.8);
+        q.pose = { ...STAND3, ...exSeq(lt, [[2.6, 'curious'], [3.75, 'delighted']]), head: [lerp(54, 62, sniff), lerp(-72, -56, sniff * (1 - tap))], hr: sniff * 0.3 * (1 - tap), fn: [lerp(32, 60, tap), -tap * 12, tap] }; }
+      else { q.pose = walkPose3(walkCyc3(stopT * 22, s) + walkCyc3(chase * 50, s, true), { trot: 1 }); Object.assign(q.pose, ex('delighted')); }
+      break;
+    }
+    case 18: { // East Gate at night: a passing scooter's headlight sweeps over — eyeshine! — then back to the gate
+      const lx = 1240 - (lt - 1.8) * 520, lgt = lt > 1.8 && lt < 4.4 ? clamp(1 - Math.abs(lx - 900) / 260) : 0;
+      q.before = () => { if (lt > 1.8 && lt < 4.4) { c.save(); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(lx, 585, 0, lx, 585, 220); g.addColorStop(0, 'rgba(255,240,200,0.32)'); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(lx - 220, 400, 440, 300); c.restore(); glow(lx + 40, 590, 26, '255,250,225', 0.9); } };
+      emo(q, lt, [[2.35, 3.2, '!']]);
+      const follow = sm((lt - 2.6) / 0.6) * (1 - sm((lt - 4.4) / 0.6));
+      q.pose = sit3(lt, { ...exSeq(lt, [[0, 'content'], [2.3, 'surprised'], [3.3, 'curious'], [4.6, 'content']]), shine: lgt, hr: lerp(-0.18, 0.05, follow), look: [lerp(0.2, 0.9, follow), 0], ts: 2.0 });
+      break;
+    }
+    case 19: { // Taoyuan: the plane roars overhead — ears flat — then it watches it climb away, dreaming of the islands
+      const u = clamp((lt - 0.5) / 5.5), px = lerp(300, 1250, u), py = lerp(430 - 6, 120, Math.pow(u, 1.4)), hd = [q.x + 30 * q.s, q.y - 82 * q.s];
+      const ang = Math.atan2(py - hd[1], Math.max(30, px - hd[0]));
+      emo(q, lt, [[0.6, 1.5, '!'], [3.6, 5.2, 'spark'], [5.0, 6.4, 'note']]);
+      q.pose = sit3(lt, { ...exSeq(lt, [[0, 'neutral'], [0.6, 'surprised'], [1.2, 'annoyed'], [2.8, 'curious'], [3.6, 'delighted']]), hr: clamp(ang, -1.1, 0.2) * sm((lt - 0.8) / 0.6), ts: 1.8 });
+      break;
+    }
+    case 20: { // Kinmen: studies the Wind Lion, copies its roar, then a gust flattens its ears — and it settles beside the lion
+      emo(q, lt, [[0.5, 1.6, '?'], [2.0, 3.3, 'note'], [3.6, 4.5, 'drop'], [4.8, 6.2, 'heart']]);
+      const roar = sm((lt - 1.9) / 0.3) * (1 - sm((lt - 3.2) / 0.3)), gust = bumpT(lt, 3.4, 4.7);
+      q.pose = sit3(lt, { ...exSeq(lt, [[0, 'curious'], [1.9, 'meow'], [3.3, 'annoyed'], [4.7, 'content']]), hr: -0.3 - roar * 0.25 + gust * 0.15, mouth: roar * 0.85, eye: roar > 0.5 ? 0.6 : undefined, ts: 1.4 + gust * 4 });
+      q.after = () => { if (gust > 0) { const r2 = rng(207); for (let k = 0; k < 16; k++) { const v = mod((lt - 3.4) * (1.2 + r2() * 0.6) + r2(), 1); c.save(); c.translate(1300 - v * 1500, 420 + r2() * 200 + Math.sin(v * 9 + k) * 20); c.rotate(v * 12 + k); oval(0, 0, 5, 2.2, 0, mix('#8a2f1e', '#c8a050', r2(), 0.85 * gust)); c.restore(); } } };
+      break;
+    }
+    case 21: { // Matsu: taps the sea — it lights up blue — taps again, delighted — a big glow, a startled leap
+      q.x = 150; q.y = 551;
+      const taps = [1.3, 2.1, 2.8, 3.5, 4.1];
+      q.after = () => { taps.forEach((t0, i) => { const v = (lt - t0) / 1.2; if (v > 0 && v < 1) { const x = 150 + 64 * q.s, y = 556; c.save(); c.globalCompositeOperation = 'lighter'; glow(x, y, 30 + v * 60 + (i === 4 ? 60 : 0), '90,200,255', (1 - v) * (i === 4 ? 0.9 : 0.5)); ripple(x, y, v, '120,220,255', 1.2); c.restore(); } }); };
+      emo(q, lt, [[0.3, 1.2, '?'], [2.2, 3.4, 'spark'], [4.2, 4.9, '!'], [5.0, 6.2, 'heart']]);
+      if (lt < 4.3) { const tap = Math.max(0, ...taps.map(t0 => bumpT(lt, t0 - 0.3, t0))); q.pose = { ...lp(STAND3, CROUCH3, 0.8), ...exSeq(lt, [[0, 'curious'], [1.4, 'surprised'], [2.1, 'delighted']]) }; q.pose.fn = [44 + tap * 20, -tap * 10, tap]; q.pose.hr = 0.35; q.pose.head = [56, -40]; }
+      else if (lt < 4.8) { const u = (lt - 4.3) / 0.5; q.pose = { ...lp(CROUCH3, LEAP3, sm(u * 2)), ...ex('scared') }; q.face = -1; q.x = 150 - u * 40; q.y = 551 - Math.sin(u * Math.PI) * 40; }
+      else { q.pose = { ...lp(LAND3, { ...STAND3, hr: 0.2 }, sm((lt - 4.8) / 0.3)), ...exSeq(lt, [[4.8, 'surprised'], [5.2, 'happy']]) }; q.face = -1; q.x = 110; }
+      break;
+    }
+    case 22: { // home: walks in, looks up at the city lights one more time, curls up, falls asleep
+      emo(q, lt, [[2.6, 3.8, 'heart'], [6.0, 9.5, 'z']]);
+      if (lt < 2.4) { seqWalk(q, 250, 30, lt); Object.assign(q.pose, ex('content', 0.7)); return drawCat3(q); }
+      const x = 250 + 2.4 * 30, lk = sm((lt - 2.4) / 0.4), sl = sm((lt - 4.2) / 2.5), pp = { ...lp(LOAF3, SLEEP3, sl), ...exSeq(lt, [[3.6, 'content'], [4.8, 'sleepy']]) };
+      pp.eye = lt > 5.6 ? 0 : (lt > 4.8 ? 0.3 : 0.4);
+      return cross({ ...q, x, pose: { ...STAND3, ...ex('happy'), hr: -0.35 * lk, head: [56, -74] } }, { ...q, x: x + 10, emote: q.emote, pose: pp }, sm((lt - 3.6) / 0.5));
     }
     default: q.pose = q.pose0 === 'sit' ? sit3(lt, { hr: q.look || 0 }) : walkPose3(walkCyc3(lt * 28, s));
   }
+  if (q.before) q.before();
   drawCat3(q); if (q.after) q.after();
 }
