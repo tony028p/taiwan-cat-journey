@@ -1,0 +1,10 @@
+<!doctype html><html><body style="margin:0"><canvas id=cv width=1400 height=980></canvas>
+<script src="../src/core.js"></script><script src="../src/cat2.js"></script><script src="../src/cat3.js"></script><script>
+const cv=document.getElementById('cv'); c=cv.getContext('2d'); S=1; c.fillStyle='#d9d4c4'; c.fillRect(0,0,1400,980);
+T=1.0;
+for(let k=0;k<6;k++){ c.fillStyle='#bfb6a2'; c.fillRect(20+k*228,170,220,4); drawCat3({x:110+k*228,y:170,s:1.6,pose:walkPose3(k/6)}); }
+const P=[['SIT',{...SITP}],['LOAF',LOAF3],['STRETCH',STRETCH3],['CROUCH',CROUCH3],['LEAP',LEAP3],['GALLOP',gallopPose3(0.15)]];
+P.forEach(([n,p],k)=>{ const x=110+k*228,y=450; c.fillStyle='#bfb6a2'; c.fillRect(x-90,y,220,4); drawCat3({x,y,s:1.6,pose:p}); c.fillStyle='#000'; c.font='16px sans-serif'; c.fillText(n,x-80,y+30); });
+const yawn={...SITP,hr:-0.5,mouth:1,eye:0}; const groom={...SITP,hr:0.45,tongue:1,eye:0.2,paw:[24,-72,1]}; const swat={...SITP,paw:[44,-66,1],hr:-0.2};
+[['YAWN',yawn],['GROOM',groom],['SWAT',swat],['TROT',walkPose3(0.3,{trot:1})],['SLEEP',SLEEP3],['SIL',{...SITP}]].forEach(([n,p],k)=>{ const x=110+k*228,y=760; c.fillStyle='#bfb6a2'; c.fillRect(x-90,y,220,4); drawCat3({x,y,s:1.6,pose:p,sil:n==='SIL',rim:n==='SIL'?'255,180,120':null}); c.fillStyle='#000'; c.fillText(n,x-80,y+30); });
+</script></body></html>

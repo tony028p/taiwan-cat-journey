@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>小貓環島記</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700&display=swap">
+<style>
+/* Layout: a dark screening room — the film on top, the 22 stops below as a ticket-stub index. Single dark look by design. */
+:root {
+  color-scheme: dark;
+  --bg: #0d0c0b; --panel: #171513; --line: #2c2824; --ink: #efe8dc; --muted: #9d9385; --accent: #e8a568; --accent-dim: rgba(232,165,104,0.16);
+  --serif: "Noto Serif TC", "Noto Serif CJK TC", "Songti TC", "PMingLiU", serif;
+  --ui: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--ui);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 48px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 24px; }
+h1 { font-family: var(--serif); font-weight: 700; font-size: clamp(30px, 5vw, 48px); letter-spacing: 0.18em; margin: 0; }
+.tag { font-size: 12px; letter-spacing: 0.32em; color: var(--muted); text-transform: uppercase; margin: 6px 0 0; }
+.facts { display: flex; gap: 22px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.facts b { display: block; color: var(--ink); font-family: var(--serif); font-size: 20px; font-weight: 600; }
+.screen { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 4px; overflow: hidden; box-shadow: 0 30px 80px -40px rgba(232,165,104,0.35); }
+.screen video, .screen canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.fallbtn { position: absolute; inset: 0; margin: auto; width: 78px; height: 78px; border-radius: 50%; border: 1px solid rgba(255,255,255,.4); background: rgba(0,0,0,.45); color: #fff; font-size: 26px; cursor: pointer; }
+.now { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.now b { color: var(--accent); font-weight: 600; font-family: var(--serif); font-size: 15px; letter-spacing: 0.1em; }
+h2 { font-family: var(--serif); font-size: 20px; letter-spacing: 0.2em; font-weight: 600; margin: 10px 0 0; }
+.stops { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 860px) { .stops { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .stops { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stops button { width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 1px 10px; align-items: baseline; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 10px 12px; color: var(--ink); font: inherit; cursor: pointer; transition: border-color .2s, background .2s; }
+.stops button:hover { border-color: #4a4239; }
+.stops button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stops li.on button { border-color: var(--accent); background: var(--accent-dim); }
+.n { font-family: var(--mono); font-size: 11px; color: var(--muted); grid-row: span 2; font-variant-numeric: tabular-nums; }
+.cty { font-family: var(--serif); font-size: 17px; font-weight: 600; letter-spacing: 0.08em; }
+.pl { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.note { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 68ch; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .stops button { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>小貓環島記</h1>
+      <p class="tag">A Cat’s Journey Around Taiwan</p>
+    </div>
+    <div class="facts">
+      <span><b>22</b>縣市</span>
+      <span><b>3:51</b>片長</span>
+      <span><b>2.39:1</b>寬銀幕</span>
+    </div>
+  </header>
+
+  <div class="screen" id="screen">
+    <video id="vid" src="media/film-720p.mp4" poster="media/poster.jpg" controls playsinline preload="metadata"></video>
+  </div>
+  <div class="now"><span>從臺北出發，順時針繞過東部、南端、離島與西部，再回到臺北。</span><span>目前：<b id="now">臺北市</b></span></div>
+
+  <h2>沿途二十二站</h2>
+  <ol class="stops" id="stops"></ol>
+  <p class="note">二十二個縣市之間，各接一段真實的沿途風景：陰陽海、蘇花海岸、花東縱谷、多良車站、高屏溪斜張橋、澎湖跨海大橋、北回歸線、阿里山林鐵、集集綠色隧道、彩虹眷村、勝興車站、永安漁港彩虹橋，再飛往金門、夜航到馬祖、降落臺北。配樂是起承轉合四段的原創鋼琴與弦樂。點選任一站即可跳到該段。</p>
+</div>
+
+<script>
+(function () {
+  const STOPS = [
+    ['臺北市', '象山 · 101'], ['新北市', '九份老街'], ['基隆市', '正濱漁港'], ['宜蘭縣', '龜山島日出'], ['花蓮縣', '清水斷崖'], ['臺東縣', '池上伯朗大道'],
+    ['屏東縣', '鵝鑾鼻燈塔'], ['高雄市', '蓮池潭龍虎塔'], ['澎湖縣', '七美雙心石滬'], ['臺南市', '井仔腳鹽田'], ['嘉義縣', '阿里山雲海'], ['嘉義市', '檜意森活村'],
+    ['雲林縣', '西螺大橋'], ['彰化縣', '扇形車庫'], ['南投縣', '日月潭'], ['臺中市', '高美濕地'], ['苗栗縣', '龍騰斷橋'], ['新竹縣', '新埔柿餅'],
+    ['新竹市', '東門城'], ['桃園市', '桃園機場'], ['金門縣', '風獅爺'], ['連江縣', '馬祖藍眼淚'], ['臺北市', '回家']
+  ];
+  const STARTS = [1, 12.6, 22.2, 31.8, 41.4, 51, 60.6, 70.2, 79.8, 89.4, 99, 108.6, 118.2, 127.8, 137.4, 147, 156.6, 166.2, 175.8, 185.4, 195, 204.6, 214.2];
+  const list = document.getElementById('stops'), now = document.getElementById('now'), vid = document.getElementById('vid'), screen = document.getElementById('screen');
+  let getT = () => vid.currentTime, seek = t => { vid.currentTime = t; vid.play().catch(() => {}); };
+  STOPS.forEach((s, i) => {
+    const li = document.createElement('li'), b = document.createElement('button');
+    b.type = 'button'; b.id = 'stop-' + i;
+    const t = STARTS[i], tc = Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0');
+    b.innerHTML = `<span class="n">${i === 22 ? '終' : String(i + 1).padStart(2, '0')}<br>${tc}</span><span class="cty">${s[0]}</span><span class="pl">${s[1]}</span>`;
+    b.addEventListener('click', () => seek(t + 0.6));
+    li.appendChild(b); list.appendChild(li);
+  });
+  const items = [...list.children];
+  let last = -1;
+  (function tick() {
+    const t = getT() || 0; let i = 0; while (i < STARTS.length - 1 && t >= STARTS[i + 1]) i++;
+    if (i !== last) { items.forEach((li, k) => li.classList.toggle('on', k === i)); now.textContent = STOPS[i][0] + '　' + STOPS[i][1]; last = i; }
+    requestAnimationFrame(tick);
+  })();
+  function useCanvas() {
+    if (screen.querySelector('canvas')) return;
+    const srcs = ['src/core.js', 'src/cat2.js', 'src/cat3.js', 'src/scenesA.js', 'src/scenesB.js', 'src/transitions.js', 'src/actions3.js', 'src/main.js']; let k = 0;
+    const next = () => { if (k >= srcs.length) return start(); const s = document.createElement('script'); s.src = srcs[k++]; s.onload = next; document.body.appendChild(s); };
+    next();
+    function start() {
+      vid.remove(); const cv = document.createElement('canvas'); screen.appendChild(cv); const ctx = cv.getContext('2d');
+      const r = screen.getBoundingClientRect(), Sc = Math.min(1.5, Math.max(0.5, r.width * Math.min(2, devicePixelRatio || 1) / 1280));
+      cv.width = Math.round(1280 * Sc); cv.height = Math.round(720 * Sc); Film.setup(Sc);
+      const btn = document.createElement('button'); btn.className = 'fallbtn'; btn.type = 'button'; btn.textContent = '▶'; btn.setAttribute('aria-label', '播放'); screen.appendChild(btn);
+      let playing = false, t = 6, lastTs = 0; Film.draw(ctx, t);
+      const loop = ts => { if (!playing) return; if (lastTs) t += Math.min(0.1, (ts - lastTs) / 1000); lastTs = ts; if (t >= Film.DUR) t = 0; Film.draw(ctx, t); requestAnimationFrame(loop); };
+      const toggle = () => { playing = !playing; btn.hidden = playing; lastTs = 0; if (playing) requestAnimationFrame(loop); };
+      btn.addEventListener('click', toggle); cv.addEventListener('click', toggle);
+      getT = () => t; seek = nt => { t = nt; Film.draw(ctx, t); if (!playing) toggle(); };
+    }
+  }
+  vid.addEventListener('error', useCanvas); if (vid.error) useCanvas();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#000}</style></head><body><canvas id="cv"></canvas>
+<script src="src/core.js"></script><script src="src/cat2.js"></script><script src="src/cat3.js"></script><script src="src/scenesA.js"></script><script src="src/scenesB.js"></script><script src="src/transitions.js"></script><script src="src/actions3.js"></script><script src="src/main.js"></script>
+<script>
+const Sc=+(new URLSearchParams(location.search).get('s')||1.5);
+const cv=document.getElementById('cv'); cv.width=1280*Sc; cv.height=720*Sc; const ctx=cv.getContext('2d');
+Film.setup(Sc);
+window.ready=(async()=>{await document.fonts.load('700 40px "Noto Serif CJK TC"','臺北');return true})();
+window.frame=(t,q)=>{Film.draw(ctx,t);return cv.toDataURL('image/jpeg',q||0.92)};
+window.info=()=>({DUR:Film.DUR,STARTS:Film.STARTS});
+</script></body></html>

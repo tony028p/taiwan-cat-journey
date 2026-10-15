@@ -1,0 +1,10 @@
+<!doctype html><html><body style="margin:0"><canvas id=cv width=1200 height=500></canvas>
+<script src="../src/core.js"></script><script>
+const cv=document.getElementById('cv'); c=cv.getContext('2d'); c.fillStyle='#9fb7a0'; c.fillRect(0,0,1200,500);
+c.fillStyle='#d9c9a6'; c.fillRect(0,380,1200,120);
+T=1.0;
+for(let k=0;k<4;k++) drawCat({x:150+k*170,y:400,s:1.5,pose:'walk',ph:k*TAU/4,rim:'255,200,150'});
+drawCat({x:900,y:400,s:1.8,pose:'sit',rim:'255,200,150'});
+drawCat({x:1100,y:400,s:1.5,pose:'sit',sil:true,rim:'255,170,110'});
+c.save(); c.translate(300,150); c.scale(5,5); catHead(CATP,{}); c.restore();
+</script></body></html>

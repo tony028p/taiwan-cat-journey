@@ -1,0 +1,11 @@
+<!doctype html><html><body style="margin:0"><canvas id=cv width=1400 height=900></canvas>
+<script src="../src/core.js"></script><script src="../src/cat2.js"></script><script>
+const cv=document.getElementById('cv'); c=cv.getContext('2d'); c.fillStyle='#e9e2d2'; c.fillRect(0,0,1400,900);
+T=1.0;
+for(let k=0;k<6;k++){ c.fillStyle='#d6cbb4'; c.fillRect(20+k*228,150,220,6); drawCat2({x:110+k*228,y:150,s:1.6,pose:walkPose(k/6)}); }
+const P=[['SIT',SIT],['LOAF',LOAF],['STRETCH',STRETCH],['CROUCH',CROUCH],['LEAP',LEAP],['TROT',walkPose(0.2,{trot:1})]];
+P.forEach(([n,p],k)=>{ const x=110+k*228,y=420; c.fillStyle='#d6cbb4'; c.fillRect(x-90,y,220,6); drawCat2({x,y,s:1.6,pose:p}); c.fillStyle='#000'; c.font='16px sans-serif'; c.fillText(n,x-80,y+30); });
+const yawn={...SIT,hr:-0.5,mouth:1,eye:0}; const groom={...SIT,hr:0.45,tongue:1,eye:0.2,fn:[26,-66,1.4],head:[18,-80]};
+const swat={...SIT,fn:[44,-62,0.6],hr:-0.2}; const wsit={...STAND};
+[['YAWN',yawn],['GROOM',groom],['SWAT',swat],['STAND',wsit]].forEach(([n,p],k)=>{ const x=110+k*228,y=700; c.fillStyle='#d6cbb4'; c.fillRect(x-90,y,220,6); drawCat2({x,y,s:1.6,pose:p}); c.fillStyle='#000'; c.fillText(n,x-80,y+30); });
+</script></body></html>

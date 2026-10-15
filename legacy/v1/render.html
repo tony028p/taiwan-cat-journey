@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="pkg/package/lxgwwenkaitc-bold.css">
+<style>body{margin:0;background:#000}</style></head><body><canvas id="cv"></canvas>
+<script src="anim.js"></script>
+<script>
+const S=+(new URLSearchParams(location.search).get('s')||1.5);
+const cv=document.getElementById('cv'); cv.width=1280*S; cv.height=720*S; const ctx=cv.getContext('2d');
+window.ready=(async()=>{await document.fonts.load('700 40px "LXGW WenKai TC"','小貓環島記台北九份太魯閣池上墾丁阿里山日月潭環島一圈，回家囉！下次再一起出發芋圓');await document.fonts.ready;return true})();
+window.frame=(t,q)=>{CatTour.draw(ctx,t,S);return cv.toDataURL('image/jpeg',q||0.92)};
+</script></body></html>

@@ -1,0 +1,15 @@
+{
+  "name": "cat-taiwan-film",
+  "version": "3.0.0",
+  "private": true,
+  "description": "小貓環島記 — a procedurally drawn, deterministic Canvas 2D animated short about a cat travelling round all 22 counties and cities of Taiwan.",
+  "scripts": {
+    "music": "python3 tools/music3.py",
+    "shots": "node tools/shots.cjs all",
+    "render": "node tools/render.cjs",
+    "serve": "npx http-server -c-1 ."
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}
