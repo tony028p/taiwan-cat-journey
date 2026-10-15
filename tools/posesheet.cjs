@@ -11,13 +11,14 @@
       ['walk', u => walkPose3(u)], ['trot', u => walkPose3(u, { trot: 1 })], ['gallop', u => gallopPose3(u)],
       ['poses', u => [STAND3, CROUCH3, LEAP3, LAND3, STRETCH3, LOAF3, SLEEP3, sit3(0)][Math.floor(u * 8)]],
     ];
+    if (typeof COATS !== 'undefined') { const ks = Object.keys(COATS); rows.push(['friends', u => { const k = ks[Math.floor(u * 8) >> 1]; return k ? { ...(Math.floor(u * 8) % 2 ? sit3(0) : walkPose3(0.3)), name: k, coat: k } : null; }]); }
     if (typeof EXPR3 !== 'undefined') { const ks = Object.keys(EXPR3), EM = ['!', '?', 'z', 'note', 'heart', 'drop', 'spark'];
       for (let r = 0; r < Math.ceil(ks.length / N); r++) rows.push(['', u => { const j = r * N + Math.round(u * N); const k = ks[j]; return k ? { ...sit3(0), ...ex(k), name: k, emote: EM[j % EM.length] } : null; }]); }
     const cw = 170, rh = 200, Wd = cw * N + 40, Hd = rh * rows.length + 20;
     const cv = document.createElement('canvas'); cv.width = Wd * 1.5; cv.height = Hd * 1.5; const x = cv.getContext('2d');
     const prevS = S; S = 1.5; x.setTransform(1.5, 0, 0, 1.5, 0, 0); x.fillStyle = '#e8e4dc'; x.fillRect(0, 0, Wd, Hd);
     rows.forEach(([n, f], r) => { for (let i = 0; i < N; i++) { const u = i / N, pose = f(u); c = x; T = u; if (!pose) continue;
-      drawCat3({ x: 85 + i * cw, y: 150 + r * rh, s: n ? 1.05 : 1.5, pose, noBlink: true, emote: pose.emote && { k: pose.emote } });
+      drawCat3({ x: 85 + i * cw, y: 150 + r * rh, s: n ? 1.05 : 1.5, pose, coat: pose.coat, noBlink: true, emote: pose.emote && { k: pose.emote } });
       c.fillStyle = '#333'; c.font = '12px sans-serif'; c.fillText(n + ' ' + (pose.name || u.toFixed(3)), 30 + i * cw, 172 + r * rh); } });
     S = prevS; return cv.toDataURL('image/png');
   }, N);

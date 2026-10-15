@@ -3,6 +3,16 @@
    the outer silhouette) and Muybridge pl. 716 for the gait. */
 const C3 = { base: '#d4975a', shade: '#a96d3d', far: '#93643f', cream: '#f5e2c4', creamS: '#dcbc96', light: 'rgba(255,238,205,0.36)', stripe: 'rgba(122,64,24,0.5)', line: '#4e301e', inner: 'rgba(78,46,26,0.8)', belly: 'rgba(255,242,220,0.9)', eye: '#d8b040', nose: '#c97b72', ear: '#eca79c' };
 const S3 = { base: '#2c201b', shade: '#1f1612', far: '#150f0c', cream: '#2c201b', creamS: '#251a16', light: 'rgba(0,0,0,0)', stripe: null, line: '#140d0a', inner: 'rgba(8,5,4,0.75)', belly: 'rgba(0,0,0,0)', eye: '#e8b84e', nose: '#2c201b', ear: '#3a2a24' };
+/* other cats met along the way (same rig, different coats). patches: [u, k, rx, ry, col] in body coords;
+   sitPatches: [x, y, rx, ry, col] in the sitting silhouette; headPatches: [x, y, rx, ry, col] in head coords */
+const COATS = {
+  black: { base: '#2b2427', shade: '#1d181b', far: '#151113', cream: '#3b3236', creamS: '#30282c', light: 'rgba(170,180,220,0.16)', stripe: null, line: '#0d0a0b', inner: 'rgba(0,0,0,0.6)', belly: 'rgba(0,0,0,0)', eye: '#9ccf54', nose: '#4a3a3e', ear: '#6e4c52' },
+  white: { base: '#f3efe7', shade: '#d6cfc3', far: '#c4bcae', cream: '#ffffff', creamS: '#e6e0d5', light: 'rgba(255,255,255,0.35)', stripe: null, line: '#6a5f56', inner: 'rgba(106,95,86,0.7)', belly: 'rgba(255,255,255,0.9)', eye: '#7fb4e6', nose: '#e8a0a0', ear: '#f2b2ae' },
+  grey: { base: '#8e9197', shade: '#717379', far: '#5d6066', cream: '#e3e1dc', creamS: '#c9c7c1', light: 'rgba(235,240,250,0.3)', stripe: 'rgba(58,60,68,0.5)', line: '#3a3c42', inner: 'rgba(58,60,66,0.8)', belly: 'rgba(240,240,236,0.9)', eye: '#c9b13c', nose: '#c08a8a', ear: '#d9a3a0' },
+  calico: { base: '#f4eee4', shade: '#d8cfc1', far: '#c6bcae', cream: '#fbf8f2', creamS: '#e7e0d4', light: 'rgba(255,255,255,0.3)', stripe: null, line: '#5a4a3e', inner: 'rgba(90,74,62,0.7)', belly: 'rgba(255,252,246,0.9)', eye: '#d6ad3c', nose: '#e39a92', ear: '#eeaaa2',
+    patches: [[0.05, 6, 16, 12, '#d98a45'], [0.42, 9, 11, 9, '#2f2a2a'], [0.78, 7, 10, 8, '#d98a45']], sitPatches: [[-22, -40, 13, 15, '#d98a45'], [-6, -60, 8, 8, '#2f2a2a'], [-28, -14, 10, 7, '#2f2a2a']], headPatches: [[-6, -6, 8, 7, '#d98a45'], [4, -11, 5, 3, '#2f2a2a']], tail: '#d98a45' },
+  tuxedo: { base: '#26222a', shade: '#1a171d', far: '#121014', cream: '#f2efe8', creamS: '#d9d4ca', light: 'rgba(170,180,220,0.16)', stripe: null, line: '#0b090c', inner: 'rgba(0,0,0,0.6)', belly: 'rgba(250,248,242,0.95)', eye: '#e2c24c', nose: '#e39a9a', ear: '#5e4650' },
+};
 const HSR = 1.44, HSS = 1.42; // head scale (rig / sitting): a little big, so expressions read at film size
 let CB = null, CB2 = null, CB3 = null, CB4 = null;
 const CBW = 720, CBH = 560, COX = 360, COY = 470;
@@ -140,7 +150,7 @@ function earT(p) { const d = p.earDown || 0; c.translate(-0.5 - d * 1.5, -11 + d
 function drawRig(p, P, k, fx) {
   const B = bodyGeom3(p), main = c;
   c.fillStyle = P.far; const ffl = fore3(B, p.ff), fhl = hind3(B, p.hf);
-  c.fillStyle = P.base; const tp = tail3(B, p);
+  c.fillStyle = P.tail || P.base; const tp = tail3(B, p);
   if (P.stripe) { c.save(); c.globalCompositeOperation = 'source-atop'; c.strokeStyle = P.stripe; c.lineCap = 'round'; c.lineWidth = 3.4;
     for (let j = 3; j < tp.length - 1; j += 2) { const q = tp[j], r = tp[j + 1], nx = -(r[1] - q[1]), ny = r[0] - q[0], l = Math.hypot(nx, ny) || 1; c.beginPath(); c.moveTo(q[0] + nx / l * 5, q[1] + ny / l * 5); c.lineTo(q[0] - nx / l * 5, q[1] - ny / l * 5); c.stroke(); }
     c.restore(); }
@@ -185,6 +195,7 @@ function shadeBody3(B, p, P) {
       c.lineWidth = (i === 0 ? 4.6 : 3.4) + j * 1.4; c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(b2[0], b2[1], d[0], d[1]); c.stroke(); });
     c.lineWidth = 2.2; const a = B.at(0.95, 8), b = B.at(0.2, 9); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
   }
+  if (P.patches) P.patches.forEach(([u, k, rx, ry, col]) => { const q = B.at(u, k); c.fillStyle = col; c.beginPath(); c.ellipse(q[0], q[1], rx, ry, Math.atan2(B.t[1], B.t[0]), 0, TAU); c.fill(); });
   // cream underside with a furry edge
   c.fillStyle = P.cream; c.beginPath(); let first = true;
   for (let u = -0.3; u <= 1.32; u += 0.02) { const w = (5.5 + 4.5 * Math.sin(clamp(u + 0.05) * Math.PI) + (Math.floor(u * 50) % 2 ? 1.2 : -0.4) + (u > 0.95 ? (u - 0.95) * 30 : 0)) * sm((u - 0.12) / 0.22) - 0.5, q = B.at(u, -B.bot(clamp(u, -0.14, 1.1)) + w); first ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); first = false; }
@@ -237,6 +248,7 @@ function shadeSit(info, p, P) {
     c.lineWidth = 3.2; [[-38, -4], [-24, 2], [-6, 3], [10, 1]].forEach(([x, y]) => { c.beginPath(); c.moveTo(x, y - 4); c.lineTo(x + 1, y + 3); c.stroke(); });
     c.lineWidth = 2.4; [[-25, 10], [-31, 15]].forEach(([y, w]) => { c.beginPath(); c.moveTo(14 - 5, y); c.lineTo(14 + 5, y + 1); c.stroke(); });
   }
+  if (P.sitPatches) P.sitPatches.forEach(([x, y, rx, ry, col]) => { c.fillStyle = col; c.beginPath(); c.ellipse(x, y, rx, ry, -0.3, 0, TAU); c.fill(); });
   // cream chest, belly and paws
   c.fillStyle = P.cream; c.beginPath(); c.ellipse(14, -50, 7, 18, 0.05, 0, TAU); c.fill(); c.beginPath(); c.ellipse(4, -14, 9, 12, 0.2, 0, TAU); c.fill();
   c.beginPath(); c.ellipse(17.5, -2.5, 5.8, 3.4, 0, 0, TAU); c.fill(); if (info.pawPt) { c.beginPath(); c.ellipse(info.pawPt[0] + 1, info.pawPt[1], 5.8, 4, -0.6, 0, TAU); c.fill(); }
@@ -268,7 +280,8 @@ function exMix(a, b, u) { return lp(ex(a), ex(b), clamp(u)); }
 function face3(P, p, sil) {
   const q = { ...FACE0 }; for (const k in p) if (p[k] != null) q[k] = p[k]; const open = Math.max(0, q.eye), m = q.mouth || 0, ES = 1.1;
   c.save(); earT(q); poly([[-3, 0.5], [3.8, -0.3], [0.2, -10]], P.ear); c.restore();
-  if (!sil) { c.fillStyle = P.belly; c.beginPath(); c.ellipse(11.5, 2.6, 5.4, 3.8, 0, 0, TAU); c.fill(); c.lineCap = 'round'; c.strokeStyle = 'rgba(110,62,28,0.42)'; c.lineWidth = 1.4; [[-4, -12, -3, -8], [0, -12.5, 1, -8.8], [-10, -1, -3, 0]].forEach(([a, b, d, e]) => { c.beginPath(); c.moveTo(a, b); c.lineTo(d, e); c.stroke(); }); }
+  if (!sil && P.headPatches) { c.save(); smoothClosed(headShape3()); c.clip(); P.headPatches.forEach(([x, y, rx, ry, col]) => oval(x, y, rx, ry, 0.2, col)); c.restore(); }
+  if (!sil) { c.fillStyle = P.belly; c.beginPath(); c.ellipse(11.5, 2.6, 5.4, 3.8, 0, 0, TAU); c.fill(); if (P.stripe) { c.lineCap = 'round'; c.strokeStyle = P.stripe; c.lineWidth = 1.4; [[-4, -12, -3, -8], [0, -12.5, 1, -8.8], [-10, -1, -3, 0]].forEach(([a, b, d, e]) => { c.beginPath(); c.moveTo(a, b); c.lineTo(d, e); c.stroke(); }); } }
   if (q.blush > 0 && !sil) { c.fillStyle = `rgba(240,120,120,${0.42 * q.blush})`; c.beginPath(); c.ellipse(5.5, 1.8, 3.8, 1.7, -0.1, 0, TAU); c.fill(); }
   // mouth
   if (m > 0.05) { c.save(); c.translate(7, 2.4); c.rotate(m * 0.45); poly([[0, 0], [10, -1], [9, 4 * m + 1], [1, 3 * m + 1]], '#5a1f1c'); poly([[8.6, 0], [9.6, 0], [9.2, 2]], '#fff'); c.restore(); c.fillStyle = '#e58a8f'; c.beginPath(); c.ellipse(10, 4 + m * 3, 3.5, 1.6, 0.4, 0, TAU); c.fill(); }
@@ -280,7 +293,7 @@ function face3(P, p, sil) {
   else {
     c.save(); c.translate(E[0], E[1]); c.rotate(-0.12);
     c.save(); c.beginPath(); c.ellipse(0, 0, rx, ry, 0, 0, TAU); c.clip();
-    const ig = c.createLinearGradient(0, -ry, 0, ry); ig.addColorStop(0, sil ? P.eye : '#b88a2a'); ig.addColorStop(0.6, P.eye); ig.addColorStop(1, sil ? P.eye : '#f0d070'); c.fillStyle = ig; c.fillRect(-rx, -ry, 2 * rx, 2 * ry);
+    const ig = c.createLinearGradient(0, -ry, 0, ry); ig.addColorStop(0, sil ? P.eye : mix(P.eye, '#000000', 0.3)); ig.addColorStop(0.6, P.eye); ig.addColorStop(1, sil ? P.eye : mix(P.eye, '#ffffff', 0.35)); c.fillStyle = ig; c.fillRect(-rx, -ry, 2 * rx, 2 * ry);
     const pw = 0.7 + 1.9 * q.pupil, ph = ry * (0.72 + 0.25 * Math.min(1, q.pupil)), lx = 0.7 + q.look[0] * 1.3, ly = q.look[1] * 0.9;
     c.fillStyle = '#140c08'; c.beginPath(); c.ellipse(lx, ly, Math.min(pw, rx * 0.95), ph, 0, 0, TAU); c.fill();
     c.fillStyle = 'rgba(255,255,255,0.95)'; c.beginPath(); c.arc(lx + 0.9, ly - ry * 0.38, 0.85 + q.sparkle * 0.35, 0, TAU); c.fill();
@@ -321,7 +334,7 @@ function emote3(kind, x, y, s, u, a = 1) {
   c.restore();
 }
 function drawCat3(o) {
-  cbufs(); const P = o.sil ? S3 : C3, p = o.pose, k = S * o.s, fx = o.face || 1;
+  cbufs(); const P = o.sil ? S3 : (o.coat ? COATS[o.coat] : C3), p = o.pose, k = S * o.s, fx = o.face || 1;
   const g = CB.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, CBW, CBH);
   g.setTransform(k * fx, 0, 0, k, COX, COY);
   const prev = c; c = g;

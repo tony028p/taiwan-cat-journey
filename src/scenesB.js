@@ -224,6 +224,7 @@ SCENES.push({ county: '連江縣', place: '馬祖藍眼淚', en: 'Blue Tears of 
 /* 22 — 臺北市 回家 night */
 SCENES.push({ county: '臺北市', place: '回到象山', en: 'Home again · Taipei', ll: '25.03°N 121.57°E', final: true, cam: [1.02, 1.12, 10, -30, 0, 8],
   sub: ['繞了一整圈，臺北的燈還亮著。', 'One full circle later, Taipei’s lights are still on.'],
+  sub2: ['一路上交到的朋友，都來到夢裡。', 'All the friends it made along the way come to visit in its dreams.'],
   sub2: ['原來，家就是最後一站。', 'Home, it turns out, is the last stop.'],
   draw(lt) {
     L('sky', 0, () => { sky([[0, '#070b1c'], [0.45, '#1c2448'], [0.7, '#3d3a62'], [1, '#5d4a68']]); stars(260, 251, 360, 0.8); glow(640, 560, 700, '255,170,120', 0.2); });
