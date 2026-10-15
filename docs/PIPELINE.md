@@ -18,6 +18,20 @@ node tools/render.cjs        # -> build/film.mp4
 - 每格呼叫 `frame(t)`，取得 JPEG（品質 0.94），用 `image2pipe` 交給 ffmpeg：H.264 `-preset slow -crf 16`，AAC 192k。母片約 250MB。
 - 速度約每格 0.3 秒（無 GPU 的 headless Chromium 以 SwiftShader 執行 WebGL），總共 5,549 格（24 fps）。
 
+### 只重算結尾（或任何一段到片尾）
+
+只改了後面的場景時，不必整部重算：
+
+```bash
+FROM=213.5 OUT=build/tail.mp4 node tools/render.cjs     # 從 213.5 秒算到片尾，只有畫面
+# 把原母片前 213.5×24 = 5124 格接上新的尾段，再配上音樂
+ffmpeg -i build/film.mp4 -i build/tail.mp4 -i build/music.wav -filter_complex \
+  "[0:v]trim=end_frame=5124,setpts=PTS-STARTPTS[a];[1:v]setpts=PTS-STARTPTS[b];[a][b]concat=n=2:v=1:a=0[v]" \
+  -map "[v]" -map 2:a -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -c:a aac -b:a 192k -shortest -movflags +faststart build/film_spliced.mp4
+```
+
+FROM 要比改動的場景早至少 0.5 秒（交叉淡化）。
+
 ## 3. 其他版本
 
 ```bash

@@ -108,7 +108,8 @@ function draw(ctx, t) {
   const texts = (k, lt2, al) => { const sc = FILM[k], d = DURS[k]; c.save(); c.globalAlpha = al;
     locCard(k, k === 0 ? lt2 - 3.2 : lt2);
     const s0 = k === 0 ? 4.4 : (sc.via ? 0.5 : 0.9);
-    if (sc.sub2) { subtitle(sc.sub[0], sc.sub[1], sm((lt2 - s0) / 0.5) * (1 - sm((lt2 - 4.4) / 0.4))); subtitle(sc.sub2[0], sc.sub2[1], sm((lt2 - 4.9) / 0.5) * (1 - sm((lt2 - d + 0.2) / 0.5))); }
+    if (sc.sub3) { subtitle(sc.sub[0], sc.sub[1], sm((lt2 - s0) / 0.5) * (1 - sm((lt2 - 4.0) / 0.35))); subtitle(sc.sub2[0], sc.sub2[1], sm((lt2 - 4.45) / 0.4) * (1 - sm((lt2 - 6.25) / 0.35))); subtitle(sc.sub3[0], sc.sub3[1], sm((lt2 - 6.7) / 0.4) * (1 - sm((lt2 - d + 0.2) / 0.5))); }
+    else if (sc.sub2) { subtitle(sc.sub[0], sc.sub[1], sm((lt2 - s0) / 0.5) * (1 - sm((lt2 - 4.4) / 0.4))); subtitle(sc.sub2[0], sc.sub2[1], sm((lt2 - 4.9) / 0.5) * (1 - sm((lt2 - d + 0.2) / 0.5))); }
     else subtitle(sc.sub[0], sc.sub[1], sm((lt2 - s0) / 0.5) * (1 - sm((lt2 - d + 0.6) / 0.4)));
     c.restore(); };
   if (j >= 0 && a > 0.5) texts(j, ljt, 1); else texts(i, lt, 1);

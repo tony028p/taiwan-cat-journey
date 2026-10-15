@@ -16,7 +16,8 @@ The same JS runs in two places:
 npm install && npx playwright install chromium
 pip install -r requirements.txt
 npm run music                 # -> build/music.wav  (must exist before render)
-npm run render                # -> build/film.mp4   (~0.22 s/frame at 1080p, ~20 min)
+npm run render                # -> build/film.mp4   (~0.4 s/frame at 1080p, ~40 min)
+FROM=213.5 OUT=build/tail.mp4 node tools/render.cjs   # re-render only the tail (see docs/PIPELINE.md to splice)
 npm run shots                 # one still per scene -> build/shots/
 node tools/shots.cjs 40 41.5  # stills at given seconds
 node tools/posesheet.cjs      # gait cycles, poses, expressions -> build/posesheet.png
@@ -47,7 +48,7 @@ Playwright must match the pre-installed browser build; if `npx playwright instal
 - If you change durations, re-time `tools/music3.py` (section start times are printed when it runs) and the `STARTS` array in `index.html`.
 
 ### Scenes
-A scene object: `{ id, county, place, en, ll, sub:[zh,en], sub2?, cam:[z0,z1,x0,x1,y0,y1], via?, dur?, final?, sun?(lt) → [x, y, strength], draw(lt) }`. `sun` (logical coords) drives the light-scattering pass.
+A scene object: `{ id, county, place, en, ll, sub:[zh,en], sub2?, sub3?, cam:[z0,z1,x0,x1,y0,y1], via?, dur?, final?, sun?(lt) → [x, y, strength], draw(lt) }`. `sun` (logical coords) drives the light-scattering pass.
 
 Inside `draw(lt)` use the layer helpers from `core.js`:
 - `L(key, depth, painter, {blur, dx, alpha})` — static layer, painted **once** into an offscreen canvas and cached per scene, then drawn with the camera transform for its `depth` (0 = far, 1 = near). Put anything expensive (textures, thousands of dabs) here.
