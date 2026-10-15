@@ -95,7 +95,7 @@ h2 { font-family: var(--serif); font-size: 20px; letter-spacing: 0.2em; font-wei
   })();
   function useCanvas() {
     if (screen.querySelector('canvas')) return;
-    const srcs = ['src/core.js', 'src/cat2.js', 'src/cat3.js', 'src/scenesA.js', 'src/scenesB.js', 'src/transitions.js', 'src/actions3.js', 'src/main.js']; let k = 0;
+    const srcs = ['src/core.js', 'src/gl.js', 'src/cat2.js', 'src/cat3.js', 'src/scenesA.js', 'src/scenesB.js', 'src/transitions.js', 'src/actions3.js', 'src/main.js']; let k = 0;
     const next = () => { if (k >= srcs.length) return start(); const s = document.createElement('script'); s.src = srcs[k++]; s.onload = next; document.body.appendChild(s); };
     next();
     function start() {

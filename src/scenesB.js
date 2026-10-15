@@ -109,7 +109,7 @@ SCENES.push({ county: '南投縣', place: '日月潭', en: 'Sun Moon Lake', ll: 
   } });
 
 /* 15 — 臺中市 高美濕地 */
-SCENES.push({ county: '臺中市', place: '高美濕地', en: 'Gaomei Wetlands', ll: '24.31°N 120.55°E', cam: [1.02, 1.07, 20, -20, 0, 0],
+SCENES.push({ county: '臺中市', place: '高美濕地', sun: lt => [560, 365 + lt * 4, 0.9], en: 'Gaomei Wetlands', ll: '24.31°N 120.55°E', cam: [1.02, 1.07, 20, -20, 0, 0],
   sub: ['臺中高美濕地，風車慢慢轉著黃昏。', 'At Gaomei Wetlands, the windmills slowly turn the dusk.'],
   draw(lt) {
     const hz = 400, sx = 560, sy = 365 + lt * 4;
@@ -178,7 +178,7 @@ SCENES.push({ county: '新竹市', place: '迎曦東門城', en: 'East Gate of H
   } });
 
 /* 19 — 桃園市 桃園國際機場 */
-SCENES.push({ county: '桃園市', place: '桃園國際機場', en: 'Taoyuan International Airport', ll: '25.08°N 121.23°E', cam: [1.02, 1.07, 0, 0, 0, 0],
+SCENES.push({ county: '桃園市', place: '桃園國際機場', sun: () => [900, 440, 0.55], en: 'Taoyuan International Airport', ll: '25.08°N 121.23°E', cam: [1.02, 1.07, 0, 0, 0, 0],
   sub: ['桃園機場。下一站，離島。', 'Taoyuan Airport. Next stop: the outer islands.'],
   draw(lt) {
     const hz = 430;

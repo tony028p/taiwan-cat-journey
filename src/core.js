@@ -51,7 +51,10 @@ function R(key, d, axis, alpha, painter, blur = 2, o = {}) {
   c.save(); camT(d);
   c.beginPath(); c.rect(-M, axis, W + 2 * M, H - axis); c.clip();
   c.translate(0, 2 * axis + (o.shift || 0)); c.scale(1, -1);
-  c.globalAlpha *= alpha; c.drawImage(lay, -M, 0, W + 2 * M, H); c.restore();
+  c.globalAlpha *= alpha;
+  if (typeof GLX !== 'undefined' && GLX.ok && o.ripple !== 0) { const [g, sx, sy, sw, sh] = GLX.ripple(lay, axis, T, o.ripple ?? 1); c.drawImage(g, sx, sy, sw, sh, -M, 0, W + 2 * M, H); }
+  else c.drawImage(lay, -M, 0, W + 2 * M, H);
+  c.restore();
 }
 function D(d, fn) { c.save(); camT(d); fn(); c.restore(); }
 
