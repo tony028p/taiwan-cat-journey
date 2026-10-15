@@ -18,7 +18,7 @@ const GLX = (() => {
       void main() { vec3 a = texture2D(src, uv).rgb * 0.2270;
         a += (texture2D(src, uv + dir * 1.3846).rgb + texture2D(src, uv - dir * 1.3846).rgb) * 0.3162;
         a += (texture2D(src, uv + dir * 3.2308).rgb + texture2D(src, uv - dir * 3.2308).rgb) * 0.0703; gl_FragColor = vec4(a, 1.); }`,
-    comp: `uniform sampler2D src, bloom; uniform vec2 res; uniform float t, bk, grain; uniform vec3 sun; uniform vec2 sc;
+    comp: `uniform sampler2D src, bloom, rays; uniform vec2 res; uniform float t, bk, grain; uniform vec2 sc;
       float hash(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
       float vn(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
         return mix(mix(hash(i), hash(i + vec2(1., 0.)), f.x), mix(hash(i + vec2(0., 1.)), hash(i + vec2(1., 1.)), f.x), f.y); }
@@ -28,9 +28,7 @@ const GLX = (() => {
         vec3 b = texture2D(bloom, q).rgb;
         col = 1. - (1. - col) * (1. - b * bk);                         // bloom, screen
         col += b * b * vec3(0.30, 0.10, 0.03) * 0.55;                  // halation: warm fringe round highlights
-        if (sun.z > 0.) { vec2 d = (uv - sun.xy) * 0.028; vec2 s = uv; vec3 acc = vec3(0.); float w = 1.;
-          for (int i = 0; i < 28; i++) { s -= d; acc += texture2D(bloom, s * sc).rgb * w; w *= 0.94; }
-          col += acc * 0.011 * sun.z * vec3(1., 0.86, 0.66); }      // light scattering toward the sun
+        col += texture2D(rays, q).rgb;                                // light scattering toward the sun (low-res pass)
         col = mix(col, 0.8 + 0.2 * (1. - exp(-(col - 0.8) / 0.2)), step(0.8, col));   // soft shoulder above 0.8 only
         col = clamp(col, 0., 1.);
         float y = uv.y;                                                // grade: warm sky, cool ground (soft-light)
@@ -45,6 +43,11 @@ const GLX = (() => {
         float dv = length(dc * res), f = clamp((dv - 0.35 * res.y) / (0.62 * res.x - 0.35 * res.y), 0., 1.); col *= mix(vec3(1.), vec3(0.275, 0.235, 0.216), f); // vignette (same curve as the 2D path)
         col += (hash(pp + fract(t * 24. * 0.6180339) * 341.7) - 0.5) * grain;  // grain + dither
         gl_FragColor = vec4(col, 1.); }`,
+    scatter: `uniform sampler2D src; uniform vec3 sun;
+      void main() { if (sun.z <= 0.) { gl_FragColor = vec4(0., 0., 0., 1.); return; }
+        vec2 d = (uv - sun.xy) * 0.028, s = uv; vec3 acc = vec3(0.); float w = 1.;
+        for (int i = 0; i < 28; i++) { s -= d; acc += texture2D(src, s).rgb * w; w *= 0.94; }
+        gl_FragColor = vec4(acc * 0.011 * sun.z * vec3(1., 0.86, 0.66), 1.); }`,
     ripple: `uniform sampler2D src; uniform float t, axis, amp; uniform vec2 sc;
       void main() { vec2 q = uv * sc; float yTop = 1. - uv.y, d = max(axis - yTop, 0.), k = smoothstep(0., 0.025, d);
         float ph = 150. * sqrt(d) - t * 1.7;
@@ -86,7 +89,8 @@ const GLX = (() => {
     run(PR.bright, fA, bw, bh, { px: [1 / FW, 1 / FH], th: 0.55 }, [['src', texSrc]]);
     for (const k of [1, 2.2]) { run(PR.blur, fB, bw, bh, { dir: [k / bw, 0] }, [['src', fA.t]]); run(PR.blur, fA, bw, bh, { dir: [0, k / bh] }, [['src', fB.t]]); }
     const sun = o.sun ? [o.sun[0] / W, 1 - o.sun[1] / H, o.sun[2]] : [0, 0, 0];
-    run(PR.comp, null, FW, FH, { res: [FW, FH], t, bk: 0.35, grain: 0.035, sun, sc: [1, 1] }, [['src', texSrc], ['bloom', fA.t]]);
+    run(PR.scatter, fB, bw, bh, { sun }, [['src', fA.t]]);
+    run(PR.comp, null, FW, FH, { res: [FW, FH], t, bk: 0.35, grain: 0.035, sc: [1, 1] }, [['src', texSrc], ['bloom', fA.t], ['rays', fB.t]]);
     ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'copy';
     ctx.drawImage(cv, 0, CH - FH, FW, FH, 0, 0, FW, FH); ctx.restore();
   }

@@ -16,7 +16,7 @@ node tools/render.cjs        # -> build/film.mp4
 
 - `render.html?s=1.5` 代表以 1.5 倍縮放（1280×720 邏輯座標 → 1920×1080）。
 - 每格呼叫 `frame(t)`，取得 JPEG（品質 0.94），用 `image2pipe` 交給 ffmpeg：H.264 `-preset slow -crf 16`，AAC 192k。母片約 250MB。
-- 速度約每格 0.22 秒，總共 5,549 格（24 fps）。
+- 速度約每格 0.3 秒（無 GPU 的 headless Chromium 以 SwiftShader 執行 WebGL），總共 5,549 格（24 fps）。
 
 ## 3. 其他版本
 
@@ -60,4 +60,5 @@ macOS / Linux：`cat CatTaiwan_master.mp4.part* > CatTaiwan_master_1080p.mp4`
 
 - 母片太大，不建議放進 git（GitHub 單檔上限 100MB）。可以放在 GitHub Releases 的附件（單檔上限 2GB），或改用 Git LFS。
 - `media/film-720p.mp4` 約 12MB，可以直接放進 repo，讓 GitHub Pages 上的 `index.html` 直接播放。
-- 開啟 GitHub Pages：Settings → Pages → Source 選 `main` 分支的根目錄。
+- 開啟 GitHub Pages：Settings → Pages → Build and deployment → Source 選「Deploy from a branch」，分支選 `main`、資料夾 `/ (root)`。repo 根目錄有 `.nojekyll`，檔案會原樣發布。
+- Pages 的限制：網站總大小 1GB、每月流量約 100GB（軟性上限）、單檔 100MB。720p 影片約 12MB，沒有問題；每次重新算圖替換影片，git 歷史會多一份，偶爾更新沒關係。
