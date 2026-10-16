@@ -135,6 +135,15 @@ function hind3(B, tg, part = 3) {
 }
 function hind3Geom(B, tg) { const f = tg[2], toe = [tg[0], tg[1]], off = f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1));
   const root = [B.H[0] - B.t[0] * 1 - B.n[0] * 3, B.H[1] - B.t[1] * 1 - B.n[1] * 3], hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4); return { root, kn: ik(root, hk, 17.5, 19, 1), hk }; }
+/* fill the notch between the rump and the shin so the back of the hind leg reads as one convex contour (rump → heel) */
+function hindWeb(B, hl, hc, p) {
+  const t = B.t, n = B.n, rx = 14, ry = 14.2 * (p.g || 1), dx = hl.hk[0] - hl.kn[0], dy = hl.hk[1] - hl.kn[1], L = Math.hypot(dx, dy) || 1;
+  let nb = [-dy / L, dx / L]; if (nb[0] > 0) nb = [-nb[0], -nb[1]];                 // normal pointing to the cat's rear
+  const rear = [hc[0] - t[0] * rx * 0.98 + n[0] * 2, hc[1] - t[1] * rx * 0.98 + n[1] * 2], low = [hc[0] - t[0] * rx * 0.6 - n[0] * ry * 0.75, hc[1] - t[1] * rx * 0.6 - n[1] * ry * 0.75];
+  const heel = [hl.hk[0] + nb[0] * 2.9, hl.hk[1] + nb[1] * 2.9], kb = [hl.kn[0] + nb[0] * 4.6, hl.kn[1] + nb[1] * 4.6];
+  const mid = [(rear[0] + heel[0]) / 2 + nb[0] * 2.5, (rear[1] + heel[1]) / 2 + nb[1] * 2.5];
+  c.beginPath(); c.moveTo(rear[0], rear[1]); c.quadraticCurveTo(mid[0], mid[1], heel[0], heel[1]); c.lineTo(hl.hk[0], hl.hk[1]); c.lineTo(hl.kn[0], hl.kn[1]); c.lineTo(kb[0], kb[1]); c.lineTo(low[0], low[1]); c.lineTo(hc[0], hc[1]); c.closePath(); c.fill();
+}
 function tail3(B, p) {
   const [ba, curl, amp, fq, ground] = p.tail, base = B.at(-0.18, 6), pts = [base], ph = p.tailPh != null ? p.tailPh : T * fq; let a = ba;
   for (let k = 0; k < 12; k++) { a += curl + amp * Math.sin(ph - k * 0.55) * (0.3 + k / 12); const q = pts[pts.length - 1]; let nx = q[0] + Math.cos(a) * 6.6, ny = q[1] + Math.sin(a) * 6.6; if (ground) ny = Math.min(ny, -3); pts.push([nx, ny]); }
@@ -177,6 +186,7 @@ function headSil(p, P, hd, sc) {
 function drawRig(p, P, k, fx) {
   const B = bodyGeom3(p), main = c;
   c.fillStyle = P.far; const ffl = fore3(B, p.ff), fhl = hind3(B, p.hf);
+  hindWeb(B, fhl, [B.H[0] - B.t[0] * 4 - B.n[0] * 1.5, B.H[1] - B.t[1] * 4 - B.n[1] * 1.5], p);
   { const g5 = CB5.getContext('2d'); g5.setTransform(1, 0, 0, 1, 0, 0); g5.globalCompositeOperation = 'copy'; g5.drawImage(CB, 0, 0); g5.globalCompositeOperation = 'source-over'; } // far legs only
   c.fillStyle = P.tail || P.base; const tp = tail3(B, p);
   if (P.stripe) { c.save(); c.globalCompositeOperation = 'source-atop'; c.strokeStyle = P.stripe; c.lineCap = 'round'; c.lineWidth = 3.4;
@@ -188,7 +198,7 @@ function drawRig(p, P, k, fx) {
   const hk0 = hind3Geom(B, p.hn), ha = Math.atan2(B.t[1], B.t[0]), sw = [(hk0.kn[0] - hk0.root[0]) * 0.12, (hk0.kn[1] - hk0.root[1]) * 0.08];
   const hc = [B.H[0] - B.t[0] * 4 - B.n[0] * 1.5 + sw[0], B.H[1] - B.t[1] * 4 - B.n[1] * 1.5 + sw[1]];
   const haunch = () => { c.beginPath(); c.ellipse(hc[0], hc[1], 14, 14.2 * (p.g || 1), ha, 0, TAU); };
-  haunch(); c.fill(); hind3(B, p.hn, 1); fore3(B, p.fn, 1);
+  haunch(); c.fill(); hind3(B, p.hn, 1); fore3(B, p.fn, 1); hindWeb(B, hind3Geom(B, p.hn), hc, p);
   c.save(); smoothClosed(B.pts); c.clip(); shadeBody3(B, p, P); c.restore();
   // near legs on their own layer
   const g3 = CB3.getContext('2d'); g3.setTransform(1, 0, 0, 1, 0, 0); g3.globalCompositeOperation = 'source-over'; g3.clearRect(0, 0, CBW, CBH); g3.setTransform(k * fx, 0, 0, k, COX, COY);
@@ -202,7 +212,9 @@ function drawRig(p, P, k, fx) {
   for (let a = 0; a < 8; a++) g4.drawImage(CB3, Math.cos(a * Math.PI / 4) * iw, Math.sin(a * Math.PI / 4) * iw);
   g4.globalCompositeOperation = 'source-in'; g4.fillStyle = P.inner; g4.fillRect(0, 0, CBW, CBH);
   g4.globalCompositeOperation = 'destination-out'; g4.drawImage(CB3, 0, 0);
-  g4.globalCompositeOperation = 'destination-in'; g4.drawImage(CB5, 0, 0); g4.globalCompositeOperation = 'source-over';
+  g4.globalCompositeOperation = 'destination-in'; g4.drawImage(CB5, 0, 0);
+  g4.globalCompositeOperation = 'destination-out'; g4.setTransform(k * fx, 0, 0, k, COX, COY); [[fl.el, 11], [hl.kn, 12]].forEach(([q, r]) => { g4.beginPath(); g4.arc(q[0], q[1], r, 0, TAU); g4.fill(); }); g4.setTransform(1, 0, 0, 1, 0, 0);
+  g4.globalCompositeOperation = 'source-over';
   c = main; c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(CB4, 0, 0); c.drawImage(CB3, 0, 0); c.restore();
   // neck + head
   const nb = B.at(1.0, 2), hd = p.head, ne = [lerp(nb[0], hd[0], 0.8), lerp(nb[1], hd[1], 0.8)];
