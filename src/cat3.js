@@ -13,7 +13,8 @@ const COATS = {
     patches: [[0.05, 6, 16, 12, '#d98a45'], [0.42, 9, 11, 9, '#2f2a2a'], [0.78, 7, 10, 8, '#d98a45']], sitPatches: [[-22, -40, 13, 15, '#d98a45'], [-6, -60, 8, 8, '#2f2a2a'], [-28, -14, 10, 7, '#2f2a2a']], headPatches: [[-6.5, -7, 4, 7.5, '#d98a45'], [5, -10.5, 3, 4.2, '#2f2a2a']], tail: '#d98a45' },
   tuxedo: { base: '#26222a', shade: '#1a171d', far: '#121014', cream: '#f2efe8', creamS: '#d9d4ca', light: 'rgba(170,180,220,0.16)', stripe: null, line: '#0b090c', inner: 'rgba(0,0,0,0.6)', belly: 'rgba(250,248,242,0.95)', eye: '#e2c24c', nose: '#e39a9a', ear: '#5e4650' },
 };
-const HSR = 1.68, HSS = 1.62; // head scale (rig / sitting): a little big, so expressions read at film size
+// head scale (rig / sitting) and eye scale: torso ≈ 2.4 head lengths (a real cat is ≈ 4, a chibi ≈ 1.5); eye height ≈ 0.28 of the head
+let HSR = 1.3, HSS = 1.27, EYE3 = 1.05;
 let CB = null, CB2 = null, CB3 = null, CB4 = null, CB5 = null;
 const CBW = 720, CBH = 560, COX = 360, COY = 470;
 function cbufs() { if (!CB) { CB = mkCanvas(CBW, CBH); CB2 = mkCanvas(CBW, CBH); CB3 = mkCanvas(CBW, CBH); CB4 = mkCanvas(CBW, CBH); CB5 = mkCanvas(CBW, CBH); } }
@@ -360,7 +361,7 @@ function eye3(x, y, rx, ry, inner, q, P, sil, H) {
 }
 function face3(P, p, sil) {
   const q = { ...FACE0 }; for (const k in p) if (p[k] != null) q[k] = p[k];
-  const H = headView(q), m = q.mouth || 0, ES = 1.25, front = Math.cos((1 - H.tn) * 0.45 * Math.PI);
+  const H = headView(q), m = q.mouth || 0, ES = EYE3, front = Math.cos((1 - H.tn) * 0.45 * Math.PI);
   // inner ears (pink, with a cream tuft) on the ears that face us
   [-1, 1].forEach(s => { const e = earGeo(H, q, s), vis = clamp(H.d(s * 0.35, 1) * 1.4); if (e.dep < -2.5 || vis < 0.08) return;
     const mid = [(e.b1[0] + e.b2[0]) / 2, (e.b1[1] + e.b2[1]) / 2, (e.b1[2] + e.b2[2]) / 2], L3 = (u, a, b) => a.map((v, i) => v + (b[i] - v) * u);
