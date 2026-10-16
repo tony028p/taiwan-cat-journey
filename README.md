@@ -71,7 +71,7 @@ tools/
   music3.py         配樂合成
   posesheet.cjs     貓咪步態／姿勢／表情對照圖
   rig3.html         貓咪姿勢表
-media/              網頁用 720p 影片、可下載的 1080p 影片與海報
+media/              網頁用 720p 影片與海報（1080p 下載檔在 GitHub Releases）
 docs/               分鏡、參考資料、製作流程、版本紀錄
 legacy/v1/          第一版（一分鐘柔和手繪風）
 ```

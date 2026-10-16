@@ -35,7 +35,7 @@ Playwright must match the pre-installed browser build; if `npx playwright instal
 3. **Script load order matters** (see `render.html`, and the `srcs` list in `index.html`): `core → gl → cat2 → cat3 → scenesA → scenesB → transitions → actions3 → main`. Later files deliberately override earlier globals (`actCat` in `actions3.js` replaces the one in `cat2.js`). Top-level `const` names are shared across classic scripts, so don't redeclare them.
 4. **Colours passed to `mix()`/`rgba()`/`toA()` must be 6-digit hex** (`#ffffff`, not `#fff`) or `rgba(...)`. 3-digit hex silently produces wrong colours (this caused blue "clouds" once).
 5. **`mountain()` with a custom `fn`** has no `base`; pass `bottom` or let the code infer it. Non-finite gradient stops throw.
-6. Don't commit renders (`build/`, masters). The only videos in git are `media/film-720p.mp4` (player) and `media/film-1080p.mp4` (download link on the page, ~85 MB — must stay under GitHub's 100 MB limit; replace it only when the film is final, each replacement adds its size to the git history).
+6. Don't commit renders (`build/`, masters). `media/film-720p.mp4` is the only video in git. The 1080p downloads (high quality, small, master) are GitHub Release assets made by `.github/workflows/release-film.yml` (Actions → Release film → Run workflow); the page links to them via `releases/latest/download/<name>`, so keep the asset names.
 7. Reference photos/GIFs were only *looked at*; none are in the repo. Don't add copyrighted images, and don't reproduce characters from other films — the cat is an original design.
 
 ## Architecture

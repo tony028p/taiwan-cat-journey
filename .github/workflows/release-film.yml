@@ -1,0 +1,83 @@
+# Renders the whole film on a GitHub runner and publishes the large files as a GitHub Release
+# (release assets may be up to 2 GB; the repository itself only holds the 720p player video).
+# The film is deterministic, so this produces the same frames as `npm run render` anywhere.
+# Run it from the Actions tab: "Release film" → Run workflow (about 1 hour).
+name: Release film
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, e.g. film-v4.2"
+        required: true
+        default: "film-v4.2"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-film
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: ffmpeg and the CJK serif font used for titles and subtitles
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg fonts-noto-cjk
+          fc-cache -f
+          fc-list :lang=zh-tw family | sort -u
+
+      - name: Install Playwright and Python deps
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+          pip install -r requirements.txt
+
+      - name: Music
+        run: npm run music
+
+      - name: Render the 1080p master
+        run: npm run render
+
+      - name: Encode the download versions
+        run: |
+          mkdir -p out
+          # high quality (visually transparent)
+          ffmpeg -y -loglevel error -i build/film.mp4 -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p -profile:v high \
+            -c:a copy -movflags +faststart out/taiwan-cat-journey-1080p.mp4
+          # small 1080p (two-pass, about 85 MB)
+          ffmpeg -y -loglevel error -i build/film.mp4 -c:v libx264 -preset slow -b:v 2800k -pass 1 -passlogfile build/p2 -an -f null /dev/null
+          ffmpeg -y -loglevel error -i build/film.mp4 -c:v libx264 -preset slow -b:v 2800k -pass 2 -passlogfile build/p2 -pix_fmt yuv420p -profile:v high \
+            -c:a aac -b:a 160k -movflags +faststart out/taiwan-cat-journey-1080p-small.mp4
+          mv build/film.mp4 out/taiwan-cat-journey-1080p-master.mp4
+          ls -la out
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+          SHA: ${{ github.sha }}
+        run: |
+          gh release delete "$TAG" --yes --cleanup-tag || true
+          cat > notes.md <<NOTES
+          小貓環島記 — 1080p 影片下載（由 commit ${SHA} 算圖）
+
+          - taiwan-cat-journey-1080p.mp4：1080p 高畫質（H.264 CRF 20）
+          - taiwan-cat-journey-1080p-small.mp4：1080p 精簡版（約 85 MB）
+          - taiwan-cat-journey-1080p-master.mp4：母片（H.264 CRF 16，最高畫質，檔案最大）
+          NOTES
+          gh release create "$TAG" out/*.mp4 --title "小貓環島記 ${TAG}" --notes-file notes.md --target "$SHA" --latest
