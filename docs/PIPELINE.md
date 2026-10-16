@@ -74,7 +74,7 @@ macOS / Linux：`cat CatTaiwan_master.mp4.part* > CatTaiwan_master_1080p.mp4`
 
 - 母片太大，不建議放進 git（GitHub 單檔上限 100MB）。可以放在 GitHub Releases 的附件（單檔上限 2GB），或改用 Git LFS。
 - `media/film-720p.mp4` 約 12MB，可以直接放進 repo，讓 GitHub Pages 上的 `index.html` 直接播放。
-- 1080p 的下載檔（高畫質 CRF 20、精簡版約 85MB、母片 CRF 16 約 970MB）不放進 git，由 GitHub Actions 產生並發布到 Releases：在 GitHub 的 Actions 分頁選「Release film」→「Run workflow」，輸入版本標籤（例如 `film-v4.2`），約一小時後 Releases 會出現三個檔案。設定在 `.github/workflows/release-film.yml`（安裝 ffmpeg、Noto CJK 字型、Playwright，執行 `npm run music`、`npm run render`，再編碼與上傳）。
+- 1080p 的下載檔（高畫質 CRF 20 約 380MB、精簡版約 85MB、母片 CRF 16 約 970MB）不放進 git，由 GitHub Actions 產生並發布到 Releases：在 GitHub 的 Actions 分頁選「Release film」→「Run workflow」，輸入版本標籤（例如 `film-v4.2`），約一小時後 Releases 會出現三個檔案。設定在 `.github/workflows/release-film.yml`（安裝 ffmpeg、Noto CJK 字型、Playwright，執行 `npm run music`、`npm run render`，再編碼與上傳）。
 - 網頁的下載連結用 `releases/latest/download/<檔名>`，永遠指向最新一次發布；檔名不要改。
 - 開啟 GitHub Pages：Settings → Pages → Build and deployment → Source 選「Deploy from a branch」，分支選 `main`、資料夾 `/ (root)`。repo 根目錄有 `.nojekyll`，檔案會原樣發布。
 - Pages 的限制：網站總大小 1GB、每月流量約 100GB（軟性上限）、單檔 100MB。720p 影片約 12MB，沒有問題；每次重新算圖替換影片，git 歷史會多一份，偶爾更新沒關係。
