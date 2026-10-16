@@ -9,7 +9,7 @@
   const d = await p.evaluate(N => {
     const rows = [
       ['walk', u => walkPose3(u)], ['trot', u => walkPose3(u, { trot: 1 })], ['gallop', u => gallopPose3(u)],
-      ['poses', u => [STAND3, CROUCH3, LEAP3, LAND3, STRETCH3, LOAF3, SLEEP3, sit3(0)][Math.floor(u * 8)]],
+      ['poses', u => [STAND3, CROUCH3, LEAP3, SCARED3, STRETCH3, LOAFT3, SLEEPT3, { ...sit3(0), ...(typeof groom3 !== 'undefined' ? groom3(1.5, 0, 3) : {}) }][Math.floor(u * 8)]],
     ];
     if (typeof COATS !== 'undefined') { const ks = Object.keys(COATS); rows.push(['friends', u => { const k = ks[Math.floor(u * 8) >> 1]; return k ? { ...(Math.floor(u * 8) % 2 ? sit3(0) : walkPose3(0.3)), name: k, coat: k } : null; }]); }
     if (typeof EXPR3 !== 'undefined') { const ks = Object.keys(EXPR3), EM = ['!', '?', 'z', 'note', 'heart', 'drop', 'spark'];

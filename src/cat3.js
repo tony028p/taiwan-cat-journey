@@ -28,6 +28,9 @@ const LOAF3 = { ...STAND3, g: 1.12, hip: [-30, -17], sh: [24, -19], arch: 5, hea
 const SCARED3 = { ...STAND3, g: 1.14, hip: [-28, -60], sh: [26, -58], arch: 15, head: [50, -60], hr: 0.12, fn: [24, 0, -0.3], ff: [18, 0, -0.3], hn: [-22, 0, 0], hf: [-28, 0, 0], tail: [-1.62, 0.02, 0.03, 9, 0], tailW: 1.7, sb: 1, hb: 1 };
 /* reared up on the hind legs, forepaws raised */
 const REAR3 = { ...STAND3, hip: [-24, -40], sh: [10, -84], arch: -3, head: [26, -108], hr: -0.35, fn: [40, -112, -1], ff: [34, -104, -1], hn: [-14, 0, 0.9], hf: [-20, 0, 0.9], tail: [-2.8, -0.12, 0.08, 3, 0], sb: 1, hb: 1 };
+/* loaf with the front paws folded under the chest (香箱座り) */
+const LOAFT3 = { ...LOAF3, g: 1.14, sh: [22, -18], head: [44, -40], fn: [14, 0, 1], ff: [10, 0, 1], tuck: 1 };
+const SLEEPT3 = { ...LOAFT3, head: [42, -30], hr: 0.25, eye: 0, ear: 0.15, tail: [2.95, -0.36, 0.03, 0.7, 1] };
 const SLEEP3 = { ...LOAF3, head: [44, -28], hr: 0.25, eye: 0, ear: 0.15, tail: [2.95, -0.36, 0.03, 0.7, 1] };
 
 /* Walk (lateral sequence) and trot (diagonal pairs). Stance feet move back at exactly the body speed (walkCyc3), so
@@ -87,7 +90,9 @@ function gallopPose3(cyc) {
 function gallopCyc3(dist, s) { return dist / (GLC * s * SPX); }
 /* rig poses are authored long; they are drawn compressed along x by SPX for a compact, cat-like torso */
 const SPX = 0.86;
-function squashX(p) { if (p.sit) return p; const q = { ...p }; ['hip', 'sh', 'head'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1]]); ['fn', 'ff', 'hn', 'hf'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1], p[k][2]]); return q; }
+/* the head sits low on the shoulders (no giraffe neck): 20% closer to the withers than authored */
+function headPos3(p) { const sx = p.sh[0] * SPX, hx = p.head[0] * SPX; return [lerp(sx, hx, 0.8) + 2, lerp(p.sh[1], p.head[1], 0.8) + 2]; }
+function squashX(p) { if (p.sit) return p; const q = { ...p }; ['hip', 'sh'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1]]); q.head = headPos3(p); ['fn', 'ff', 'hn', 'hf'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1], p[k][2]]); return q; }
 
 function bodyGeom3(p) {
   const H = p.hip, Sh = p.sh, dx = Sh[0] - H[0], dy = Sh[1] - H[1], L = Math.hypot(dx, dy), t = [dx / L, dy / L], n = [t[1], -t[0]];
@@ -121,15 +126,15 @@ function fore3(B, tg, part = 3) {
 }
 function hind3(B, tg, part = 3) {
   const f = tg[2], toe = [tg[0], tg[1]];
-  const off = f <= 1 ? lp([-5, -14], [-12, -8], clamp(f)) : lp([-12, -8], [-19, -3], clamp(f - 1));
+  const off = f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1));
   const root = [B.H[0] - B.t[0] * 1 - B.n[0] * 3, B.H[1] - B.t[1] * 1 - B.n[1] * 3];
-  const hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 42), kn = ik(root, hk, 20.5, 22, 1);
-  if (part & 1) limbSeg(root, kn, 14, 8.8, 1.5);
-  if (part & 2) { limbSeg(kn, hk, 7.4, 5.2, 1); taper(hk, toe, 5.2, 4.9); c.beginPath(); c.ellipse(toe[0] + 1.5, toe[1] - 2.1, 5.1, 2.8, 0, 0, TAU); c.fill(); }
+  const hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4), kn = ik(root, hk, 17.5, 19, 1);
+  if (part & 1) limbSeg(root, kn, 22, 10.5, 3);
+  if (part & 2) { limbSeg(kn, hk, 9.5, 5.6, 2.2); taper(hk, toe, 5.4, 4.8); c.beginPath(); c.ellipse(toe[0] + 1.5, toe[1] - 2.1, 5.1, 2.8, 0, 0, TAU); c.fill(); }
   return { root, kn, hk, toe };
 }
-function hind3Geom(B, tg) { const f = tg[2], toe = [tg[0], tg[1]], off = f <= 1 ? lp([-5, -14], [-12, -8], clamp(f)) : lp([-12, -8], [-19, -3], clamp(f - 1));
-  const root = [B.H[0] - B.t[0] * 1 - B.n[0] * 3, B.H[1] - B.t[1] * 1 - B.n[1] * 3], hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 42); return { root, kn: ik(root, hk, 20.5, 22, 1), hk }; }
+function hind3Geom(B, tg) { const f = tg[2], toe = [tg[0], tg[1]], off = f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1));
+  const root = [B.H[0] - B.t[0] * 1 - B.n[0] * 3, B.H[1] - B.t[1] * 1 - B.n[1] * 3], hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4); return { root, kn: ik(root, hk, 17.5, 19, 1), hk }; }
 function tail3(B, p) {
   const [ba, curl, amp, fq, ground] = p.tail, base = B.at(-0.18, 6), pts = [base], ph = p.tailPh != null ? p.tailPh : T * fq; let a = ba;
   for (let k = 0; k < 12; k++) { a += curl + amp * Math.sin(ph - k * 0.55) * (0.3 + k / 12); const q = pts[pts.length - 1]; let nx = q[0] + Math.cos(a) * 6.6, ny = q[1] + Math.sin(a) * 6.6; if (ground) ny = Math.min(ny, -3); pts.push([nx, ny]); }
@@ -140,7 +145,7 @@ function tail3(B, p) {
    pose.turn = 0 → profile (looking along the body, +x), 1 → facing the camera. Head coords: x = across the face
    (viewer's right when facing the camera), y down, z forward (nose). Units match the old profile head. */
 function headView(p) {
-  const tn = clamp(p.turn || 0), ph = (1 - tn) * 0.45 * Math.PI, cs = Math.cos(ph), sn = Math.sin(ph);
+  const tn = clamp(p.turn || 0, 0, 2), ph = (1 - tn) * 0.45 * Math.PI, cs = Math.cos(ph), sn = Math.sin(ph);
   return { tn, cs, sn, pr: (x, y, z) => [z * sn + x * cs, y], d: (x, z) => z * cs - x * sn };
 }
 /* ear triangle for side s (±1): ear > 0 swivels back, < 0 pricks forward; earDown flattens it sideways */
@@ -154,11 +159,10 @@ function earGeo(H, p, s) {
 function headPath(H, p) {
   const sk = H.pr(0, -2, 0), w = Math.hypot(12 * H.cs, 11.5 * H.sn);
   c.beginPath(); c.ellipse(sk[0], sk[1], w, 11, 0, 0, TAU);
-  [-1, 1].forEach(s => { const q = H.pr(s * 8, 3.4, 2.4); c.moveTo(q[0] + 6.6, q[1]); c.arc(q[0], q[1], 6.6, 0, TAU);
-    const t1 = H.pr(s * 14.2, 4.6, -0.5), t2 = H.pr(s * 11.4, 0.6, 1.2), t3 = H.pr(s * 11.8, 8.4, 0.8); c.moveTo(t1[0], t1[1]); c.lineTo(t2[0], t2[1]); c.lineTo(t3[0], t3[1]); c.closePath(); });
-  const mz = H.pr(0, 3.6, 10.2), ch = H.pr(0, 6.8, 7.6);
-  c.moveTo(mz[0] + 5.6, mz[1]); c.arc(mz[0], mz[1], 5.6, 0, TAU); c.moveTo(ch[0] + 4.2, ch[1]); c.arc(ch[0], ch[1], 4.2, 0, TAU);
-  if ((p.mouth || 0) > 0.05) { const j = H.pr(0, 6.4 + 3.6 * p.mouth, 9.6); c.moveTo(j[0] + 4.4, j[1]); c.arc(j[0], j[1], 4.4, 0, TAU); }
+  [-1, 1].forEach(s => { const q = H.pr(s * 7.6, 3.2, 2.6); c.moveTo(q[0] + 6.4, q[1]); c.arc(q[0], q[1], 6.4, 0, TAU); });
+  const mz = H.pr(0, 3.3, 9), ch = H.pr(0, 6.2, 6.6);
+  c.moveTo(mz[0] + 5, mz[1]); c.arc(mz[0], mz[1], 5, 0, TAU); c.moveTo(ch[0] + 3.8, ch[1]); c.arc(ch[0], ch[1], 3.8, 0, TAU);
+  if ((p.mouth || 0) > 0.05) { const j = H.pr(0, 5.8 + 3.6 * p.mouth, 8.4); c.moveTo(j[0] + 4.2, j[1]); c.arc(j[0], j[1], 4.2, 0, TAU); }
 }
 function headSil(p, P, hd, sc) {
   const H = headView(p);
@@ -178,18 +182,19 @@ function drawRig(p, P, k, fx) {
   if (P.stripe) { c.save(); c.globalCompositeOperation = 'source-atop'; c.strokeStyle = P.stripe; c.lineCap = 'round'; c.lineWidth = 3.4;
     for (let j = 3; j < tp.length - 1; j += 2) { const q = tp[j], r = tp[j + 1], nx = -(r[1] - q[1]), ny = r[0] - q[0], l = Math.hypot(nx, ny) || 1; c.beginPath(); c.moveTo(q[0] + nx / l * 5, q[1] + ny / l * 5); c.lineTo(q[0] - nx / l * 5, q[1] - ny / l * 5); c.stroke(); }
     c.restore(); }
+  if (p.tuck > 0.5) { c.fillStyle = P.base; fore3(B, p.fn, 2); }
   c.fillStyle = P.base; smoothClosed(B.pts); c.fill();
   // the haunch belongs to the body silhouette: a rounded rump that follows the near thigh, no separate outline
   const hk0 = hind3Geom(B, p.hn), ha = Math.atan2(B.t[1], B.t[0]), sw = [(hk0.kn[0] - hk0.root[0]) * 0.12, (hk0.kn[1] - hk0.root[1]) * 0.08];
-  const hc = [B.H[0] - B.t[0] * 4 + sw[0], B.H[1] - B.t[1] * 4 + sw[1]];
-  const haunch = () => { c.beginPath(); c.ellipse(hc[0], hc[1], 13.5, 13.2 * (p.g || 1), ha, 0, TAU); };
+  const hc = [B.H[0] - B.t[0] * 4 - B.n[0] * 1.5 + sw[0], B.H[1] - B.t[1] * 4 - B.n[1] * 1.5 + sw[1]];
+  const haunch = () => { c.beginPath(); c.ellipse(hc[0], hc[1], 14, 14.2 * (p.g || 1), ha, 0, TAU); };
   haunch(); c.fill(); hind3(B, p.hn, 1); fore3(B, p.fn, 1);
   c.save(); smoothClosed(B.pts); c.clip(); shadeBody3(B, p, P); c.restore();
   // near legs on their own layer
   const g3 = CB3.getContext('2d'); g3.setTransform(1, 0, 0, 1, 0, 0); g3.globalCompositeOperation = 'source-over'; g3.clearRect(0, 0, CBW, CBH); g3.setTransform(k * fx, 0, 0, k, COX, COY);
   c = g3; c.fillStyle = P.base;
   const hl = hind3(B, p.hn, 2);
-  const fl = fore3(B, p.fn, 2);
+  const fl = p.tuck > 0.5 ? fore3(B, p.fn, 0) : fore3(B, p.fn, 2);
   shadeLegs3(B, hl, fl, p, P);
   // inner contour: ring around the near lower legs, kept only where they cross a far leg (never against the body)
   const g4 = CB4.getContext('2d'), iw = Math.max(0.8, 0.95 * S);
@@ -201,11 +206,11 @@ function drawRig(p, P, k, fx) {
   c = main; c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(CB4, 0, 0); c.drawImage(CB3, 0, 0); c.restore();
   // neck + head
   const nb = B.at(1.0, 2), hd = p.head, ne = [lerp(nb[0], hd[0], 0.8), lerp(nb[1], hd[1], 0.8)];
-  c.fillStyle = P.base; taper(nb, ne, 19, 15);
+  c.fillStyle = P.base; taper(nb, ne, 25, 21);
   headSil(p, P, hd, HSR);
   // cream throat, clipped to the neck
   c.save(); const dx = ne[0] - nb[0], dy = ne[1] - nb[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
-  c.beginPath(); c.moveTo(nb[0] + nx * 9.5, nb[1] + ny * 9.5); c.lineTo(ne[0] + nx * 7.5, ne[1] + ny * 7.5); c.lineTo(ne[0] - nx * 7.5, ne[1] - ny * 7.5); c.lineTo(nb[0] - nx * 9.5, nb[1] - ny * 9.5); c.closePath(); c.clip();
+  c.beginPath(); c.moveTo(nb[0] + nx * 12.5, nb[1] + ny * 12.5); c.lineTo(ne[0] + nx * 10.5, ne[1] + ny * 10.5); c.lineTo(ne[0] - nx * 10.5, ne[1] - ny * 10.5); c.lineTo(nb[0] - nx * 12.5, nb[1] - ny * 12.5); c.closePath(); c.clip();
   c.fillStyle = P.cream; const tq = [lerp(nb[0], ne[0], 0.4) + nx * 8, lerp(nb[1], ne[1], 0.4) + ny * 8]; c.beginPath(); c.ellipse(tq[0], tq[1], 10, 4, Math.atan2(dy, dx), 0, TAU); c.fill();
   c.restore();
   return { B, tp, hl, fl };
@@ -257,7 +262,8 @@ function silSit(p, P) {
   if (p.paw) { const sh0 = [14, -40], W2 = reach(sh0, [p.paw[0], p.paw[1]], 36), el = ik(sh0, W2, 17, 19, p.paw[1] < -40 ? 1 : -1); taper(sh0, el, 11, 7.5); taper(el, W2, 7.5, 6); c.beginPath(); c.ellipse(W2[0] + 1, W2[1], 5.4, 3.6, -0.6, 0, TAU); c.fill(); pawPt = W2; }
   else { taper([14, -40], [14, -20], 10, 7); taper([14, -20], [15, -4], 7, 6); c.beginPath(); c.ellipse(17, -2.5, 5.4, 3.1, 0, 0, TAU); c.fill(); }
   c.beginPath(); c.ellipse(-3, -3, 10, 3.8, 0, 0, TAU); c.fill();
-  const hd = [8, -82 - br];
+  const hd = [8 + (p.hdx || 0), -82 - br + (p.hdy || 0)];
+  if (p.hdx || p.hdy) { taper([6, -64], [lerp(8, hd[0], 0.7), lerp(-70, hd[1], 0.7)], 20, 16); }
   headSil(p, P, hd, HSS);
   return { body, hd, pawPt };
 }
@@ -339,31 +345,31 @@ function face3(P, p, sil) {
     if (P.stripe) { c.strokeStyle = P.stripe; c.lineCap = 'round'; c.lineWidth = 1.4;
       [-1, 0, 1].forEach(k => { if (H.d(k * 2.4, 7) < -1) return; const a = H.pr(k * 2.7, -12.4, 5.2), b = H.pr(k * 2.1, -8.2, 8.4); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); });
       [-1, 1].forEach(s => { if (H.d(s, 0.2) < 0) return; const a = H.pr(s * 9.6, -0.6, 3), b = H.pr(s * 12.2, 1.6, -1.5); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }); }
-    const mz = H.pr(0, 3.8, 10.6), ch = H.pr(0, 6.6, 8.2); c.fillStyle = P.belly; c.beginPath(); c.ellipse(mz[0], mz[1], 5.2 * (0.8 + 0.2 * front) + 0.6, 4.6, 0, 0, TAU); c.moveTo(ch[0] + 3.6, ch[1]); c.arc(ch[0], ch[1], 3.6, 0, TAU); c.fill();
-    if (q.blush > 0) [-1, 1].forEach(s => { if (H.d(s * 0.6, 0.8) <= 0) return; const b = H.pr(s * 7.2, 2.6, 8.2); c.fillStyle = `rgba(240,120,120,${0.42 * q.blush})`; c.beginPath(); c.ellipse(b[0], b[1], 3.6 * (0.5 + 0.5 * clamp(H.d(s * 0.6, 0.8))), 1.6, 0, 0, TAU); c.fill(); });
+    const mz = H.pr(0, 3.5, 9.4), ch = H.pr(0, 6, 7.2); c.fillStyle = P.belly; c.beginPath(); c.ellipse(mz[0], mz[1], 4.8 * (0.8 + 0.2 * front) + 0.5, 4.2, 0, 0, TAU); c.moveTo(ch[0] + 3.3, ch[1]); c.arc(ch[0], ch[1], 3.3, 0, TAU); c.fill();
+    if (q.blush > 0) [-1, 1].forEach(s => { if (H.d(s * 0.6, 0.8) <= 0) return; const b = H.pr(s * 7, 2.6, 7.6); c.fillStyle = `rgba(240,120,120,${0.42 * q.blush})`; c.beginPath(); c.ellipse(b[0], b[1], 3.6 * (0.5 + 0.5 * clamp(H.d(s * 0.6, 0.8))), 1.6, 0, 0, TAU); c.fill(); });
     c.restore();
   }
   // eyes
-  const N = H.pr(0, 1.1, 15.6);
+  const N = H.pr(0, 0.8, 13.9);
   [-1, 1].forEach(s => { const fw = H.d(s * 0.55, 0.83); if (fw < 0.05) return; const E = H.pr(s * 5.4, -2.6, 8.7), inner = N[0] >= E[0] ? 1 : -1;
     eye3(E[0], E[1], 3.9 * ES * (0.3 + 0.7 * fw), 2.9 * ES, inner, q, P, sil, H); });
   // mouth (open)
-  if (m > 0.05) { const Mo = H.pr(0, 5.6 + 2.2 * m, 13.6), rx = lerp(2.2, 3.8, front), ry = 0.8 + 3.2 * m;
+  if (m > 0.05) { const Mo = H.pr(0, 5.2 + 2.2 * m, 12.2), rx = lerp(2.2, 3.8, front), ry = 0.8 + 3.2 * m;
     c.fillStyle = '#5a1f1c'; c.beginPath(); c.ellipse(Mo[0], Mo[1], rx, ry, 0, 0, TAU); c.fill();
     c.fillStyle = '#e58a8f'; c.beginPath(); c.ellipse(Mo[0], Mo[1] + ry * 0.45, rx * 0.68, ry * 0.42, 0, 0, TAU); c.fill();
     c.fillStyle = '#ffffff'; [-1, 1].forEach(s => { if (front < 0.3 && s < 0) return; const fx = Mo[0] + s * rx * 0.55 * (front < 0.3 ? 0 : 1); poly([[fx - 0.6, Mo[1] - ry * 0.85], [fx + 0.6, Mo[1] - ry * 0.85], [fx, Mo[1] - ry * 0.4]], '#ffffff'); }); }
-  if (q.tongue > 0) { const tg = H.pr(0, 4.8 + q.tongue, 15); c.fillStyle = '#e58a8f'; c.beginPath(); c.ellipse(tg[0], tg[1], 1.3 + q.tongue * 1.1, 1.2 + q.tongue * 0.9, 0.3 * (1 - front), 0, TAU); c.fill(); }
+  if (q.tongue > 0) { const tg = H.pr(0, 4.4 + q.tongue, 13.4); c.fillStyle = '#e58a8f'; c.beginPath(); c.ellipse(tg[0], tg[1], 1.3 + q.tongue * 1.1, 1.2 + q.tongue * 0.9, 0.3 * (1 - front), 0, TAU); c.fill(); }
   // nose: profile wedge ↔ front inverted triangle
   const ns = lp([[-0.2, -1.6], [1.6, -0.6], [0.6, 1]], [[-1.9, -1.2], [1.9, -1.2], [0, 1]], front);
   poly(ns.map(v => [N[0] + v[0], N[1] + v[1]]), P.nose);
   // mouth line: philtrum + the two halves of the 'ω' (smile curls the corners up, frown pulls them down)
   c.strokeStyle = P.line; c.lineWidth = 0.75; c.lineCap = 'round';
-  const nb = H.pr(0, 2.2, 15.4), ph = H.pr(0, 3.4, 15.1); c.beginPath(); c.moveTo(nb[0], nb[1]); c.lineTo(ph[0], ph[1]); c.stroke();
-  [-1, 1].forEach(s => { if (H.d(s * 3.6, 13) < -1.4) return; const cp = H.pr(s * 1.6, 4.6, 14.4), en = H.pr(s * 3.7, 4.3 + q.frown * 1.4 - q.smile * 0.4, 12.8), cu = H.pr(s * 4.6, 3.2 + q.frown * 2, 12.2);
+  const nb = H.pr(0, 1.9, 13.7), ph = H.pr(0, 3.1, 13.4); c.beginPath(); c.moveTo(nb[0], nb[1]); c.lineTo(ph[0], ph[1]); c.stroke();
+  [-1, 1].forEach(s => { if (H.d(s * 3.6, 11.5) < -1.4) return; const cp = H.pr(s * 1.6, 4.3, 12.8), en = H.pr(s * 3.6, 4 + q.frown * 1.4 - q.smile * 0.4, 11.3), cu = H.pr(s * 4.4, 2.9 + q.frown * 2, 10.7);
     c.beginPath(); c.moveTo(ph[0], ph[1]); c.quadraticCurveTo(cp[0], cp[1], en[0], en[1]); if (q.smile > 0.05) c.quadraticCurveTo(lerp(en[0], cu[0], 0.5), en[1] + 0.2, lerp(en[0], cu[0], 0.9), en[1] - 1.3 * q.smile); c.stroke(); });
   // whiskers: forward/up when interested, drooping when down
   [-1, 1].forEach(s => { const far = H.d(s, 0.5) < 0; c.strokeStyle = sil ? `rgba(255,220,180,${far ? 0.15 : 0.35})` : `rgba(255,252,245,${far ? 0.3 : 0.75})`; c.lineWidth = 0.45;
-    for (let k = 0; k < 3; k++) { const b0 = H.pr(s * 3.6, 3.2 + k * 0.7, 12.6), cp = H.pr(s * 10, 1.6 + k * 1.4 - q.whisk * 1.4, 11.5), en = H.pr(s * 17.5, 0.6 + k * 2.7 - q.whisk * 3 + Math.sin(T * 1.5) * 0.3, 8.5 + q.whisk * 3);
+    for (let k = 0; k < 3; k++) { const b0 = H.pr(s * 3.4, 3 + k * 0.7, 11.2), cp = H.pr(s * 10, 1.4 + k * 1.4 - q.whisk * 1.4, 10), en = H.pr(s * 17.5, 0.4 + k * 2.7 - q.whisk * 3 + Math.sin(T * 1.5) * 0.3, 7.2 + q.whisk * 3);
       c.beginPath(); c.moveTo(b0[0], b0[1]); c.quadraticCurveTo(cp[0], cp[1], en[0], en[1]); c.stroke(); } });
 }
 /* comic marks above the head: '!', '?', 'z', 'note', 'heart', 'drop', 'spark'. u = 0..1 pop-in progress */
@@ -400,7 +406,7 @@ function drawCat3(o) {
     g2.globalCompositeOperation = 'lighter'; g2.globalAlpha = 0.85; g2.drawImage(CB, 0, 0); g2.globalAlpha = 1; g2.globalCompositeOperation = 'source-over'; }
   // face on top
   g2.setTransform(k * (o.face || 1), 0, 0, k, COX, COY); c = g2;
-  const hp = p.sit ? [8, -82 - Math.sin(T * 1.7) * 0.6] : p.head, fp = (p.eye ?? 1) > 0.3 && !p.happy && !o.noBlink && blinkAt(T, (o.bseed || 0) + 0.37) ? { ...p, eye: 0 } : p;
+  const hp = p.sit ? [8 + (p.hdx || 0), -82 - Math.sin(T * 1.7) * 0.6 + (p.hdy || 0)] : p.head, fp = (p.eye ?? 1) > 0.3 && !p.happy && !o.noBlink && blinkAt(T, (o.bseed || 0) + 0.37) ? { ...p, eye: 0 } : p;
   c.save(); c.translate(hp[0], hp[1]); c.rotate(p.hr || 0); c.scale(p.sit ? HSS : HSR, p.sit ? HSS : HSR); face3(P, fp, o.sil); c.restore();
   c = prev; g2.setTransform(1, 0, 0, 1, 0, 0);
   // composite into scene

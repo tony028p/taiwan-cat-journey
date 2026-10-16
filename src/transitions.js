@@ -181,7 +181,7 @@ V('T15', '苗栗縣 · 三義', '勝興車站', 'Shengxing Station', '24.39°N 1
     poly([[x - 30, y - 118], [x + 60, y - 190], [x + 320, y - 190], [x + 410, y - 118]], '#3d3f45'); for (let k = 0; k < 24; k++) line(x - 20 + k * 18, y - 120, x + 60 + k * 11, y - 188, 'rgba(20,20,25,0.45)', 1);
     c.fillStyle = '#ffffff'; c.fillRect(x + 140, y - 160, 100, 26); c.fillStyle = '#222'; c.font = `700 18px ${FONTS}`; c.textAlign = 'center'; c.fillText('勝 興 驛', x + 190, y - 141);
     c.fillStyle = vg(y, H, [[0, '#9b9488'], [1, '#6a645a']]); c.fillRect(-M, y, W + 2 * M, 200); c.fillStyle = '#4a443e'; c.fillRect(-M, 572, W + 2 * M, 6); c.fillRect(-M, 590, W + 2 * M, 6); for (let k = 0; k < 40; k++) c.fillRect(-M + k * 40, 570, 18, 28); c.fillStyle = '#cfc8b8'; c.fillRect(-M, 540, W + 2 * M, 22); });
-  D(0.45, () => drawCat3({ x: 320, y: 548, s: 1.0, pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [2, 'curious']]), hr: lt > 2 ? 0.25 : -0.1, ts: 1.4 }), emote: emoAt(lt, [[2.1, 3.3, 'note']]) }));
+  D(0.45, () => drawCat3({ x: 320, y: 548, s: 1.0, pose: lt < 2.1 ? sit3(lt, groom3(lt, 0.1, 2.15)) : sit3(lt, { ...exSeq(lt, [[0, 'content'], [2, 'curious']]), hr: lt > 2 ? 0.25 : -0.1, ts: 1.4 }), emote: emoAt(lt, [[2.2, 3.4, 'note']]) }));
 });
 /* T16 客家茶園 */
 V('T16', '新竹縣 · 峨眉', '客家茶園', 'Hakka tea hills', '24.69°N 121.01°E', ['客家的茶山，一排一排綠到天邊。', 'Hakka tea hills — row after row, green all the way to the sky.'], [1.03, 1.07, 30, -30, 0, 0], function (lt) {

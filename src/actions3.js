@@ -2,6 +2,9 @@
    notices something in the scene, reacts (expression + optional comic mark), interacts with it, then settles.
    Timing is in scene-local seconds (lt); props the cat touches are drawn here so they stay in sync with it. */
 function sit3(lt, o = {}) { return { ...SITP, ...o }; }
+/* grooming: sitting cat turns its head back over the shoulder and licks its flank with long tongue strokes */
+function groom3(lt, t0, t1, o = {}) { const u = sm((lt - t0) / 0.5) * (1 - sm((lt - t1 + 0.5) / 0.5)), lick = Math.max(0, Math.sin((lt - t0) * 7)), stroke = Math.sin((lt - t0) * 7 - 0.6);
+  return { ...ex('content'), ...o, sit: 1, ts: o.ts ?? 1.1, eye: u > 0.5 ? 0 : undefined, turn: 2 * u, hdx: -17 * u, hdy: (17 + stroke * 2.5) * u, hr: (0.55 + stroke * 0.12) * u, tongue: u > 0.6 ? 0.25 + 0.75 * lick : 0 }; }
 function cross(qa, qb, u) { if (u <= 0) return drawCat3(qa); if (u >= 1) return drawCat3(qb); c.save(); c.globalAlpha *= 1 - u; drawCat3({ ...qa, shadow: false, emote: null }); c.restore(); c.save(); c.globalAlpha *= u; drawCat3(qb); c.restore(); }
 function seqWalk(q, x0, sp, t, o = {}) { q.x = x0 + t * sp; q.pose = walkPose3(walkCyc3(t * sp, q.s, o.trot), o); return q; }
 /* expression timeline: [[t0, 'name'], [t1, 'name2'], …] with short cross-fades */
@@ -17,7 +20,7 @@ function emoAt(lt, list) { const q = {}; emo(q, lt, list); return q.emote; }
 function turnAt(lt, list) { let v = 0; for (const [t0, t1, k] of list) v = Math.max(v, (k ?? 1) * sm((lt - t0) / 0.3) * (1 - sm((lt - t1 + 0.3) / 0.3))); return v; }
 const mirrored = () => c.getTransform().d < 0;
 /* world position of the nose tip (for props that land on the cat) */
-function noseW(q) { const p = q.pose, f = q.face || 1, hs = p.sit ? HSS : HSR, h = p.sit ? [8, -82] : [p.head[0] * SPX, p.head[1]], a = p.hr || 0, n = headView(p).pr(0, 1.1, 15.6);
+function noseW(q) { const p = q.pose, f = q.face || 1, hs = p.sit ? HSS : HSR, h = p.sit ? [8 + (p.hdx || 0), -82 + (p.hdy || 0)] : headPos3(p), a = p.hr || 0, n = headView(p).pr(0, 0.8, 13.9);
   return [q.x + f * q.s * (h[0] + hs * (Math.cos(a) * n[0] - Math.sin(a) * n[1])), q.y + q.s * (h[1] + hs * (Math.sin(a) * n[0] + Math.cos(a) * n[1]))]; }
 function pawW(q, k = 'fn') { const p = q.pose, f = q.face || 1; return [q.x + f * q.s * p[k][0] * (p.sit ? 1 : SPX), q.y + q.s * p[k][1]]; }
 /* jump from a to b ([x, y] ground points): 0.22 s crouch before t0, flight t0..t1, 0.25 s landing after */
@@ -230,11 +233,11 @@ function actCat(o) {
     }
     case 8: { // Qimei: the Twin Hearts are where couples come for photos — a calico curls up against our cat; heads together,
       // they gaze at the two stone hearts and doze off side by side.
-      const doze = sm((lt - 3.5) / 1.5), pp = { ...lp(LOAF3, SLEEP3, doze), ...exSeq(lt, [[0, 'content'], [3.4, 'sleepy']]) };
+      const doze = sm((lt - 3.5) / 1.5), pp = { ...lp(LOAFT3, SLEEPT3, doze), ...exSeq(lt, [[0, 'content'], [3.4, 'sleepy']]) };
       pp.eye = doze > 0.5 ? 0 : (lt < 3.4 ? 0.35 : 0.3); pp.ear = Math.max(0, Math.sin(lt * 3.3)) > 0.97 ? 0.45 : pp.ear; pp.hr = (pp.hr || 0) + Math.sin(lt * 0.5) * 0.05;
       emo(q, lt, [[0.6, 2.4, 'heart'], [4.6, 7, 'z']]);
       q.pose = pp; q.y = 546; q.x = 220;
-      const fd = sm((lt - 3.9) / 1.4), fp = { ...lp(LOAF3, SLEEP3, fd), ...exSeq(lt, [[0, 'happy'], [2.2, 'content'], [3.8, 'sleepy']]) };
+      const fd = sm((lt - 3.9) / 1.4), fp = { ...lp(LOAFT3, SLEEPT3, fd), ...exSeq(lt, [[0, 'happy'], [2.2, 'content'], [3.8, 'sleepy']]) };
       fp.eye = fd > 0.5 ? 0 : 0.4; fp.hr = (fp.hr || 0) + 0.12 + Math.sin(lt * 0.6 + 1) * 0.04; fp.head = [fp.head[0] + 2, fp.head[1] + 3];
       const fq = { x: 124, y: 538, s: s * 0.92, coat: 'calico', bseed: 8, pose: fp };
       emo(fq, lt, [[2.0, 3.6, 'heart'], [5.1, 7, 'z']]);
@@ -255,7 +258,7 @@ function actCat(o) {
       const tx = 1100 - lt * 40, y = sm((lt - 3.6) / 0.4) * (1 - sm((lt - 4.7) / 0.5)), turn = sm((lt - 2.1) / 0.3) * (1 - sm((lt - 3.3) / 0.4));
       q.after = () => { if (lt > 1.9 && lt < 3.4) { puff(tx + 6, 520, (lt - 1.9) / 1.5, 0.8); emote3('note', tx + 30, 500, 0.9, clamp((lt - 2.0) / 0.35), 1 - sm((lt - 3.0) / 0.3)); } };
       emo(q, lt, [[2.15, 2.9, '!', 0.9]]);
-      q.pose = sit3(lt, { ...exSeq(lt, [[0, 'content'], [2.1, 'surprised'], [3.3, 'neutral'], [4.8, 'content']]), hr: lerp(-0.1, 0.18, turn) + lerp(0, -0.6, y), mouth: y, eye: y > 0.3 ? 0 : undefined, ear: turn > 0.1 ? -0.3 : 0, seed: 9 }); break;
+      q.pose = lt > 4.8 ? sit3(lt, groom3(lt, 4.85, 7.2, { seed: 9 })) : sit3(lt, { ...exSeq(lt, [[0, 'content'], [2.1, 'surprised'], [3.3, 'neutral'], [4.8, 'content']]), hr: lerp(-0.1, 0.18, turn) + lerp(0, -0.6, y), mouth: y, eye: y > 0.3 ? 0 : undefined, ear: turn > 0.1 ? -0.3 : 0, seed: 9 }); break;
     }
     case 11: { // Hinoki Village (people come to stroll the Japanese-era houses in yukata): big stretch, sniff and cheek-rub the cypress post,
       // then a tuxedo cat napping on the porch wakes up — a nose boop, the cat way of saying hello.
@@ -298,7 +301,7 @@ function actCat(o) {
       q.after = () => { if (lt > 0.5 && lt < 5) dragonfly(dx, dy, 1.1, lt, lt < 2.0 || lt > 3.3 ? 1 : -1); };
       const swat = bumpT(lt, 3.05, 3.45), ph = lt * 4.5, a = 0.5 + 0.5 * Math.sin(ph);
       if (lt < 3.6) q.pose = sit3(lt, { ...exSeq(lt, [[0, 'content'], [1.2, 'curious'], [3.3, 'surprised']]), look: lt > 1.6 ? [1.2, 0.2] : [0.4, -0.2], hr: lt > 1.6 && lt < 3.3 ? -0.08 + Math.sin(lt * 2) * 0.05 : -0.05, paw: swat > 0.02 ? [lerp(16, 34, swat), lerp(-10, -84, swat), 1] : null });
-      else if (lt < 5.2) q.pose = sit3(lt, { ...ex('content'), eye: 0, hr: 0.15 + a * 0.25, paw: [22 + a * 4, -86 + a * 8, 1] });
+      else if (lt < 5.2) q.pose = sit3(lt, groom3(lt, 3.55, 5.35));
       else q.pose = sit3(lt, { ...ex('blep'), eye: 0.7, turn: turnAt(lt, [[5.2, 7, 1]]) });
       break;
     }
@@ -400,7 +403,7 @@ function actCat(o) {
     case 22: { // home: walks in, looks up at the city lights one more time, curls up, falls asleep — and dreams of the friends it made
       emo(q, lt, [[2.6, 3.8, 'heart'], [5.4, 6.1, 'z']]);
       if (lt < 2.4) { seqWalk(q, 250, 30, lt); Object.assign(q.pose, ex('content', 0.7)); return drawCat3(q); }
-      const x = 250 + 2.4 * 30, lk = sm((lt - 2.4) / 0.4), sl = sm((lt - 4.2) / 2.5), pp = { ...lp(LOAF3, SLEEP3, sl), ...exSeq(lt, [[3.6, 'content'], [4.8, 'sleepy'], [6.4, 'content']]) };
+      const x = 250 + 2.4 * 30, lk = sm((lt - 2.4) / 0.4), sl = sm((lt - 4.2) / 2.5), pp = { ...lp(LOAFT3, SLEEPT3, sl), ...exSeq(lt, [[3.6, 'content'], [4.8, 'sleepy'], [6.4, 'content']]) };
       pp.eye = lt > 5.4 ? 0 : (lt > 4.8 ? 0.3 : 0.4);
       cross({ ...q, x, pose: { ...STAND3, ...ex('happy'), hr: -0.25 * lk, head: [56, -74], turn: turnAt(lt, [[2.5, 4.2, 0.55]]) } }, { ...q, x: x + 10, emote: q.emote, pose: pp }, sm((lt - 3.6) / 0.5));
       const du = clamp((lt - 6.0) / 2.2) * (1 - sm((lt - 8.7) / 0.5)); dreamBubble(x + 10 + 40 * q.s, q.y - 66 * q.s, 1.35, du);
