@@ -13,11 +13,13 @@ function exSeq(lt, seq, d = 0.25) {
 /* comic marks: [[t0, t1, kind, scale?], …] */
 function emo(q, lt, list) { for (const [t0, t1, k, sc] of list) if (lt >= t0 && lt < t1) q.emote = { k, u: clamp((lt - t0) / 0.35), a: 1 - sm((lt - t1 + 0.3) / 0.3), s: sc || 1 }; }
 function emoAt(lt, list) { const q = {}; emo(q, lt, list); return q.emote; }
+/* head turned toward the camera: [[t0, t1, amount], …] with 0.3 s ramps */
+function turnAt(lt, list) { let v = 0; for (const [t0, t1, k] of list) v = Math.max(v, (k ?? 1) * sm((lt - t0) / 0.3) * (1 - sm((lt - t1 + 0.3) / 0.3))); return v; }
 const mirrored = () => c.getTransform().d < 0;
 /* world position of the nose tip (for props that land on the cat) */
-function noseW(q) { const p = q.pose, f = q.face || 1, hs = p.sit ? HSS : HSR, h = p.sit ? [8, -82] : p.head, a = p.hr || 0;
-  return [q.x + f * q.s * (h[0] + hs * (Math.cos(a) * 16.5 - Math.sin(a) * 0.5)), q.y + q.s * (h[1] + hs * (Math.sin(a) * 16.5 + Math.cos(a) * 0.5))]; }
-function pawW(q, k = 'fn') { const p = q.pose, f = q.face || 1; return [q.x + f * q.s * p[k][0], q.y + q.s * p[k][1]]; }
+function noseW(q) { const p = q.pose, f = q.face || 1, hs = p.sit ? HSS : HSR, h = p.sit ? [8, -82] : [p.head[0] * SPX, p.head[1]], a = p.hr || 0, n = headView(p).pr(0, 1.1, 15.6);
+  return [q.x + f * q.s * (h[0] + hs * (Math.cos(a) * n[0] - Math.sin(a) * n[1])), q.y + q.s * (h[1] + hs * (Math.sin(a) * n[0] + Math.cos(a) * n[1]))]; }
+function pawW(q, k = 'fn') { const p = q.pose, f = q.face || 1; return [q.x + f * q.s * p[k][0] * (p.sit ? 1 : SPX), q.y + q.s * p[k][1]]; }
 /* jump from a to b ([x, y] ground points): 0.22 s crouch before t0, flight t0..t1, 0.25 s landing after */
 function jumpArc(q, lt, t0, t1, a, b, h) {
   const u = clamp((lt - t0) / (t1 - t0)); h = h ?? (22 + Math.max(0, a[1] - b[1]) * 0.35);
@@ -105,7 +107,7 @@ function dreamBubble(x, y, s, u) {
   [[x + 6, y + 30, 3], [x + 14, y + 16, 5]].forEach(([bx, by, r]) => disc(bx, by, r * s, 'rgba(255,250,240,0.85)'));
   const cx = x + 70 * s, cy = y - 40 * s; c.fillStyle = 'rgba(255,250,240,0.9)'; c.beginPath();
   [[-60, 6, 30], [-28, -16, 34], [12, -22, 36], [52, -10, 32], [70, 14, 26], [30, 22, 32], [-14, 24, 32], [-52, 22, 24]].forEach(([dx, dy, r]) => { c.moveTo(cx + (dx + r) * s, cy + dy * s); c.arc(cx + dx * s, cy + dy * s, r * s, 0, TAU); }); c.fill();
-  ['black', 'white', 'grey', 'calico', 'tuxedo'].forEach((k, i) => { const P = COATS[k], pose = { ...ex('happy'), hr: Math.sin(T * 1.5 + i) * 0.08, ear: 0 }, hx = cx + (-58 + i * 29) * s, hy = cy + (6 - Math.sin(i / 4 * Math.PI) * 14) * s, hs = 0.95 * s;
+  ['black', 'white', 'grey', 'calico', 'tuxedo'].forEach((k, i) => { const P = COATS[k], pose = { ...ex('happy'), turn: 1, hr: Math.sin(T * 1.5 + i) * 0.08, ear: 0 }, hx = cx + (-58 + i * 29) * s, hy = cy + (6 - Math.sin(i / 4 * Math.PI) * 14) * s, hs = 0.95 * s;
     const pop = clamp(u * 5 - i * 0.6); if (pop <= 0) return; c.save(); c.translate(hx, hy); c.scale(hs * easeOut(pop), hs * easeOut(pop));
     c.save(); c.scale(1.08, 1.08); headSil(pose, { ...P, base: P.line }, [0, 0], 1); c.restore(); headSil(pose, P, [0, 0], 1); face3(P, pose, false); c.restore(); });
   c.restore();
@@ -119,7 +121,7 @@ function actCat(o) {
     case 0: { // dawn on Xiangshan: dozing → ear twitch → wakes → yawn → stretch → walks off
       emo(q, lt, [[0.4, 2.5, 'z']]);
       if (lt < 5.4) { const y = sm((lt - 3.9) / 0.35) * (1 - sm((lt - 5.0) / 0.4)), wake = sm((lt - 2.5) / 0.5);
-        q.pose = sit3(lt, { ...exSeq(lt, [[0, 'sleepy'], [2.6, 'neutral'], [3.7, 'sleepy']]), eye: lt < 2.5 ? 0 : (y > 0.3 ? 0 : undefined), hr: lerp(0.2 + Math.sin(lt * 1.3) * 0.03, -0.06, wake) + lerp(0, -0.5, y), mouth: y, ear: lt > 2.2 && lt < 2.45 ? -0.35 : (lt < 2.5 ? 0.15 : 0), ts: 1.1 });
+        q.pose = sit3(lt, { ...exSeq(lt, [[0, 'sleepy'], [2.6, 'neutral'], [3.7, 'sleepy']]), eye: lt < 2.5 ? 0 : (y > 0.3 ? 0 : undefined), hr: lerp(0.2 + Math.sin(lt * 1.3) * 0.03, -0.06, wake) + lerp(0, -0.5, y), mouth: y, ear: lt > 2.2 && lt < 2.45 ? -0.35 : (lt < 2.5 ? 0.15 : 0), ts: 1.1, turn: turnAt(lt, [[2.7, 3.8, 0.85]]) });
         return drawCat3(q); }
       const u = sm((lt - 5.4) / 0.35), st = sm((lt - 5.7) / 0.7) * (1 - sm((lt - 6.9) / 0.6));
       const qb = { ...q, x: q.x + 8, pose: { ...lp(STAND3, STRETCH3, st), ...ex('content') } }; if (lt > 7.2) { seqWalk(qb, q.x + 8, 32, lt - 7.2); Object.assign(qb.pose, ex('happy', 0.6)); }
@@ -153,7 +155,7 @@ function actCat(o) {
       else if (lt < 3.65) { const u = (lt - 3.0) / 0.65; q.pose = { ...lp(CROUCH3, LEAP3, sm(u * 2)), ...ex('focused'), ear: 0.3 }; q.x = 250 + u * 110; q.y = 594 - Math.sin(u * Math.PI) * 60; q.shadowA = 0.18; }
       else if (lt < 4.4) { const u = sm((lt - 3.65) / 0.25), lk = sm((lt - 3.8) / 0.4); q.pose = { ...lp(LAND3, { ...STAND3, hr: -0.6 * lk, head: [56, -74] }, u), ...exSeq(lt, [[3.65, 'surprised'], [4.1, 'sad']]), look: [0.6, -0.8] }; q.x = 360; }
       else if (lt < 5.25) { jumpArc(q, lt, 4.62, 5.0, [360, 594], top); Object.assign(q.pose, exSeq(lt, [[4.4, 'focused'], [5.0, 'happy']])); }
-      else { const qa = { ...q, x: top[0], y: top[1], pose: { ...STAND3, ...ex('happy') } }; return cross(qa, { ...qa, x: top[0] - 4, shadow: false, pose: sit3(lt, { ...ex('content'), hr: -0.25, ts: 1.6 }) }, sm((lt - 5.25) / 0.3)), q.after(); }
+      else { const qa = { ...q, x: top[0], y: top[1], pose: { ...STAND3, ...ex('happy') } }; return cross(qa, { ...qa, x: top[0] - 4, shadow: false, pose: sit3(lt, { ...ex('content'), hr: -0.1, ts: 1.6, turn: turnAt(lt, [[5.4, 7, 0.9]]) }) }, sm((lt - 5.25) / 0.3)), q.after(); }
       break;
     }
     case 3: { // Yilan: a crab wanders up; one curious pat and it bolts — then back to washing, facing the sunrise
@@ -187,7 +189,7 @@ function actCat(o) {
       if (lt < 2.4) { seqWalk(q, 250, 30, lt); Object.assign(q.pose, exSeq(lt, [[0, 'neutral'], [1.7, 'curious']])); }
       else if (lt < 3.8) { const u = sm((lt - 2.4) / 0.5); q.x = 250 + 72; q.pose = { ...lp(STAND3, CROUCH3, u), ...ex('focused') }; q.pose.hip = [q.pose.hip[0] + (lt > 3 ? Math.sin(lt * 24) * 3 : 0), q.pose.hip[1]]; q.pose.hr = -0.3; }
       else if (lt < 4.5) { const u = (lt - 3.8) / 0.7; q.pose = { ...lp(CROUCH3, LEAP3, sm(u * 1.6)), ...ex('focused') }; q.x = 322 + u * 130; q.y = 582 - Math.sin(u * Math.PI) * 80; q.shadowA = 0.15; }
-      else { const u = sm((lt - 4.5) / 0.3), dn = sm((lt - 5.0) / 0.5), bk = bumpT(lt, 4.5, 4.9); q.pose = { ...lp(LAND3, { ...STAND3, hr: lerp(-0.2, -0.05, dn), head: [56, lerp(-74, -70, dn)] }, u), ...exSeq(lt, [[4.5, 'surprised'], [5.1, 'curious'], [5.45, 'delighted']]), look: [lerp(0.5, 1.1, dn), lerp(-0.4, 0.7, dn)] }; q.x = 452 - bk * 6; }
+      else { const u = sm((lt - 4.5) / 0.3), dn = sm((lt - 5.0) / 0.5), bk = bumpT(lt, 4.5, 4.9); q.pose = { ...lp(LAND3, { ...STAND3, hr: lerp(-0.2, -0.05, dn), head: [56, lerp(-74, -70, dn)] }, u), ...exSeq(lt, [[4.5, 'surprised'], [5.1, 'curious'], [5.45, 'delighted']]), look: [lerp(0.5, 1.1, dn), lerp(-0.4, 0.7, dn)], turn: turnAt(lt, [[5.5, 7, 0.6]]) }; q.x = 452 - bk * 6; }
       // the white cat
       const fq = { x: 700, y: 582, s, face: -1, coat: 'white', bseed: 5, shadowA: 0.25 };
       if (lt < 2.4) fq.pose = sit3(lt, { ...exSeq(lt, [[0, 'content'], [1.5, 'curious']]), hr: lt > 1.5 ? -0.3 : -0.05, ts: 1.3 });
@@ -264,8 +266,8 @@ function actCat(o) {
       else if (lt < 2.3) { seqWalk(q, 230, 30, lt - 1.6); Object.assign(q.pose, ex('curious')); }
       else if (lt < 3.7) { const x = 230 + 0.7 * 30, sn = sm((lt - 2.3) / 0.4), rub = lt > 3.0 ? Math.sin((lt - 3.0) * 7) : 0, rb = sm((lt - 3.0) / 0.3);
         q.x = x; q.pose = { ...lp(walkPose3(walkCyc3(0.7 * 30, s)), { ...STAND3, head: [58 + sn * 3, -66 - rub * 4 * rb], hr: lerp(0.1, -0.25 + rub * 0.12, rb) }, sn), ...exSeq(lt, [[2.3, 'curious'], [2.7, 'content'], [3.0, 'happy']]) }; }
-      else if (lt < 4.5) { seqWalk(q, 251, 30, lt - 3.7); Object.assign(q.pose, ex('curious')); }
-      else { const bp = sm((lt - 4.5) / 0.3) * (1 - sm((lt - 5.3) / 0.4)); q.x = 275; q.pose = { ...STAND3, ...exSeq(lt, [[4.5, 'curious'], [4.8, 'happy']]), head: [56 + bp * 4, -70 + bp * 3], hr: 0.1 }; }
+      else if (lt < 4.5) { seqWalk(q, 251, 41, lt - 3.7); Object.assign(q.pose, ex('curious')); }
+      else { const bp = sm((lt - 4.5) / 0.3) * (1 - sm((lt - 5.3) / 0.4)); q.x = 284; q.pose = { ...STAND3, ...exSeq(lt, [[4.5, 'curious'], [4.8, 'happy']]), head: [56 + bp * 4, -70 + bp * 3], hr: 0.1 }; }
       const wake = sm((lt - 3.9) / 0.4), fb = sm((lt - 4.55) / 0.3) * (1 - sm((lt - 5.3) / 0.4)), fp = { ...lp(SLEEP3, LOAF3, wake), ...exSeq(lt, [[0, 'sleepy'], [3.9, 'surprised'], [4.5, 'curious'], [4.8, 'happy']]) };
       fp.eye = wake < 0.3 ? 0 : undefined; fp.head = [fp.head[0] + fb * 5, fp.head[1] + fb * 2];
       const fq = { x: fx, y: 516, s, face: -1, coat: 'tuxedo', bseed: 12, rim: '255,230,180', pose: fp };
@@ -283,7 +285,7 @@ function actCat(o) {
       emo(q, lt, [[3.3, 4.4, '!'], [4.8, 5.8, 'drop']]);
       if (lt < wt) { q.pose = walkPose3(walkCyc3(wd, s)); Object.assign(q.pose, ex('content', 0.6)); }
       else if (lt < 5.2) { const jump = bumpT(lt, 3.25, 3.75), puffd = sm((lt - 3.25) / 0.15) * (1 - sm((lt - 4.5) / 0.6));
-        q.pose = { ...lp(STAND3, SCARED3, puffd), ...exSeq(lt, [[3.2, 'scared'], [4.5, 'annoyed']]) }; q.y -= jump * 26; q.shadowA = 0.32 - jump * 0.15; }
+        q.pose = { ...lp(STAND3, SCARED3, puffd), ...exSeq(lt, [[3.2, 'scared'], [4.5, 'annoyed']]), turn: turnAt(lt, [[3.3, 4.0, 0.7], [4.55, 5.3, 1]]) }; q.y -= jump * 26; q.shadowA = 0.32 - jump * 0.15; }
       else { q.pose = walkPose3(walkCyc3(wd, s)); Object.assign(q.pose, exSeq(lt, [[5.2, 'annoyed'], [5.9, 'neutral']])); }
       break;
     }
@@ -297,7 +299,7 @@ function actCat(o) {
       const swat = bumpT(lt, 3.05, 3.45), ph = lt * 4.5, a = 0.5 + 0.5 * Math.sin(ph);
       if (lt < 3.6) q.pose = sit3(lt, { ...exSeq(lt, [[0, 'content'], [1.2, 'curious'], [3.3, 'surprised']]), look: lt > 1.6 ? [1.2, 0.2] : [0.4, -0.2], hr: lt > 1.6 && lt < 3.3 ? -0.08 + Math.sin(lt * 2) * 0.05 : -0.05, paw: swat > 0.02 ? [lerp(16, 34, swat), lerp(-10, -84, swat), 1] : null });
       else if (lt < 5.2) q.pose = sit3(lt, { ...ex('content'), eye: 0, hr: 0.15 + a * 0.25, paw: [22 + a * 4, -86 + a * 8, 1] });
-      else q.pose = sit3(lt, { ...ex('blep'), eye: 0.3 });
+      else q.pose = sit3(lt, { ...ex('blep'), eye: 0.7, turn: turnAt(lt, [[5.2, 7, 1]]) });
       break;
     }
     case 15: { // Gaomei: a fiddler crab pops out of its hole — the cat jumps back, sniffs, gets waved at, crab ducks away
@@ -323,7 +325,7 @@ function actCat(o) {
       q.x = 470; q.y = 600;
       q.pose = sit3(lt, { ...exSeq(lt, [[0, 'delighted'], [2.6, 'curious'], [3.75, 'neutral'], [4.25, 'surprised'], [4.9, 'happy']]), look: lt > 2.9 && lt < 3.9 ? [1, 0.9] : [0.3, -0.3],
         hr: lt < 2.6 ? -0.35 - sw * 0.1 : lt < 3.75 ? lerp(-0.35, 0.05, sm((lt - 2.6) / 0.5)) - sm((lt - 3.5) / 0.3) * 0.25 + sn * 0.6 : sn * 0.6 - 0.05, paw: sw > 0.05 ? [30 + sw * 14, -50 - sw * 40, 1] : null, ts: 2.4,
-        eye: lt > 3.6 && lt < 4.3 ? 0 : undefined, mouth: lt > 3.85 && lt < 4.3 ? sn * 0.7 : 0 });
+        eye: lt > 3.6 && lt < 4.3 ? 0 : undefined, mouth: lt > 3.85 && lt < 4.3 ? sn * 0.7 : 0, turn: turnAt(lt, [[4.25, 5.6, 0.9]]) });
       emo(q, lt, [[4.25, 4.95, '!'], [5.0, 6.2, 'note']]);
       const n = noseW(q), lv = sm((lt - 2.6) / 0.9), fly = clamp((lt - 4.0) / 0.8);
       const bx = lt < 4.0 ? lerp(n[0] + 30, n[0] + 1, lv) + Math.sin(lt * 4) * 14 * (1 - lv) : n[0] + 2 + fly * 80, by = lt < 4.0 ? lerp(n[1] - 90, n[1] - 3, lv) : n[1] - 3 - Math.sin(fly * Math.PI) * 40 + fly * 50;
@@ -347,7 +349,7 @@ function actCat(o) {
       q.before = () => { if (lt > 1.8 && lt < 4.4) { c.save(); c.globalCompositeOperation = 'lighter'; const g = c.createRadialGradient(lx, 585, 0, lx, 585, 220); g.addColorStop(0, 'rgba(255,240,200,0.32)'); g.addColorStop(1, 'rgba(255,240,200,0)'); c.fillStyle = g; c.fillRect(lx - 220, 400, 440, 300); c.restore(); glow(lx + 40, 590, 26, '255,250,225', 0.9); } };
       emo(q, lt, [[2.35, 3.2, '!']]);
       const follow = sm((lt - 2.6) / 0.6) * (1 - sm((lt - 4.4) / 0.6));
-      q.pose = sit3(lt, { ...exSeq(lt, [[0, 'content'], [2.3, 'surprised'], [3.3, 'curious'], [4.6, 'content']]), shine: lgt, hr: lerp(-0.18, 0.05, follow), look: [lerp(0.2, 0.9, follow), 0], ts: 2.0 });
+      q.pose = sit3(lt, { ...exSeq(lt, [[0, 'content'], [2.3, 'surprised'], [3.3, 'curious'], [4.6, 'content']]), shine: lgt, hr: lerp(-0.18, 0.05, follow), look: [lerp(0.2, 0.9, follow), 0], ts: 2.0, turn: turnAt(lt, [[2.2, 3.3, 0.8]]) });
       break;
     }
     case 19: { // Taoyuan: the plane roars overhead — ears flat — then it jumps onto the fence rail to watch it climb away
@@ -400,7 +402,7 @@ function actCat(o) {
       if (lt < 2.4) { seqWalk(q, 250, 30, lt); Object.assign(q.pose, ex('content', 0.7)); return drawCat3(q); }
       const x = 250 + 2.4 * 30, lk = sm((lt - 2.4) / 0.4), sl = sm((lt - 4.2) / 2.5), pp = { ...lp(LOAF3, SLEEP3, sl), ...exSeq(lt, [[3.6, 'content'], [4.8, 'sleepy'], [6.4, 'content']]) };
       pp.eye = lt > 5.4 ? 0 : (lt > 4.8 ? 0.3 : 0.4);
-      cross({ ...q, x, pose: { ...STAND3, ...ex('happy'), hr: -0.35 * lk, head: [56, -74] } }, { ...q, x: x + 10, emote: q.emote, pose: pp }, sm((lt - 3.6) / 0.5));
+      cross({ ...q, x, pose: { ...STAND3, ...ex('happy'), hr: -0.25 * lk, head: [56, -74], turn: turnAt(lt, [[2.5, 4.2, 0.55]]) } }, { ...q, x: x + 10, emote: q.emote, pose: pp }, sm((lt - 3.6) / 0.5));
       const du = clamp((lt - 6.0) / 2.2) * (1 - sm((lt - 8.7) / 0.5)); dreamBubble(x + 10 + 40 * q.s, q.y - 66 * q.s, 1.35, du);
       return;
     }
