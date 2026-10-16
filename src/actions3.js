@@ -22,7 +22,7 @@ const mirrored = () => c.getTransform().d < 0;
 /* world position of the nose tip (for props that land on the cat) */
 function noseW(q) { const p = q.pose, f = q.face || 1, hs = p.sit ? HSS : HSR, h = p.sit ? [8 + (p.hdx || 0), -82 + (p.hdy || 0)] : headPos3(p), a = p.hr || 0, n = headView(p).pr(0, 0.8, 13.9);
   return [q.x + f * q.s * (h[0] + hs * (Math.cos(a) * n[0] - Math.sin(a) * n[1])), q.y + q.s * (h[1] + hs * (Math.sin(a) * n[0] + Math.cos(a) * n[1]))]; }
-function pawW(q, k = 'fn') { const p = q.pose, f = q.face || 1; return [q.x + f * q.s * p[k][0] * (p.sit ? 1 : SPX), q.y + q.s * p[k][1]]; }
+function pawW(q, k = 'fn') { const p = q.pose, f = q.face || 1; return [q.x + f * q.s * p[k][0] * (p.sit ? 1 : SPX), q.y + q.s * p[k][1] * (p.sit ? 1 : SPY)]; }
 /* jump from a to b ([x, y] ground points): 0.22 s crouch before t0, flight t0..t1, 0.25 s landing after */
 function jumpArc(q, lt, t0, t1, a, b, h) {
   const u = clamp((lt - t0) / (t1 - t0)); h = h ?? (22 + Math.max(0, a[1] - b[1]) * 0.35);

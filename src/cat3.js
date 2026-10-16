@@ -90,9 +90,11 @@ function gallopPose3(cyc) {
 function gallopCyc3(dist, s) { return dist / (GLC * s * SPX); }
 /* rig poses are authored long; they are drawn compressed along x by SPX for a compact, cat-like torso */
 const SPX = 0.86;
+/* …and lowered by SPY with legs shortened to match (LEG), so the torso is as deep as the legs are long, not on stilts */
+const SPY = 0.88, LEG = 0.88;
 /* the head sits low on the shoulders (no giraffe neck): 20% closer to the withers than authored */
-function headPos3(p) { const sx = p.sh[0] * SPX, hx = p.head[0] * SPX; return [lerp(sx, hx, 0.8) + 2, lerp(p.sh[1], p.head[1], 0.8) + 2]; }
-function squashX(p) { if (p.sit) return p; const q = { ...p }; ['hip', 'sh'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1]]); q.head = headPos3(p); ['fn', 'ff', 'hn', 'hf'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1], p[k][2]]); return q; }
+function headPos3(p) { const sx = p.sh[0] * SPX, hx = p.head[0] * SPX; return [lerp(sx, hx, 0.8) + 2, lerp(p.sh[1], p.head[1], 0.8) * SPY + 2]; }
+function squashX(p) { if (p.sit) return p; const q = { ...p }; ['hip', 'sh'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1] * SPY]); q.head = headPos3(p); ['fn', 'ff', 'hn', 'hf'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1] * SPY, p[k][2]]); return q; }
 
 function bodyGeom3(p) {
   const H = p.hip, Sh = p.sh, dx = Sh[0] - H[0], dy = Sh[1] - H[1], L = Math.hypot(dx, dy), t = [dx / L, dy / L], n = [t[1], -t[0]];
@@ -100,10 +102,11 @@ function bodyGeom3(p) {
   const sp = u => { const a = 4 * u * (1 - u) * (p.arch || 0); return [H[0] + dx * u + n[0] * a, H[1] + dy * u + n[1] * a]; };
   const at = (u, k) => { const q = sp(u); return [q[0] + n[0] * k, q[1] + n[1] * k]; };
   const top = u => (10.5 + 1.6 * Math.sin(clamp(u) * Math.PI) + 1.2 * sm(clamp((u - 0.7) / 0.3))) * g0 + sb * Math.exp(-Math.pow((u - 0.86) / 0.09, 2)) + hb * Math.exp(-Math.pow((u - 0.06) / 0.1, 2));
-  const bot = u => (u < 0.48 ? lerp(12, 8.6, sm(clamp((u + 0.05) / 0.5))) : lerp(8.6, 17, sm(clamp((u - 0.48) / 0.47)))) * br * g0;
+  // belly: one soft, nearly level line (a slight pouch in front of the haunch) rising only into the deep chest — no wasp waist
+  const bot = u => (13.6 + 1.1 * Math.exp(-Math.pow((u - 0.26) / 0.2, 2)) + 4.2 * sm(clamp((u - 0.5) / 0.45)) - 3 * sm(clamp((0.08 - u) / 0.2))) * br * g0;
   const TP = [], BP = [];
   for (let u = -0.12; u <= 1.1001; u += 0.04) { TP.push(at(u, top(u))); BP.push(at(u, -bot(u))); }
-  const front = [at(1.19, 8), at(1.24, -3), at(1.17, -13)], rear = [at(-0.18, -9), at(-0.21, 1), at(-0.17, 10)];
+  const front = [at(1.19, 8), at(1.24, -3), at(1.17, -13)], rear = [at(-0.17, -9), at(-0.205, -3.5), at(-0.215, 2.5), at(-0.185, 8.5)];
   return { H, Sh, t, n, L, sp, at, top, bot, TP, BP, pts: [...TP, ...front, ...BP.slice().reverse(), ...rear] };
 }
 function taper(a, b, wa, wb) { const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
@@ -118,23 +121,23 @@ function fore3(B, tg, part = 3) {
   const f = tg[2], toe = [tg[0], tg[1]];
   const pas = f >= 0 ? lp([3, 7], [-6, 4], Math.min(1, f)) : lp([3, 7], [9, 2], Math.min(1, -f));
   const root = [B.Sh[0] - B.t[0] * 3 - B.n[0] * 2, B.Sh[1] - B.t[1] * 3 - B.n[1] * 2];
-  const W = reach(root, [toe[0] - pas[0], toe[1] - pas[1]], 40), el = ik(root, W, 19.5, 21, -1), T2 = [W[0] + pas[0], W[1] + pas[1]];
+  const W = reach(root, [toe[0] - pas[0], toe[1] - pas[1]], 40 * LEG), el = ik(root, W, 19.5 * LEG, 21 * LEG, -1), T2 = [W[0] + pas[0], W[1] + pas[1]];
   const pa = Math.atan2(pas[1], pas[0]) - Math.PI / 2 + 0.3;
   if (part & 1) limbSeg(root, el, 14, 8.6, 2);
-  if (part & 2) { limbSeg(el, W, 7.6, 5.4, 1); taper(W, T2, 5.3, 5); c.beginPath(); c.ellipse(T2[0] + 1.2, T2[1] - 2.3, 4.9, 3, pa, 0, TAU); c.fill(); }
+  if (part & 2) { limbSeg(el, W, 8.2, 5.9, 1); taper(W, T2, 5.7, 5.3); c.beginPath(); c.ellipse(T2[0] + 1.2, T2[1] - 2.3, 4.9, 3, pa, 0, TAU); c.fill(); }
   return { root, el, W, T2, pa };
 }
 function hind3(B, tg, part = 3) {
   const f = tg[2], toe = [tg[0], tg[1]];
-  const off = f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1));
+  const off = (f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1))).map(v => v * LEG);
   const root = [B.H[0] - B.t[0] * 1 - B.n[0] * 3, B.H[1] - B.t[1] * 1 - B.n[1] * 3];
-  const hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4), kn = ik(root, hk, 17.5, 19, 1);
+  const hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4 * LEG), kn = ik(root, hk, 17.5 * LEG, 19 * LEG, 1);
   if (part & 1) limbSeg(root, kn, 22, 10.5, 3);
-  if (part & 2) { limbSeg(kn, hk, 9.5, 5.6, 2.2); taper(hk, toe, 5.4, 4.8); c.beginPath(); c.ellipse(toe[0] + 1.5, toe[1] - 2.1, 5.1, 2.8, 0, 0, TAU); c.fill(); }
+  if (part & 2) { limbSeg(kn, hk, 10, 6, 2.2); taper(hk, toe, 5.8, 5.1); c.beginPath(); c.ellipse(toe[0] + 1.5, toe[1] - 2.1, 5.1, 2.8, 0, 0, TAU); c.fill(); }
   return { root, kn, hk, toe };
 }
-function hind3Geom(B, tg) { const f = tg[2], toe = [tg[0], tg[1]], off = f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1));
-  const root = [B.H[0] - B.t[0] * 1 - B.n[0] * 3, B.H[1] - B.t[1] * 1 - B.n[1] * 3], hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4); return { root, kn: ik(root, hk, 17.5, 19, 1), hk }; }
+function hind3Geom(B, tg) { const f = tg[2], toe = [tg[0], tg[1]], off = (f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1))).map(v => v * LEG);
+  const root = [B.H[0] - B.t[0] * 1 - B.n[0] * 3, B.H[1] - B.t[1] * 1 - B.n[1] * 3], hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4 * LEG); return { root, kn: ik(root, hk, 17.5 * LEG, 19 * LEG, 1), hk }; }
 /* fill the notch between the rump and the shin so the back of the hind leg reads as one convex contour (rump → heel) */
 function hindWeb(B, hl, hc, p) {
   const t = B.t, n = B.n, rx = 14, ry = 14.2 * (p.g || 1), dx = hl.hk[0] - hl.kn[0], dy = hl.hk[1] - hl.kn[1], L = Math.hypot(dx, dy) || 1;
@@ -246,7 +249,8 @@ function shadeBody3(B, p, P) {
     c.strokeStyle = P.stripe; c.lineCap = 'round';
     [-0.06, 0.16, 0.38, 0.6, 0.8].forEach((u, i) => { const j = hash(i * 7.1) - 0.5, a = B.at(u + j * 0.03, B.top(u) + 1), b2 = B.at(u + 0.06, 2), d = B.at(u + 0.015 + j * 0.03, -5 - j * 6);
       c.lineWidth = (i === 0 ? 4.6 : 3.4) + j * 1.4; c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(b2[0], b2[1], d[0], d[1]); c.stroke(); });
-    c.lineWidth = 2.2; const a = B.at(0.95, 8), b = B.at(0.2, 9); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
+    // dorsal stripe follows the topline
+    c.lineWidth = 2.2; c.beginPath(); for (let u = 0.2; u <= 0.951; u += 0.05) { const q = B.at(u, B.top(u) - 3.2); u === 0.2 ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); } c.stroke();
   }
   if (P.patches) P.patches.forEach(([u, k, rx, ry, col]) => { const q = B.at(u, k); c.fillStyle = col; c.beginPath(); c.ellipse(q[0], q[1], rx, ry, Math.atan2(B.t[1], B.t[0]), 0, TAU); c.fill(); });
   // cream underside with a furry edge
@@ -258,7 +262,9 @@ function shadeBody3(B, p, P) {
   for (let u = -0.3; u <= 1.32; u += 0.04) { const q = B.at(u, -B.bot(clamp(u, -0.14, 1.1)) + 2.2 * sm((u - 0.1) / 0.2)); first ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); first = false; }
   c.lineTo(e1[0], e1[1]); c.lineTo(e0[0], e0[1]); c.closePath(); c.fill(); c.globalAlpha = 1;
   // top light
-  c.fillStyle = P.light; c.beginPath(); c.moveTo(B.TP[0][0] + B.n[0] * 10, B.TP[0][1] + B.n[1] * 10); B.TP.forEach(q => c.lineTo(q[0] - B.n[0] * 5, q[1] - B.n[1] * 5)); const lq = B.TP[B.TP.length - 1]; c.lineTo(lq[0] + B.n[0] * 10, lq[1] + B.n[1] * 10); c.closePath(); c.fill();
+  // top light, feathered in three bands so it has no hard lower edge
+  c.fillStyle = P.light; const lq = B.TP[B.TP.length - 1];
+  [[2.5, 0.45], [4.5, 0.35], [6.5, 0.25]].forEach(([d, al]) => { c.globalAlpha = al; c.beginPath(); c.moveTo(B.TP[0][0] + B.n[0] * 10, B.TP[0][1] + B.n[1] * 10); B.TP.forEach(q => c.lineTo(q[0] - B.n[0] * d, q[1] - B.n[1] * d)); c.lineTo(lq[0] + B.n[0] * 10, lq[1] + B.n[1] * 10); c.closePath(); c.fill(); }); c.globalAlpha = 1;
 }
 /* near-leg shading on CB3 (source-atop): stripes on thigh/forearm/shin, lighter paws, a shadow under the thigh */
 function shadeLegs3(B, hl, fl, p, P) {
