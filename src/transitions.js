@@ -56,7 +56,7 @@ V('T3', '宜蘭 → 花蓮', '蘇花海岸 · 臺鐵', 'Along the Suhua coast by
     c.beginPath(); c.moveTo(-M, H); for (let x = -M; x <= W + M; x += 6) { const y = f(x); c.lineTo(x, (x + off) % 900 < 520 ? y : 420); } c.lineTo(W + M, H); c.closePath(); c.fillStyle = vg(250, 520, [[0, '#4f7a4a'], [1, '#3a5d3c']]); c.fill();
     c.fillStyle = '#6b6b6b'; c.fillRect(-M, 500, W + 2 * M, 40); for (let x = -mod(off * 2, 80); x < W; x += 80) { c.fillStyle = '#4a4a4a'; c.fillRect(x, 500, 6, 40); }
   }, '#d8cfc0', '#857a6c'));
-  D(1, () => drawCat3({ x: 470, y: 512, s: 1.25, pose: sit3(lt, { ...ex('delighted'), hr: -0.05, ear: -0.1 }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
+  D(1, () => drawCat3({ x: 470, y: 512, s: 1.25, pose: sit3(lt, { ...ex('delighted'), hr: -0.05, ear: -0.1, turn: turnAt(lt, [[1.6, 3.0, 0.9]]) }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
 });
 /* T4 花東縱谷 */
 V('T4', '花蓮 → 臺東', '花東縱谷', 'Huadong Valley', '23.40°N 121.35°E', ['縱谷好長，長到可以一直跑。', 'The rift valley is long enough to run and run.'], [1.02, 1.05, 0, 0, 0, 0], function (lt) {
@@ -101,7 +101,7 @@ V('T7', '臺灣海峽', '高雄 → 馬公 渡輪', 'Ferry to Penghu', '23.00°N
     for (let k = 0; k < 5; k++) { const u = mod(lt * 0.5 + k / 5, 1); c.strokeStyle = `rgba(255,255,255,${0.5 * (1 - u)})`; c.lineWidth = 2; c.beginPath(); c.moveTo(-M, 470 + u * 120); c.quadraticCurveTo(300, 460 + u * 130, 700, 480 + u * 110); c.stroke(); } flock(3, 700, 220, -30, 0.9, 'rgba(255,255,255,0.95)', 373, lt); });
   L('deck', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#d7d2c4'], [1, '#9b9484']]); c.fillRect(-M, 570, W + 2 * M, 200); for (let k = 0; k < 30; k++) line(-M + k * 50, 570, -M + k * 60, H, 'rgba(120,110,95,0.5)', 1);
     c.strokeStyle = '#f4f4f2'; line(-M, 520, W + M, 520, '#f4f4f2', 5); line(-M, 545, W + M, 545, '#f4f4f2', 3); for (let x = -M; x < W + M; x += 60) line(x, 520, x, 572, '#f4f4f2', 4); });
-  D(0.95, () => drawCat3({ x: 420, y: 588, s: 1.1, pose: sit3(lt, { ...ex('annoyed'), earDown: 1, hr: -0.1 + Math.sin(lt * 9) * 0.02, ts: 4 }), emote: emoAt(lt, [[0.9, 2.6, 'drop']]) }));
+  D(0.95, () => drawCat3({ x: 420, y: 588, s: 1.1, pose: sit3(lt, { ...ex('annoyed'), earDown: 1, hr: -0.1 + Math.sin(lt * 9) * 0.02, ts: 4, turn: turnAt(lt, [[1.4, 3.0, 0.85]]) }), emote: emoAt(lt, [[0.9, 2.6, 'drop']]) }));
 });
 /* T8 澎湖跨海大橋 */
 V('T8', '澎湖縣 · 白沙', '澎湖跨海大橋', 'Penghu Great Bridge', '23.65°N 119.53°E', ['澎湖跨海大橋，把兩座島連在一起。', 'The Penghu Great Bridge joins two islands together.'], [1.03, 1.08, 0, 0, 0, 0], function (lt) {
@@ -181,7 +181,7 @@ V('T15', '苗栗縣 · 三義', '勝興車站', 'Shengxing Station', '24.39°N 1
     poly([[x - 30, y - 118], [x + 60, y - 190], [x + 320, y - 190], [x + 410, y - 118]], '#3d3f45'); for (let k = 0; k < 24; k++) line(x - 20 + k * 18, y - 120, x + 60 + k * 11, y - 188, 'rgba(20,20,25,0.45)', 1);
     c.fillStyle = '#ffffff'; c.fillRect(x + 140, y - 160, 100, 26); c.fillStyle = '#222'; c.font = `700 18px ${FONTS}`; c.textAlign = 'center'; c.fillText('勝 興 驛', x + 190, y - 141);
     c.fillStyle = vg(y, H, [[0, '#9b9488'], [1, '#6a645a']]); c.fillRect(-M, y, W + 2 * M, 200); c.fillStyle = '#4a443e'; c.fillRect(-M, 572, W + 2 * M, 6); c.fillRect(-M, 590, W + 2 * M, 6); for (let k = 0; k < 40; k++) c.fillRect(-M + k * 40, 570, 18, 28); c.fillStyle = '#cfc8b8'; c.fillRect(-M, 540, W + 2 * M, 22); });
-  D(0.45, () => drawCat3({ x: 320, y: 548, s: 1.0, pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [2, 'curious']]), hr: lt > 2 ? 0.25 : -0.1, ts: 1.4 }), emote: emoAt(lt, [[2.1, 3.3, 'note']]) }));
+  D(0.45, () => drawCat3({ x: 320, y: 548, s: 1.0, pose: lt < 2.1 ? sit3(lt, groom3(lt, 0.1, 2.15)) : sit3(lt, { ...exSeq(lt, [[0, 'content'], [2, 'curious']]), hr: lt > 2 ? 0.25 : -0.1, ts: 1.4 }), emote: emoAt(lt, [[2.2, 3.4, 'note']]) }));
 });
 /* T16 客家茶園 */
 V('T16', '新竹縣 · 峨眉', '客家茶園', 'Hakka tea hills', '24.69°N 121.01°E', ['客家的茶山，一排一排綠到天邊。', 'Hakka tea hills — row after row, green all the way to the sky.'], [1.03, 1.07, 30, -30, 0, 0], function (lt) {
@@ -218,7 +218,7 @@ V('T19', '臺灣海峽上空', '飛往金門', 'Flying to Kinmen', '24.50°N 119
     const r = rng(491); for (let k = 0; k < 30; k++) { const x = mod(r() * 1800 - lt * 60 * (0.5 + r()), 1800) - 200, y = 300 + r() * 280; cumulus(x, y, 120 + r() * 160, 30 + r() * 30, 492 + k, '#ffffff', '#c9d6e2', 0.2); }
     c.fillStyle = '#c9ccd2'; poly([[600, 560], [1200, 470], [1250, 485], [700, 600]], '#cfd2d8'); poly([[1150, 478], [1180, 440], [1196, 444], [1186, 482]], '#b2b6bd');
     c.save(); c.fillStyle = '#e9e6e0'; c.beginPath(); c.rect(-M, 0, W + 2 * M, H); c.ellipse(640, 360, 210, 270, 0, 0, TAU); c.fill('evenodd'); c.strokeStyle = '#cfcac0'; c.lineWidth = 26; c.beginPath(); c.ellipse(640, 360, 220, 280, 0, 0, TAU); c.stroke(); c.restore(); });
-  D(1, () => drawCat3({ x: 470, y: 640, s: 1.4, pose: sit3(lt, { ...ex('delighted'), hr: 0.1, ear: -0.1 }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
+  D(1, () => drawCat3({ x: 470, y: 640, s: 1.4, pose: sit3(lt, { ...ex('delighted'), hr: 0.1, ear: -0.1, turn: turnAt(lt, [[1.8, 3.6, 0.7]]) }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
 });
 /* T20 夜航 */
 V('T20', '臺灣海峽', '夜航往馬祖', 'Night boat to Matsu', '25.60°N 120.00°E', ['夜裡的船，往更北邊的島。', 'A night boat to the islands further north.'], [1.02, 1.05, 0, 0, 0, 0], function (lt) {
@@ -234,5 +234,5 @@ V('T21', '臺北市上空', '降落松山機場', 'Landing in Taipei', '25.07°N
     for (let k = 0; k < 900; k++) { const x = mod(r() * 1800 - lt * 90 * (1 + r()), 1800) - 200, y = 390 + Math.pow(r(), 0.8) * 300; disc(x, y, 0.8 + r() * 1.4, `rgba(255,${190 + r() * 60},${120 + r() * 80},${0.5 + r() * 0.5})`); }
     tower101(820 - lt * 40, 470, 120, { light: '#4a5a7a', dark: '#262c44', night: true });
     c.save(); c.fillStyle = '#d8d4cc'; c.beginPath(); c.rect(-M, 0, W + 2 * M, H); c.ellipse(640, 360, 210, 270, 0, 0, TAU); c.fill('evenodd'); c.strokeStyle = '#bdb8ae'; c.lineWidth = 26; c.beginPath(); c.ellipse(640, 360, 220, 280, 0, 0, TAU); c.stroke(); c.restore(); });
-  D(1, () => drawCat3({ x: 470, y: 640, s: 1.4, pose: sit3(lt, { ...ex('happy'), hr: 0.2 + Math.sin(lt * 2) * 0.03, ear: -0.1 }), emote: emoAt(lt, [[1.2, 3.0, 'heart']]), shadow: false }));
+  D(1, () => drawCat3({ x: 470, y: 640, s: 1.4, pose: sit3(lt, { ...ex('happy'), hr: 0.05, ear: -0.1, turn: turnAt(lt, [[1.0, 3.2, 1]]) }), emote: emoAt(lt, [[1.2, 3.0, 'heart']]), shadow: false }));
 });
