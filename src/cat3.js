@@ -14,7 +14,7 @@ const COATS = {
   tuxedo: { base: '#26222a', shade: '#1a171d', far: '#121014', cream: '#f2efe8', creamS: '#d9d4ca', light: 'rgba(170,180,220,0.16)', stripe: null, line: '#0b090c', inner: 'rgba(0,0,0,0.6)', belly: 'rgba(250,248,242,0.95)', eye: '#e2c24c', nose: '#e39a9a', ear: '#5e4650' },
 };
 // head scale (rig / sitting) and eye scale: torso ≈ 2.4 head lengths (a real cat is ≈ 4, a chibi ≈ 1.5); eye height ≈ 0.28 of the head
-let HSR = 1.3, HSS = 1.27, EYE3 = 1.05;
+let HSR = 1.3, HSS = 1.27, EYE3 = 1.05, EARH = -20;   // EARH: ear-tip height in head units (skull top ≈ −11.5)
 let CB = null, CB2 = null, CB3 = null, CB4 = null, CB5 = null;
 const CBW = 720, CBH = 560, COX = 360, COY = 470;
 function cbufs() { if (!CB) { CB = mkCanvas(CBW, CBH); CB2 = mkCanvas(CBW, CBH); CB3 = mkCanvas(CBW, CBH); CB4 = mkCanvas(CBW, CBH); CB5 = mkCanvas(CBW, CBH); } }
@@ -162,11 +162,25 @@ function headView(p) {
   return { tn, cs, sn, pr: (x, y, z) => [z * sn + x * cs, y], d: (x, z) => z * cs - x * sn };
 }
 /* ear triangle for side s (±1): ear > 0 swivels back, < 0 pricks forward; earDown flattens it sideways */
+function hull2(P) { const p = P.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]), cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]), lo = [], up = [];
+  for (const q of p) { while (lo.length > 1 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (const q of p.reverse()) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+  return lo.slice(0, -1).concat(up.slice(0, -1)); }
 function earGeo(H, p, s) {
   const e = p.ear || 0, dn = p.earDown || 0;
-  const b1 = [s * 2.4, -11.2, 4.6], b2 = [s * 10.8, -6.8, -3.4], tp = [s * (8.4 + dn * 8), -24 + dn * 11 + Math.max(0, e) * 2.5, -0.6 - e * 7 - dn * 2];
-  const dep = H.d(s * 7, 0), off = dep < 0 ? [-5 * (1 - H.tn), -1 * (1 - H.tn)] : [0, 0];   // the far ear peeks out behind in profile
-  return { b1, b2, tp, pts: [b1, b2, tp].map(v => { const q = H.pr(...v); return [q[0] + off[0], q[1] + off[1]]; }), dep };
+  // ear ≈ 0.4 of the skull height (a real cat's proportion), with a softly rounded tip — tall spikes read as a fox
+  const b1 = [s * 2.2, -11.2, 4.6], b2 = [s * 11, -6.6, -3.4], tp = [s * (8.6 + dn * 8), EARH + dn * 9 + Math.max(0, e) * 2, -0.6 - e * 6 - dn * 2];
+  const dep = H.d(s * 7, 0), q1 = H.pr(...b1), q2 = H.pr(...b2), edge = clamp(1 - Math.hypot(q1[0] - q2[0], q1[1] - q2[1]) / 12.4);
+  // seen edge-on (or foreshortened behind the head) an ear would stand up as a thin spike: lower its tip
+  tp[1] += 3.2 * Math.max(edge, dep < 0 ? clamp(-dep / 5) : 0);
+  const L3 = (u, a, b) => a.map((v, i) => v + (b[i] - v) * u), tA = L3(0.16, tp, b1), tB = L3(0.16, tp, b2), tc = L3(0.05, tp, L3(0.5, b1, b2));
+  const off = dep < 0 ? [-5 * (1 - H.tn), -1 * (1 - H.tn)] : [0, 0];   // the far ear peeks out behind in profile
+  // the ear is a shallow cup, not a flat card: the hull of its rim and back keeps some width at every yaw
+  let pts = hull2([b1, b2, tB, tc, tA, [s * 6.4, -8.6, -4.6], [s * 6.2, -9.6, 3.2]].map(v => { const q = H.pr(...v); return [q[0] + off[0], q[1] + off[1]]; }));
+  // and never narrower than ~2/3 of its full width, so a turned ear reads as a smaller ear, not a spike
+  const xs = pts.map(q => q[0]), w = Math.max(...xs) - Math.min(...xs), cx = (Math.max(...xs) + Math.min(...xs)) / 2;
+  if (w < 6.5) pts = pts.map(q => [cx + (q[0] - cx) * 6.5 / Math.max(w, 0.5), q[1]]);
+  return { b1, b2, tp, pts, dep };
 }
 /* head outline pieces as one path (skull, cheeks + fur tufts, muzzle, chin) */
 /* head outline: the skull, cheeks, muzzle and chin are merged into ONE smooth contour. A ray is cast from the head
