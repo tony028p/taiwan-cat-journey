@@ -93,7 +93,7 @@ function headland(xEnd, ySea, slope, seed, top, bot, o = {}) {
 
 const SCENES = [];
 /* 0 — 臺北市 象山 dawn */
-SCENES.push({ county: '臺北市', place: '象山', en: 'Xiangshan · Taipei 101', ll: '25.03°N 121.57°E', cam: [1.02, 1.09, 30, -10, 0, 6],
+SCENES.push({ county: '臺北市', place: '象山', sun: () => [880, 470, 0.45], en: 'Xiangshan · Taipei 101', ll: '25.03°N 121.57°E', cam: [1.02, 1.09, 30, -10, 0, 6],
   sub: ['清晨五點半，臺北還沒醒。', '5:30 a.m. — Taipei is still asleep.'],
   draw(lt) {
     L('sky', 0, () => { sky([[0, '#17223d'], [0.3, '#3b4872'], [0.52, '#a27c88'], [0.64, '#eba985'], [0.74, '#f6cd9c'], [1, '#f3dcb8']]); glow(880, 470, 520, '255,185,140', 0.35); stars(80, 1, 220, 0.6);
@@ -171,7 +171,7 @@ SCENES.push({ county: '基隆市', place: '正濱漁港', en: 'Zhengbin Fishing 
   } });
 
 /* 3 — 宜蘭縣 龜山島 sunrise */
-SCENES.push({ county: '宜蘭縣', place: '外澳海灘 · 龜山島', en: 'Turtle Island from Wai’ao', ll: '24.88°N 121.84°E', cam: [1.02, 1.08, -10, 10, 0, 0],
+SCENES.push({ county: '宜蘭縣', place: '外澳海灘 · 龜山島', sun: lt => [820, 432 - lt * 9, 1], en: 'Turtle Island from Wai’ao', ll: '24.88°N 121.84°E', cam: [1.02, 1.08, -10, 10, 0, 0],
   sub: ['宜蘭的海上，龜山島正等著日出。', 'Off Yilan, Turtle Island waits for the sunrise.'],
   draw(lt) {
     const hz = 420, sy = 432 - lt * 9;
@@ -225,7 +225,7 @@ SCENES.push({ county: '臺東縣', place: '池上伯朗大道', en: 'Mr. Brown A
   } });
 
 /* 6 — 屏東縣 鵝鑾鼻 sunset */
-SCENES.push({ county: '屏東縣', place: '鵝鑾鼻燈塔', en: 'Eluanbi Lighthouse', ll: '21.90°N 120.85°E', cam: [1.03, 1.09, 10, -20, 0, 0],
+SCENES.push({ county: '屏東縣', place: '鵝鑾鼻燈塔', sun: lt => [420, 372 + lt * 4, 1], en: 'Eluanbi Lighthouse', ll: '21.90°N 120.85°E', cam: [1.03, 1.09, 10, -20, 0, 0],
   sub: ['屏東的最南端，燈塔替夕陽守著海。', 'At Pingtung’s southern tip, the lighthouse keeps watch as the sun sets.'],
   draw(lt) {
     const hz = 420, sx = 420, sy = 372 + lt * 4;
@@ -281,7 +281,7 @@ SCENES.push({ county: '澎湖縣', place: '七美雙心石滬', en: 'Twin Hearts
   } });
 
 /* 9 — 臺南市 井仔腳瓦盤鹽田 */
-SCENES.push({ county: '臺南市', place: '井仔腳瓦盤鹽田', en: 'Jingzaijiao Tile-Paved Salt Fields', ll: '23.16°N 120.09°E', cam: [1.03, 1.08, 20, -20, 0, 0],
+SCENES.push({ county: '臺南市', place: '井仔腳瓦盤鹽田', sun: lt => [680, 330 + lt * 5, 1], en: 'Jingzaijiao Tile-Paved Salt Fields', ll: '23.16°N 120.09°E', cam: [1.03, 1.08, 20, -20, 0, 0],
   sub: ['臺南的鹽田，把整片天空收了進來。', 'Tainan’s salt fields hold the whole sky.'],
   draw(lt) {
     const hz = 380, sx = 680, sy = 330 + lt * 5;
@@ -301,7 +301,7 @@ SCENES.push({ county: '臺南市', place: '井仔腳瓦盤鹽田', en: 'Jingzaij
   } });
 
 /* 10 — 嘉義縣 阿里山 */
-SCENES.push({ county: '嘉義縣', place: '阿里山 · 雲海日出', en: 'Alishan Sunrise & Sea of Clouds', ll: '23.51°N 120.80°E', cam: [1.02, 1.08, -20, 20, 0, 0],
+SCENES.push({ county: '嘉義縣', place: '阿里山 · 雲海日出', sun: lt => [360, 300 - lt * 6, 1], en: 'Alishan Sunrise & Sea of Clouds', ll: '23.51°N 120.80°E', cam: [1.02, 1.08, -20, 20, 0, 0],
   sub: ['嘉義的阿里山，雲海在腳下翻湧。', 'On Alishan, a sea of clouds rolls beneath its paws.'],
   draw(lt) {
     const sx = 360, sy = 300 - lt * 6;
@@ -318,7 +318,7 @@ SCENES.push({ county: '嘉義縣', place: '阿里山 · 雲海日出', en: 'Alis
   } });
 
 /* 11 — 嘉義市 檜意森活村 */
-SCENES.push({ county: '嘉義市', place: '檜意森活村', en: 'Hinoki Village', ll: '23.48°N 120.45°E', cam: [1.03, 1.09, 20, -20, 0, 0],
+SCENES.push({ county: '嘉義市', place: '檜意森活村', sun: () => [1150, -40, 0.5], en: 'Hinoki Village', ll: '23.48°N 120.45°E', cam: [1.03, 1.09, 20, -20, 0, 0],
   sub: ['嘉義市的老木屋，還留著檜木的香氣。', 'Chiayi’s old wooden houses still smell of cypress.'],
   draw(lt) {
     L('bg', 0, () => { sky([[0, '#9fbfcf'], [1, '#e8e2cf']]); const r = rng(141); for (let k = 0; k < 900; k++) { const x = r() * (W + 2 * M) - M, y = r() * 360, s = 6 + r() * 16; oval(x, y, s, s * 0.8, 0, mix('#3d5b35', '#9fbf6a', r() * (y < 200 ? 1 : 0.6), 0.85)); } }, { blur: 2.5 });

@@ -17,6 +17,7 @@ function setup(Sc) {
   for (let g = 0; g < 6; g++) { const k = mkCanvas(960, 540), x = k.getContext('2d'), id = x.createImageData(960, 540); let s = 1234 + g * 777;
     for (let i = 0; i < id.data.length; i += 4) { s = (s * 16807) % 2147483647; const v = 128 + ((s / 2147483647) - 0.5) * 120; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = 255; }
     x.putImageData(id, 0, 0); grains.push(k); }
+  if (typeof GLX !== 'undefined') GLX.init(Math.ceil((W + 2 * M) * S), Math.ceil(H * S), bufA.width, bufA.height);
 }
 function renderScene(target, i, lt) {
   c = target.getContext('2d'); c.setTransform(S, 0, 0, S, 0, 0); c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.filter = 'none';
@@ -72,7 +73,8 @@ function credits(ct) {
   c.save(); c.globalAlpha = e; txt('— 完 —', 860, 500, 20, '#f4ede0', { w: 600, ls: 8 }); c.restore();
   c.save(); c.globalAlpha = 1 - (1 - sm((ct - CREDITS + 0.8) / 0.8)); c.restore();
 }
-function post(ctx, t) {
+function post(ctx, t, sun) {
+  if (typeof GLX !== 'undefined' && GLX.ok) return GLX.post(ctx, t, { sun });
   const cw = W * S, ch = H * S;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   const b = bloomC.getContext('2d'); b.filter = 'blur(5px) brightness(1.05)'; b.clearRect(0, 0, 480, 270); b.drawImage(ctx.canvas, 0, 0, 480, 270); b.filter = 'none';
@@ -91,19 +93,23 @@ function draw(ctx, t) {
   let i = 0; while (i < FILM.length - 1 && t >= STARTS[i + 1]) i++;
   const lt = Math.max(-XF, t - STARTS[i]);
   for (const k in CACHES) if (+k < i - 1 || +k > i + 1) delete CACHES[k];
+  if (typeof GLX !== 'undefined' && GLX.ok) GLX.prune(new Set(Object.values(CACHES).flatMap(o => Object.values(o))));
   renderScene(bufA, i, lt); ctx.drawImage(bufA, 0, 0);
   let j = -1, ljt = 0, a = 0;
   if (i < FILM.length - 1 && lt > DURS[i] - XF) { j = i + 1; ljt = lt - DURS[i]; a = sm((lt - (DURS[i] - XF)) / (2 * XF)); }
   else if (i > 0 && lt < XF) { j = i - 1; ljt = lt + DURS[i - 1]; a = 1 - sm((lt + XF) / (2 * XF)); }
   if (j >= 0) { renderScene(bufB, j, ljt); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = a; ctx.drawImage(bufB, 0, 0); ctx.globalAlpha = 1; }
-  post(ctx, t);
+  const sunOf = (k, l, w) => { const f = FILM[k].sun; if (!f || w <= 0) return null; const s = f(l); return [s[0], s[1], (s[2] ?? 1) * w]; };
+  const sI = sunOf(i, lt, j >= 0 ? 1 - a : 1), sJ = j >= 0 ? sunOf(j, ljt, a) : null;
+  post(ctx, t, sJ && (!sI || sJ[2] > sI[2]) ? sJ : sI);
   c = ctx; c.setTransform(S, 0, 0, S, 0, 0); c.globalAlpha = 1;
   c.fillStyle = '#000'; c.fillRect(0, 0, W, BAR); c.fillRect(0, H - BAR, W, BAR);
   // texts (scene-owned, crossfade with scene alpha)
   const texts = (k, lt2, al) => { const sc = FILM[k], d = DURS[k]; c.save(); c.globalAlpha = al;
     locCard(k, k === 0 ? lt2 - 3.2 : lt2);
     const s0 = k === 0 ? 4.4 : (sc.via ? 0.5 : 0.9);
-    if (sc.sub2) { subtitle(sc.sub[0], sc.sub[1], sm((lt2 - s0) / 0.5) * (1 - sm((lt2 - 4.4) / 0.4))); subtitle(sc.sub2[0], sc.sub2[1], sm((lt2 - 4.9) / 0.5) * (1 - sm((lt2 - d + 0.2) / 0.5))); }
+    if (sc.sub3) { subtitle(sc.sub[0], sc.sub[1], sm((lt2 - s0) / 0.5) * (1 - sm((lt2 - 4.0) / 0.35))); subtitle(sc.sub2[0], sc.sub2[1], sm((lt2 - 4.45) / 0.4) * (1 - sm((lt2 - 6.25) / 0.35))); subtitle(sc.sub3[0], sc.sub3[1], sm((lt2 - 6.7) / 0.4) * (1 - sm((lt2 - d + 0.2) / 0.5))); }
+    else if (sc.sub2) { subtitle(sc.sub[0], sc.sub[1], sm((lt2 - s0) / 0.5) * (1 - sm((lt2 - 4.4) / 0.4))); subtitle(sc.sub2[0], sc.sub2[1], sm((lt2 - 4.9) / 0.5) * (1 - sm((lt2 - d + 0.2) / 0.5))); }
     else subtitle(sc.sub[0], sc.sub[1], sm((lt2 - s0) / 0.5) * (1 - sm((lt2 - d + 0.6) / 0.4)));
     c.restore(); };
   if (j >= 0 && a > 0.5) texts(j, ljt, 1); else texts(i, lt, 1);

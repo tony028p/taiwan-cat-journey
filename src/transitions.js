@@ -23,7 +23,7 @@ V('T0', '新北市 · 瑞芳', '陰陽海', 'Yin-Yang Sea', '25.12°N 121.86°E'
     for (let k = 0; k < 18; k++) { c.fillStyle = mix('#d9d3c6', '#9da9b0', hash(k)); c.fillRect(870 + k * 16, 420 - hash(k + 3) * 30, 14, 20 + hash(k + 3) * 30); } });
   L('road', 0.9, () => { c.fillStyle = vg(560, H, [[0, '#5a5a5e'], [1, '#2e2e32']]); c.fillRect(-M, 590, W + 2 * M, 200); for (let k = 0; k < 20; k++) c.fillStyle = '#f2e7c6', c.fillRect(-M + k * 120, 640, 60, 4);
     c.fillStyle = '#c9c9c9'; c.fillRect(-M, 572, W + 2 * M, 8); c.fillStyle = '#8f8f8f'; c.fillRect(-M, 580, W + 2 * M, 4); for (let k = 0; k < 30; k++) c.fillRect(-M + k * 60, 572, 5, 22); });
-  D(0.9, () => { const q = { x: 200 + lt * 46, y: 574, s: 1.0 }; q.pose = walkPose3(walkCyc3(lt * 46, 1, true), { trot: 1 }); drawCat3(q); });
+  D(0.9, () => { const q = { x: 200 + lt * 46, y: 574, s: 1.0 }; q.pose = { ...walkPose3(walkCyc3(lt * 46, 1, true), { trot: 1 }), ...ex('happy', 0.8) }; q.emote = emoAt(lt, [[1.0, 2.6, 'note']]); drawCat3(q); });
 });
 /* T1 基隆港 */
 V('T1', '基隆市', '基隆港', 'Port of Keelung', '25.13°N 121.74°E', ['港口的大船，要開去好遠的地方。', 'The big ships in the harbour are bound for faraway places.'], [1.02, 1.06, 0, 0, 0, 0], function (lt) {
@@ -36,7 +36,7 @@ V('T1', '基隆市', '基隆港', 'Port of Keelung', '25.13°N 121.74°E', ['港
     for (let k = 0; k < 24; k++) { c.fillStyle = ['#c0392b', '#2c6e9b', '#d4a017', '#3f8b5a', '#7f8c8d'][k % 5]; c.fillRect(830 + (k % 8) * 26, 392 - Math.floor(k / 8) * 11, 24, 10); } });
   D(0.3, () => { shimmer(405, H, 150, '255,255,255', 314, { a: 0.3 }); const sx = 760 - lt * 22; c.save(); c.translate(sx, 470); poly([[-220, 0], [200, 0], [240, -30], [-230, -26]], '#f4f4f2'); c.fillStyle = '#1f3a5a'; c.fillRect(-222, -8, 450, 8); c.fillStyle = '#ffffff'; c.fillRect(-150, -70, 300, 44); c.fillRect(-100, -98, 200, 30); c.fillStyle = '#36506a'; for (let k = 0; k < 14; k++) c.fillRect(-140 + k * 20, -60, 12, 8); c.fillStyle = '#c7372c'; c.fillRect(60, -128, 26, 32); c.restore(); });
   L('fg', 0.95, () => { c.fillStyle = vg(580, H, [[0, '#8a8580'], [1, '#4c4844']]); c.fillRect(-M, 586, W + 2 * M, 200); c.fillStyle = '#2e2c2b'; c.fillRect(250, 548, 40, 42); c.beginPath(); c.ellipse(270, 548, 26, 8, 0, 0, TAU); c.fill(); });
-  D(0.95, () => drawCat3({ x: 262, y: 542, s: 1.05, pose: sit3(lt, { hr: -0.05 + Math.sin(lt * 0.6) * 0.1 }), shadow: false }));
+  D(0.95, () => drawCat3({ x: 262, y: 542, s: 1.05, pose: sit3(lt, { ...exSeq(lt, [[0, 'curious'], [1.2, 'delighted'], [2.6, 'content']]), look: [0.8, -0.3], hr: -0.05 + Math.sin(lt * 0.6) * 0.1 }), emote: emoAt(lt, [[1.2, 2.6, 'spark']]), shadow: false }));
 });
 /* T2 東北角 鼻頭角 */
 V('T2', '新北市 · 東北角', '鼻頭角', 'Bitou Cape', '25.13°N 121.92°E', ['海浪把岩石刻成了一格一格的豆腐。', 'The waves have carved the rocks into blocks like tofu.'], [1.03, 1.07, 40, -40, 0, 0], function (lt) {
@@ -45,7 +45,7 @@ V('T2', '新北市 · 東北角', '鼻頭角', 'Bitou Cape', '25.13°N 121.92°E
   L('sea', 0.2, () => { c.fillStyle = vg(420, H, [[0, '#3b7fa6'], [1, '#2d6d8b']]); c.fillRect(-M, 420, W + 2 * M, H); });
   D(0.2, () => { shimmer(422, 560, 160, '255,255,255', 322, { a: 0.4 }); for (let k = 0; k < 4; k++) { const u = mod(lt * 0.4 + k / 4, 1); c.strokeStyle = `rgba(255,255,255,${0.6 * Math.sin(u * Math.PI)})`; c.lineWidth = 2.5; c.beginPath(); c.moveTo(-M, 548 - u * 20); for (let x = -M; x < W + M; x += 30) c.lineTo(x, 548 - u * 20 + Math.sin(x * 0.03 + k) * 4); c.stroke(); } });
   L('rocks', 0.85, () => { const r = rng(323); for (let row = 0; row < 3; row++) for (let k = 0; k < 16; k++) { const x = -M + k * 100 + row * 40 + r() * 20, y = 560 + row * 30, w = 92, h = 22 + row * 6; poly([[x, y], [x + w, y - 4], [x + w + 6, y + h], [x + 4, y + h + 4]], mix('#c8b48c', '#9b8763', r())); line(x + 2, y + 2, x + w, y - 2, 'rgba(255,245,220,0.6)', 1.5); } });
-  D(0.85, () => { const u = mod(lt / 1.2, 1), k = Math.floor(lt / 1.2), x = 160 + lt * 110; const q = { x, y: 560 - Math.sin(u * Math.PI) * 26, s: 0.95, pose: gallopPose3(gallopCyc3(lt * 110, 0.95)) }; drawCat3(q); });
+  D(0.85, () => { const u = mod(lt / 1.2, 1), x = 40 + lt * 190; const q = { x, y: 560 - Math.sin(u * Math.PI) * 26, s: 0.95, pose: { ...gallopPose3(gallopCyc3(lt * 190, 0.95)), ...ex('happy'), ear: 0.4 } }; drawCat3(q); });
 });
 /* T3 蘇花 by train */
 V('T3', '宜蘭 → 花蓮', '蘇花海岸 · 臺鐵', 'Along the Suhua coast by train', '24.30°N 121.75°E', ['搭上火車，沿著蘇花海岸的懸崖往南。', 'By train, south along the cliffs of the Suhua coast.'], [1.0, 1.02, 0, 0, 0, 0], function (lt) {
@@ -56,7 +56,7 @@ V('T3', '宜蘭 → 花蓮', '蘇花海岸 · 臺鐵', 'Along the Suhua coast by
     c.beginPath(); c.moveTo(-M, H); for (let x = -M; x <= W + M; x += 6) { const y = f(x); c.lineTo(x, (x + off) % 900 < 520 ? y : 420); } c.lineTo(W + M, H); c.closePath(); c.fillStyle = vg(250, 520, [[0, '#4f7a4a'], [1, '#3a5d3c']]); c.fill();
     c.fillStyle = '#6b6b6b'; c.fillRect(-M, 500, W + 2 * M, 40); for (let x = -mod(off * 2, 80); x < W; x += 80) { c.fillStyle = '#4a4a4a'; c.fillRect(x, 500, 6, 40); }
   }, '#d8cfc0', '#857a6c'));
-  D(1, () => drawCat3({ x: 470, y: 512, s: 1.25, pose: sit3(lt, { hr: -0.05, ear: 0.1 }), shadow: false }));
+  D(1, () => drawCat3({ x: 470, y: 512, s: 1.25, pose: sit3(lt, { ...ex('delighted'), hr: -0.05, ear: -0.1 }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
 });
 /* T4 花東縱谷 */
 V('T4', '花蓮 → 臺東', '花東縱谷', 'Huadong Valley', '23.40°N 121.35°E', ['縱谷好長，長到可以一直跑。', 'The rift valley is long enough to run and run.'], [1.02, 1.05, 0, 0, 0, 0], function (lt) {
@@ -69,7 +69,7 @@ V('T4', '花蓮 → 臺東', '花東縱谷', 'Huadong Valley', '23.40°N 121.35�
     const tx = 1500 - lt * 420; for (let k = 0; k < 6; k++) { const x = tx + k * 92; c.fillStyle = '#f2f2ee'; c.beginPath(); c.roundRect(x, 418, 88, 30, 6); c.fill(); c.fillStyle = '#e07a2c'; c.fillRect(x, 436, 88, 4); c.fillStyle = '#2b3b4a'; c.fillRect(x + 6, 424, 76, 8); }
     c.save(); c.globalCompositeOperation = 'lighter'; for (let w = 0; w < 5; w++) { const u = mod(lt * 0.3 + w / 5, 1), y = 470 + u * 240; c.fillStyle = `rgba(230,255,170,${0.1 * Math.sin(u * Math.PI)})`; c.fillRect(-M, y - 10, W + 2 * M, 20); } c.restore(); });
   L('path', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#b8a888'], [1, '#8a7a5c']]); c.fillRect(-M, 596, W + 2 * M, 200); });
-  D(0.95, () => { grassTufts(590, 600, 80, ['#4f8a2c', '#6fa83f'], 345, 1.2, 14); drawCat3({ x: 200 + lt * 120, y: 600, s: 1.0, pose: gallopPose3(gallopCyc3(lt * 120, 1)) }); });
+  D(0.95, () => { grassTufts(590, 600, 80, ['#4f8a2c', '#6fa83f'], 345, 1.2, 14); drawCat3({ x: 60 + lt * 210, y: 600, s: 1.0, pose: { ...gallopPose3(gallopCyc3(lt * 210, 1)), ...ex('happy'), ear: 0.4 }, emote: emoAt(lt, [[1.0, 2.6, 'note']]) }); });
 });
 /* T5 多良車站 */
 V('T5', '臺東縣 · 太麻里', '多良車站', 'Duoliang Station', '22.51°N 120.96°E', ['多良車站，離太平洋最近的月台。', 'Duoliang — the platform closest to the Pacific.'], [1.02, 1.06, 0, 0, 0, 0], function (lt) {
@@ -79,7 +79,7 @@ V('T5', '臺東縣 · 太麻里', '多良車站', 'Duoliang Station', '22.51°N 
   L('track', 0.5, () => { mountain({ fn: x => 380 + (x < 200 ? 0 : (x - 200) * 0.0) + fbm1(x * 0.01 + 9) * 20 - (x < 260 ? (260 - x) * 0.8 : 0), floor: 560, top: '#4a7a46', bot: '#3d6339', tex: 'forest', dark: '#2f4f2e', mid: '#4a7a46', light: '#8fb47a', depth: 60, n: 500, r: 4, seed: 353 }); c.fillStyle = '#6f6a62'; c.fillRect(-M, 540, W + 2 * M, 14); c.fillStyle = '#3e3a36'; c.fillRect(-M, 538, W + 2 * M, 3); c.fillRect(-M, 548, W + 2 * M, 3); });
   D(0.5, () => { const tx = -900 + lt * 520; for (let k = 0; k < 5; k++) { const x = tx + k * 150; c.fillStyle = '#f4f3ef'; c.beginPath(); c.roundRect(x, 492, 146, 46, 8); c.fill(); c.fillStyle = '#d23a2e'; c.fillRect(x, 520, 146, 6); c.fillStyle = '#2a3440'; c.fillRect(x + 8, 500, 130, 12); } });
   L('plat', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#9a9690'], [1, '#5f5c58']]); c.fillRect(-M, 600, W + 2 * M, 200); c.strokeStyle = '#2f6fb0'; c.lineWidth = 4; line(-M, 572, W + M, 572, '#2f6fb0', 5); line(-M, 588, W + M, 588, '#2f6fb0', 3); for (let x = -M; x < W + M; x += 26) line(x, 572, x, 602, '#2f6fb0', 2.4); });
-  D(0.95, () => drawCat3({ x: 520, y: 572, s: 1.0, pose: sit3(lt, { hr: -0.05, ts: 1.6, ear: lt > 1.4 && lt < 2.6 ? 0.3 : 0 }), shadow: false }));
+  D(0.95, () => drawCat3({ x: 520, y: 572, s: 1.0, pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [1.4, 'surprised'], [2.4, 'happy']]), hr: lt > 1.4 && lt < 2.6 ? -0.15 : -0.05, ts: 1.6 }), emote: emoAt(lt, [[1.4, 2.3, '!']]), shadow: false }));
 });
 /* T6 高屏溪斜張橋 */
 V('T6', '屏東 → 高雄', '高屏溪斜張橋', 'Kao-Ping Hsi Bridge', '22.64°N 120.43°E', ['跨過高屏溪，就到高雄了。', 'Across the Gaoping River lies Kaohsiung.'], [1.02, 1.06, -20, 20, 0, 0], function (lt) {
@@ -91,7 +91,7 @@ V('T6', '屏東 → 高雄', '高屏溪斜張橋', 'Kao-Ping Hsi Bridge', '22.64
   D(0.25, () => { shimmer(412, 560, 120, '255,255,255', 363, { a: 0.3 }); const cx = mod(lt * 140, 1600) - 200; c.fillStyle = '#c9402f'; c.fillRect(cx, 392, 20, 8); c.fillStyle = '#2f5f9a'; c.fillRect(1200 - mod(lt * 170, 1600), 392, 22, 8); });
   L('levee', 0.9, () => { c.fillStyle = vg(570, H, [[0, '#7b9050'], [1, '#43582a']]); c.fillRect(-M, 580, W + 2 * M, 200); c.fillStyle = '#c9c0a8'; c.fillRect(-M, 594, W + 2 * M, 12); });
   D(0.9, () => { const r = rng(364); for (let k = 0; k < 50; k++) { const x = r() * (W + 2 * M) - M, h = 40 + r() * 50, sw = Math.sin(T * 1.4 + x * 0.01) * 8; c.strokeStyle = 'rgba(110,100,60,0.9)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x, 640); c.quadraticCurveTo(x + sw * 0.3, 640 - h * 0.6, x + sw, 640 - h); c.stroke(); oval(x + sw + 3, 640 - h + 6, 3.5, 11, 0.4 + sw * 0.03, 'rgba(240,225,200,0.8)'); }
-    const q = { x: 280 + lt * 30, y: 598, s: 1.0 }; q.pose = walkPose3(walkCyc3(lt * 30, 1)); drawCat3(q); });
+    const q = { x: 280 + lt * 30, y: 598, s: 1.0 }; q.pose = { ...walkPose3(walkCyc3(lt * 30, 1)), ...ex('content', 0.7) }; drawCat3(q); });
 });
 /* T7 渡輪 */
 V('T7', '臺灣海峽', '高雄 → 馬公 渡輪', 'Ferry to Penghu', '23.00°N 120.00°E', ['第一次搭船，風好大。', 'First time on a ferry. So windy!'], [1.02, 1.05, 0, 0, 0, 4], function (lt) {
@@ -101,7 +101,7 @@ V('T7', '臺灣海峽', '高雄 → 馬公 渡輪', 'Ferry to Penghu', '23.00°N
     for (let k = 0; k < 5; k++) { const u = mod(lt * 0.5 + k / 5, 1); c.strokeStyle = `rgba(255,255,255,${0.5 * (1 - u)})`; c.lineWidth = 2; c.beginPath(); c.moveTo(-M, 470 + u * 120); c.quadraticCurveTo(300, 460 + u * 130, 700, 480 + u * 110); c.stroke(); } flock(3, 700, 220, -30, 0.9, 'rgba(255,255,255,0.95)', 373, lt); });
   L('deck', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#d7d2c4'], [1, '#9b9484']]); c.fillRect(-M, 570, W + 2 * M, 200); for (let k = 0; k < 30; k++) line(-M + k * 50, 570, -M + k * 60, H, 'rgba(120,110,95,0.5)', 1);
     c.strokeStyle = '#f4f4f2'; line(-M, 520, W + M, 520, '#f4f4f2', 5); line(-M, 545, W + M, 545, '#f4f4f2', 3); for (let x = -M; x < W + M; x += 60) line(x, 520, x, 572, '#f4f4f2', 4); });
-  D(0.95, () => drawCat3({ x: 420, y: 588, s: 1.1, pose: sit3(lt, { hr: -0.1, ear: 0.45, eye: 0.5, ts: 4 }) }));
+  D(0.95, () => drawCat3({ x: 420, y: 588, s: 1.1, pose: sit3(lt, { ...ex('annoyed'), earDown: 1, hr: -0.1 + Math.sin(lt * 9) * 0.02, ts: 4 }), emote: emoAt(lt, [[0.9, 2.6, 'drop']]) }));
 });
 /* T8 澎湖跨海大橋 */
 V('T8', '澎湖縣 · 白沙', '澎湖跨海大橋', 'Penghu Great Bridge', '23.65°N 119.53°E', ['澎湖跨海大橋，把兩座島連在一起。', 'The Penghu Great Bridge joins two islands together.'], [1.03, 1.08, 0, 0, 0, 0], function (lt) {
@@ -111,7 +111,7 @@ V('T8', '澎湖縣 · 白沙', '澎湖跨海大橋', 'Penghu Great Bridge', '23.
   L('arch', 0.6, () => { c.fillStyle = vg(560, H, [[0, '#9a9a96'], [1, '#55534f']]); c.fillRect(-M, 560, W + 2 * M, 200); c.fillStyle = '#f2f0ea'; c.fillRect(-M, 556, W + 2 * M, 8);
     c.strokeStyle = '#f7f6f2'; c.lineWidth = 34; c.beginPath(); c.moveTo(340, 562); c.bezierCurveTo(380, 150, 900, 150, 940, 562); c.stroke(); c.strokeStyle = 'rgba(160,160,155,0.5)'; c.lineWidth = 6; c.beginPath(); c.moveTo(356, 562); c.bezierCurveTo(396, 170, 884, 170, 924, 562); c.stroke();
     c.fillStyle = '#4a4a4a'; c.font = `700 26px ${FONTS}`; c.textAlign = 'center'; c.save(); c.translate(640, 270); c.fillText('澎 湖 跨 海 大 橋', 0, 0); c.restore(); });
-  D(0.6, () => { const q = { x: 300 + lt * 70, y: 560, s: 0.95 }; q.pose = walkPose3(walkCyc3(lt * 70, 0.95, true), { trot: 1 }); drawCat3(q); });
+  D(0.6, () => { const q = { x: 300 + lt * 70, y: 560, s: 0.95 }; q.pose = { ...walkPose3(walkCyc3(lt * 70, 0.95, true), { trot: 1 }), ...ex('happy', 0.8) }; drawCat3(q); });
 });
 /* T9 北回歸線標誌 */
 V('T9', '嘉義縣 · 水上', '北回歸線標誌', 'Tropic of Cancer Monument', '23.46°N 120.42°E', ['北回歸線上，夏至正午的影子會消失。', 'On the Tropic of Cancer, shadows vanish at noon on midsummer’s day.'], [1.02, 1.08, 0, 0, 0, 0], function (lt) {
@@ -121,7 +121,7 @@ V('T9', '嘉義縣 · 水上', '北回歸線標誌', 'Tropic of Cancer Monument'
     c.fillStyle = hg(x - 120, x + 120, [[0, '#ffffff'], [1, '#c9c9c4']]); c.beginPath(); c.ellipse(x, y - 190, 120, 26, 0, 0, TAU); c.fill(); c.beginPath(); c.ellipse(x, y - 210, 60, 36, 0, Math.PI, 0); c.fill();
     c.fillStyle = '#7b8a9a'; for (let k = 0; k < 10; k++) c.fillRect(x - 54 + k * 11, y - 200, 7, 6); line(x, y - 246, x, y + 20, '#e8e8e2', 4);
     c.fillStyle = hg(880, 920, [[0, '#ffffff'], [1, '#cfcfca']]); c.fillRect(880, 180, 40, 290); c.fillStyle = '#c0392b'; for (let k = 0; k < 6; k++) c.fillRect(896, 220 + k * 34, 8, 16); });
-  D(0.4, () => { const t = Math.min(lt, 2.2), q = { x: 380 + t * 34, y: 520, s: 1.0 }; q.pose = lt < 2.2 ? walkPose3(walkCyc3(t * 34, 1)) : lp(walkPose3(walkCyc3(2.2 * 34, 1)), { ...STAND3, hr: -0.75, head: [52, -74] }, sm((lt - 2.2) / 0.5)); drawCat3(q); });
+  D(0.4, () => { const t = Math.min(lt, 2.2), q = { x: 380 + t * 34, y: 520, s: 1.0 }; q.pose = lt < 2.2 ? walkPose3(walkCyc3(t * 34, 1)) : lp(walkPose3(walkCyc3(2.2 * 34, 1)), { ...STAND3, hr: -0.75, head: [52, -74] }, sm((lt - 2.2) / 0.5)); Object.assign(q.pose, exSeq(lt, [[0, 'neutral'], [2.2, 'curious']])); q.emote = emoAt(lt, [[2.4, 3.6, '?']]); drawCat3(q); });
 });
 /* T10 阿里山林鐵 */
 V('T10', '嘉義縣 · 竹崎', '阿里山林鐵 · 獨立山', 'Alishan Forest Railway', '23.48°N 120.60°E', ['林鐵繞著獨立山轉了三圈，才慢慢下山。', 'The forest railway spirals three times round Dulishan on its way down.'], [1.0, 1.02, 0, 0, 0, 0], function (lt) {
@@ -130,7 +130,7 @@ V('T10', '嘉義縣 · 竹崎', '阿里山林鐵 · 獨立山', 'Alishan Forest 
     const r = rng(402); for (let k = 0; k < 70; k++) { const x = mod(r() * 1600 - off, 1600) - 160, y = 320 + r() * 260, h = 60 + r() * 120; poly([[x - h * 0.2, y], [x, y - h], [x + h * 0.2, y]], mix('#1f3f2e', '#3d6b4a', r())); }
     c.fillStyle = 'rgba(255,255,255,0.35)'; c.fillRect(-M, 380, W + 2 * M, 60);
     for (let k = 0; k < 40; k++) { const x = mod(r() * 1600 - off * 2.2, 1600) - 160; c.fillStyle = mix('#173022', '#2d4f38', r()); c.fillRect(x, 300, 7, 260); } }, '#7a3a2c', '#4e2a20'));
-  D(1, () => drawCat3({ x: 520, y: 512, s: 1.25, pose: sit3(lt, { hr: 0.08 + Math.sin(lt * 1.5) * 0.06 }), shadow: false }));
+  D(1, () => drawCat3({ x: 520, y: 512, s: 1.25, pose: sit3(lt, { ...ex('content'), hr: 0.08 + Math.sin(lt * 1.5) * 0.06 }), emote: emoAt(lt, [[1.2, 2.8, 'note']]), shadow: false }));
 });
 /* T11 高鐵 */
 V('T11', '嘉義 → 雲林', '台灣高鐵', 'Taiwan High Speed Rail', '23.74°N 120.42°E', ['高鐵一眨眼就不見了。', 'The bullet train is gone in the blink of an eye.'], [1.02, 1.05, 0, 0, 0, 0], function (lt) {
@@ -141,7 +141,7 @@ V('T11', '嘉義 → 雲林', '台灣高鐵', 'Taiwan High Speed Rail', '23.74°
   D(0.35, () => { const u = clamp((lt - 0.8) / 1.0), x = lerp(-1400, 1600, u); c.save(); c.translate(x, 336); c.fillStyle = '#f7f7f4'; c.beginPath(); c.moveTo(0, 24); c.lineTo(0, 4); c.lineTo(1080, 4); c.quadraticCurveTo(1150, 6, 1180, 24); c.closePath(); c.fill(); c.fillStyle = '#e8792c'; c.fillRect(0, 16, 1170, 4); c.fillStyle = '#2b3846'; for (let k = 0; k < 40; k++) c.fillRect(20 + k * 26, 8, 16, 6); c.restore();
     if (u > 0 && u < 1) { c.save(); c.globalAlpha = 0.3; c.fillStyle = '#ffffff'; c.fillRect(x - 200, 340, 200, 16); c.restore(); } });
   L('fg', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#7aa84c'], [1, '#4f7a2c']]); c.fillRect(-M, 600, W + 2 * M, 200); });
-  D(0.95, () => { const u = clamp((lt - 0.9) / 1.0); drawCat3({ x: 620, y: 606, s: 1.15, face: -1, pose: sit3(lt, { hr: lerp(0.3, -0.5, sm(u)), eye: u > 0.2 && u < 0.6 ? 1 : undefined, ear: u > 0.1 && u < 0.9 ? 0.3 : 0, ts: 3 }) }); grassTufts(600, 640, 100, ['#5f8f35', '#86b452'], 414, 1, 14); });
+  D(0.95, () => { const u = clamp((lt - 0.9) / 1.0); drawCat3({ x: 620, y: 606, s: 1.15, face: -1, pose: sit3(lt, { ...exSeq(lt, [[0, 'neutral'], [0.9, 'surprised'], [2.1, 'curious']]), hr: lerp(0.3, -0.5, sm(u)), ear: u > 0.1 && u < 0.9 ? 0.3 : 0, ts: 3 }), emote: emoAt(lt, [[0.95, 1.8, '!'], [2.2, 3.4, '?']]) }); grassTufts(600, 640, 100, ['#5f8f35', '#86b452'], 414, 1, 14); });
 });
 /* T12 八卦山大佛 */
 V('T12', '彰化縣', '八卦山大佛', 'Great Buddha of Baguashan', '24.08°N 120.55°E', ['八卦山的大佛，在山上看了好久的風景。', 'The Great Buddha of Baguashan has watched over this view for a long time.'], [1.02, 1.07, 20, -20, 0, 0], function (lt) {
@@ -150,7 +150,7 @@ V('T12', '彰化縣', '八卦山大佛', 'Great Buddha of Baguashan', '24.08°N 
     c.fillStyle = '#3c3a40'; c.beginPath(); c.ellipse(x, y, 120, 46, 0, Math.PI, 0); c.fill(); c.beginPath(); c.moveTo(x - 90, y); c.quadraticCurveTo(x - 92, y - 140, x - 50, y - 170); c.lineTo(x + 50, y - 170); c.quadraticCurveTo(x + 92, y - 140, x + 90, y); c.fill(); c.beginPath(); c.ellipse(x, y - 210, 40, 46, 0, 0, TAU); c.fill(); c.beginPath(); c.ellipse(x, y - 252, 26, 18, 0, 0, TAU); c.fill(); c.fillRect(x - 100, y - 4, 200, 30); c.strokeStyle = 'rgba(255,190,140,0.6)'; c.lineWidth = 2; c.beginPath(); c.arc(x, y - 210, 41, Math.PI * 1.1, Math.PI * 1.6); c.stroke();
     bushes(60, -M, W + M, xx => 510 + Math.sin(xx * 0.01) * 8, 422, '#1c2624', '#2b3a36', 20); });
   L('path', 0.9, () => { c.fillStyle = vg(580, H, [[0, '#4b4440'], [1, '#2a2522']]); c.fillRect(-M, 590, W + 2 * M, 200); for (let x = -M; x < W + M; x += 90) { line(x, 560, x, 594, '#5b524b', 4); glow(x, 556, 16, '255,200,140', 0.6); } });
-  D(0.9, () => { const q = { x: 260 + lt * 28, y: 594, s: 1.0, rim: '255,180,120' }; q.pose = walkPose3(walkCyc3(lt * 28, 1), { hr: -0.15 }); drawCat3(q); });
+  D(0.9, () => { const q = { x: 260 + lt * 28, y: 594, s: 1.0, rim: '255,180,120' }; q.pose = { ...walkPose3(walkCyc3(lt * 28, 1), { hr: -0.15 }), ...ex('content') }; drawCat3(q); });
 });
 /* T13 集集綠色隧道 */
 V('T13', '南投縣 · 集集', '綠色隧道', 'Jiji Green Tunnel', '23.83°N 120.78°E', ['集集的樟樹，排成了一條綠色隧道。', 'In Jiji, camphor trees arch over the road into a green tunnel.'], [1.02, 1.05, 30, -30, 0, 0], function (lt) {
@@ -160,7 +160,7 @@ V('T13', '南投縣 · 集集', '綠色隧道', 'Jiji Green Tunnel', '23.83°N 1
   D(0.5, () => { const x = 1500 - lt * 360; c.fillStyle = '#f2c230'; c.beginPath(); c.roundRect(x, 470, 210, 50, 8); c.fill(); c.fillStyle = '#2b3846'; for (let k = 0; k < 6; k++) c.fillRect(x + 14 + k * 32, 480, 22, 14); c.fillStyle = '#d8a020'; c.fillRect(x, 506, 210, 6);
     c.save(); c.globalCompositeOperation = 'lighter'; const r = rng(432); for (let k = 0; k < 40; k++) { const xx = r() * W, yy = 540 + r() * 80, a = 0.15 + 0.1 * Math.sin(T * 0.8 + k); oval(xx + Math.sin(T * 0.5 + k) * 6, yy, 16 + r() * 30, 4 + r() * 5, 0, `rgba(255,240,180,${a})`); } c.restore(); });
   L('road', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#5d5a55'], [1, '#3a3834']]); c.fillRect(-M, 560, W + 2 * M, 200); for (let k = 0; k < 14; k++) c.fillStyle = '#e9d9a8', c.fillRect(-M + k * 130, 640, 70, 4); });
-  D(0.95, () => { const q = { x: 200 + lt * 46, y: 600, s: 1.05 }; q.pose = walkPose3(walkCyc3(lt * 46, 1.05, true), { trot: 1 }); drawCat3(q); });
+  D(0.95, () => { const q = { x: 200 + lt * 46, y: 600, s: 1.05 }; q.pose = { ...walkPose3(walkCyc3(lt * 46, 1.05, true), { trot: 1 }), ...ex('happy', 0.8) }; drawCat3(q); });
 });
 /* T14 彩虹眷村 */
 V('T14', '臺中市 · 南屯', '彩虹眷村', 'Rainbow Village', '24.13°N 120.61°E', ['彩虹眷村，每一面牆都畫滿了顏色。', 'At Rainbow Village, every wall is painted in colour.'], [1.02, 1.06, 20, -20, 0, 0], function (lt) {
@@ -171,7 +171,7 @@ V('T14', '臺中市 · 南屯', '彩虹眷村', 'Rainbow Village', '24.13°N 120
       if (t < 0.4) { c.beginPath(); c.arc(x, y, 3 + r() * 8, 0, TAU); c.fill(); } else if (t < 0.7) { c.fillRect(x, y, 4 + r() * 16, 3 + r() * 5); } else { c.strokeStyle = c.fillStyle; c.lineWidth = 2 + r() * 3; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + 10, y - 10, x + 20 + r() * 20, y + r() * 10); c.stroke(); } }
     for (let k = 0; k < 9; k++) { const x = 40 + k * 150, y = 420; c.fillStyle = '#ffffff'; c.beginPath(); c.arc(x, y, 34, 0, TAU); c.fill(); c.fillStyle = cols[k % cols.length]; c.beginPath(); c.arc(x, y, 26, 0, TAU); c.fill(); c.fillStyle = '#222'; disc(x - 9, y - 4, 4, '#222'); disc(x + 9, y - 4, 4, '#222'); c.strokeStyle = '#222'; c.lineWidth = 2; c.beginPath(); c.arc(x, y + 4, 10, 0.2, Math.PI - 0.2); c.stroke(); }
     c.fillStyle = vg(590, H, [[0, '#c9c0ad'], [1, '#8a826f']]); c.fillRect(-M, 598, W + 2 * M, 200); });
-  D(0.45, () => { const q = { x: 300 + lt * 30, y: 604, s: 1.15 }; q.pose = walkPose3(walkCyc3(lt * 30, 1.15), { hr: lt > 1.5 && lt < 2.6 ? -0.3 : 0 }); drawCat3(q); });
+  D(0.45, () => { const q = { x: 300 + lt * 30, y: 604, s: 1.15 }; q.pose = { ...walkPose3(walkCyc3(lt * 30, 1.15), { hr: lt > 1.5 && lt < 2.6 ? -0.3 : 0 }), ...exSeq(lt, [[0, 'content'], [1.5, 'delighted']]) }; q.emote = emoAt(lt, [[1.6, 2.9, 'spark']]); drawCat3(q); });
 });
 /* T15 勝興車站 */
 V('T15', '苗栗縣 · 三義', '勝興車站', 'Shengxing Station', '24.39°N 120.78°E', ['勝興車站，舊山線海拔最高的車站。', 'Shengxing — the highest station on the old mountain line.'], [1.02, 1.07, 0, 0, 0, 0], function (lt) {
@@ -181,7 +181,7 @@ V('T15', '苗栗縣 · 三義', '勝興車站', 'Shengxing Station', '24.39°N 1
     poly([[x - 30, y - 118], [x + 60, y - 190], [x + 320, y - 190], [x + 410, y - 118]], '#3d3f45'); for (let k = 0; k < 24; k++) line(x - 20 + k * 18, y - 120, x + 60 + k * 11, y - 188, 'rgba(20,20,25,0.45)', 1);
     c.fillStyle = '#ffffff'; c.fillRect(x + 140, y - 160, 100, 26); c.fillStyle = '#222'; c.font = `700 18px ${FONTS}`; c.textAlign = 'center'; c.fillText('勝 興 驛', x + 190, y - 141);
     c.fillStyle = vg(y, H, [[0, '#9b9488'], [1, '#6a645a']]); c.fillRect(-M, y, W + 2 * M, 200); c.fillStyle = '#4a443e'; c.fillRect(-M, 572, W + 2 * M, 6); c.fillRect(-M, 590, W + 2 * M, 6); for (let k = 0; k < 40; k++) c.fillRect(-M + k * 40, 570, 18, 28); c.fillStyle = '#cfc8b8'; c.fillRect(-M, 540, W + 2 * M, 22); });
-  D(0.45, () => drawCat3({ x: 320, y: 548, s: 1.0, pose: sit3(lt, { hr: lt > 2 ? 0.25 : -0.1, ts: 1.4 }) }));
+  D(0.45, () => drawCat3({ x: 320, y: 548, s: 1.0, pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [2, 'curious']]), hr: lt > 2 ? 0.25 : -0.1, ts: 1.4 }), emote: emoAt(lt, [[2.1, 3.3, 'note']]) }));
 });
 /* T16 客家茶園 */
 V('T16', '新竹縣 · 峨眉', '客家茶園', 'Hakka tea hills', '24.69°N 121.01°E', ['客家的茶山，一排一排綠到天邊。', 'Hakka tea hills — row after row, green all the way to the sky.'], [1.03, 1.07, 30, -30, 0, 0], function (lt) {
@@ -190,7 +190,7 @@ V('T16', '新竹縣 · 峨眉', '客家茶園', 'Hakka tea hills', '24.69°N 121
   L('tea', 0.5, () => { const f = x => 380 + Math.sin(x * 0.004) * 40 + fbm1(x * 0.006 + 3) * 30; mountain({ fn: f, top: '#6f9a4a', bot: '#5a8a3a', seed: 462 });
     for (let k = 0; k < 18; k++) { c.strokeStyle = k % 2 ? '#4f7f2e' : '#88b65a'; c.lineWidth = 7 + k * 0.8; c.beginPath(); for (let x = -M; x <= W + M; x += 20) { const y = f(x) + 12 + k * (14 + k * 1.1) + Math.sin(x * 0.006 + k * 0.3) * (10 + k); x === -M ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke(); }
     minnanHouse(980, 400, 140, 40, 0.7); });
-  D(0.5, () => { const q = { x: 240 + lt * 28, y: 600, s: 1.05 }; q.pose = walkPose3(walkCyc3(lt * 28, 1.05)); drawCat3(q); });
+  D(0.5, () => { const q = { x: 240 + lt * 28, y: 600, s: 1.05 }; q.pose = { ...walkPose3(walkCyc3(lt * 28, 1.05)), ...ex('content', 0.8) }; drawCat3(q); });
 });
 /* T17 南寮 17 公里海岸 風箏 */
 V('T17', '新竹市', '南寮 · 十七公里海岸', 'Nanliao kites', '24.85°N 120.92°E', ['新竹的風，讓風箏飛得好高。', 'Hsinchu’s famous wind sends the kites soaring.'], [1.02, 1.06, 0, 0, 0, 0], function (lt) {
@@ -200,7 +200,7 @@ V('T17', '新竹市', '南寮 · 十七公里海岸', 'Nanliao kites', '24.85°N
       else { poly([[0, -40], [30, 0], [0, 46], [-30, 0]], col); line(0, -40, 0, 46, 'rgba(255,255,255,0.7)', 1.5); line(-30, 0, 30, 0, 'rgba(255,255,255,0.7)', 1.5); c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); c.moveTo(0, 46); for (let t = 1; t < 8; t++) c.lineTo(Math.sin(T * 5 + t) * 8, 46 + t * 12); c.stroke(); }
       c.restore(); line(xx, yy + 40, 300 + k * 120, 600, 'rgba(255,255,255,0.5)', 0.8); }); });
   L('shore', 0.4, () => { c.fillStyle = vg(400, 470, [[0, '#4a8fb0'], [1, '#6fb2c4']]); c.fillRect(-M, 420, W + 2 * M, 60); c.fillStyle = vg(470, H, [[0, '#d8c9a2'], [1, '#a99a74']]); c.fillRect(-M, 470, W + 2 * M, H); for (let x = -M; x < W + M; x += 200) { line(x + 80, 470, x + 80, 300, '#e8e8e8', 3); for (let k = 0; k < 3; k++) { c.save(); c.translate(x + 80, 300); c.rotate(T * 2 + k * TAU / 3 + x); poly([[0, -2], [40, 0], [0, 2]], '#f2f2f2'); c.restore(); } } });
-  D(0.4, () => { grassTufts(560, 620, 100, ['#b8a868', '#8f8a4c'], 472, 3, 18); drawCat3({ x: 520, y: 604, s: 1.15, pose: sit3(lt, { hr: -0.55 + Math.sin(lt * 1.3) * 0.15, ear: 0.35, ts: 3 }) }); });
+  D(0.4, () => { grassTufts(560, 620, 100, ['#b8a868', '#8f8a4c'], 472, 3, 18); drawCat3({ x: 520, y: 604, s: 1.15, pose: sit3(lt, { ...ex('delighted'), hr: -0.55 + Math.sin(lt * 1.3) * 0.15, ear: 0.35, ts: 3 }), emote: emoAt(lt, [[1.0, 2.6, 'spark']]) }); });
 });
 /* T18 永安漁港 彩虹橋 */
 V('T18', '桃園市 · 新屋', '永安漁港彩虹橋', 'Rainbow Bridge, Yong’an', '24.99°N 121.01°E', ['永安漁港的彩虹橋，夜裡會一直換顏色。', 'Yong’an’s Rainbow Bridge keeps changing colour through the night.'], [1.02, 1.07, 0, 0, 0, 0], function (lt) {
@@ -210,7 +210,7 @@ V('T18', '桃園市 · 新屋', '永安漁港彩虹橋', 'Rainbow Bridge, Yong�
     for (let k = 0; k < 7; k++) { const col = cols[(k + ph) % 6]; c.strokeStyle = `rgb(${col})`; c.lineWidth = 6; c.beginPath(); c.moveTo(260 + k * 3, 500); c.quadraticCurveTo(640, 260 + k * 8, 1020 - k * 3, 500); c.stroke(); c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = `rgba(${col},0.25)`; c.lineWidth = 20; c.stroke(); c.restore();
       c.save(); c.beginPath(); c.rect(-M, 500, W + 2 * M, 200); c.clip(); c.globalAlpha = 0.35; c.strokeStyle = `rgb(${col})`; c.lineWidth = 6; c.beginPath(); c.moveTo(260 + k * 3, 500); c.quadraticCurveTo(640, 740 - k * 8, 1020 - k * 3, 500); c.stroke(); c.restore(); }
     c.fillStyle = '#1a1a26'; c.fillRect(240, 494, 800, 10); shimmer(505, H, 120, '255,200,150', 483, { a: 0.4, op: 'lighter' });
-    const q = { x: 300 + lt * 70, y: 494, s: 0.85, sil: true, rim: '255,170,200', shadow: false }; q.pose = walkPose3(walkCyc3(lt * 70, 0.85, true), { trot: 1 }); drawCat3(q); });
+    const q = { x: 300 + lt * 70, y: 494, s: 0.85, sil: true, rim: '255,170,200', shadow: false }; q.pose = { ...walkPose3(walkCyc3(lt * 70, 0.85, true), { trot: 1 }), ...ex('happy', 0.8) }; drawCat3(q); });
 });
 /* T19 飛往金門 */
 V('T19', '臺灣海峽上空', '飛往金門', 'Flying to Kinmen', '24.50°N 119.50°E', ['飛越臺灣海峽，去金門。', 'Up over the Taiwan Strait, bound for Kinmen.'], [1.0, 1.02, 0, 0, 0, 0], function (lt) {
@@ -218,7 +218,7 @@ V('T19', '臺灣海峽上空', '飛往金門', 'Flying to Kinmen', '24.50°N 119
     const r = rng(491); for (let k = 0; k < 30; k++) { const x = mod(r() * 1800 - lt * 60 * (0.5 + r()), 1800) - 200, y = 300 + r() * 280; cumulus(x, y, 120 + r() * 160, 30 + r() * 30, 492 + k, '#ffffff', '#c9d6e2', 0.2); }
     c.fillStyle = '#c9ccd2'; poly([[600, 560], [1200, 470], [1250, 485], [700, 600]], '#cfd2d8'); poly([[1150, 478], [1180, 440], [1196, 444], [1186, 482]], '#b2b6bd');
     c.save(); c.fillStyle = '#e9e6e0'; c.beginPath(); c.rect(-M, 0, W + 2 * M, H); c.ellipse(640, 360, 210, 270, 0, 0, TAU); c.fill('evenodd'); c.strokeStyle = '#cfcac0'; c.lineWidth = 26; c.beginPath(); c.ellipse(640, 360, 220, 280, 0, 0, TAU); c.stroke(); c.restore(); });
-  D(1, () => drawCat3({ x: 470, y: 640, s: 1.4, pose: sit3(lt, { hr: 0.1, ear: 0.1 }), shadow: false }));
+  D(1, () => drawCat3({ x: 470, y: 640, s: 1.4, pose: sit3(lt, { ...ex('delighted'), hr: 0.1, ear: -0.1 }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
 });
 /* T20 夜航 */
 V('T20', '臺灣海峽', '夜航往馬祖', 'Night boat to Matsu', '25.60°N 120.00°E', ['夜裡的船，往更北邊的島。', 'A night boat to the islands further north.'], [1.02, 1.05, 0, 0, 0, 0], function (lt) {
@@ -226,7 +226,7 @@ V('T20', '臺灣海峽', '夜航往馬祖', 'Night boat to Matsu', '25.60°N 120
   D(0, () => { disc(980, 140, 24, '#f6f0d6'); glow(980, 140, 120, '255,250,220', 0.25); });
   D(0.15, () => { c.fillStyle = vg(400, H, [[0, '#0c1424'], [1, '#05080f']]); c.fillRect(-M, 400, W + 2 * M, H); shimmer(402, 600, 80, '255,245,210', 502, { xc: 980, spread: 160, a: 0.6, op: 'lighter' }); });
   L('deck', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#3a3a44'], [1, '#1a1a22']]); c.fillRect(-M, 570, W + 2 * M, 200); line(-M, 520, W + M, 520, '#8a8a96', 4); for (let x = -M; x < W + M; x += 60) line(x, 520, x, 572, '#8a8a96', 3); glow(160, 500, 60, '255,210,150', 0.6); });
-  D(0.95, () => drawCat3({ x: 560, y: 586, s: 1.1, sil: true, rim: '255,240,200', pose: sit3(lt, { hr: -0.2, ts: 1.2 }), shadow: false }));
+  D(0.95, () => drawCat3({ x: 560, y: 586, s: 1.1, sil: true, rim: '255,240,200', pose: sit3(lt, { ...ex('sleepy'), eye: lt > 1.4 ? 0 : 0.3, hr: -0.1 + sm((lt - 1.2) / 0.6) * 0.2, ts: 1.2 }), emote: emoAt(lt, [[1.5, 3.8, 'z']]), shadow: false }));
 });
 /* T21 降落松山 */
 V('T21', '臺北市上空', '降落松山機場', 'Landing in Taipei', '25.07°N 121.55°E', ['看到 101 了，快到家了。', 'There’s Taipei 101. Almost home.'], [1.0, 1.02, 0, 0, 0, 0], function (lt) {
@@ -234,5 +234,5 @@ V('T21', '臺北市上空', '降落松山機場', 'Landing in Taipei', '25.07°N
     for (let k = 0; k < 900; k++) { const x = mod(r() * 1800 - lt * 90 * (1 + r()), 1800) - 200, y = 390 + Math.pow(r(), 0.8) * 300; disc(x, y, 0.8 + r() * 1.4, `rgba(255,${190 + r() * 60},${120 + r() * 80},${0.5 + r() * 0.5})`); }
     tower101(820 - lt * 40, 470, 120, { light: '#4a5a7a', dark: '#262c44', night: true });
     c.save(); c.fillStyle = '#d8d4cc'; c.beginPath(); c.rect(-M, 0, W + 2 * M, H); c.ellipse(640, 360, 210, 270, 0, 0, TAU); c.fill('evenodd'); c.strokeStyle = '#bdb8ae'; c.lineWidth = 26; c.beginPath(); c.ellipse(640, 360, 220, 280, 0, 0, TAU); c.stroke(); c.restore(); });
-  D(1, () => drawCat3({ x: 470, y: 640, s: 1.4, pose: sit3(lt, { hr: 0.2 + Math.sin(lt * 2) * 0.03, ear: -0.1 }), shadow: false }));
+  D(1, () => drawCat3({ x: 470, y: 640, s: 1.4, pose: sit3(lt, { ...ex('happy'), hr: 0.2 + Math.sin(lt * 2) * 0.03, ear: -0.1 }), emote: emoAt(lt, [[1.2, 3.0, 'heart']]), shadow: false }));
 });
