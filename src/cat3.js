@@ -13,7 +13,7 @@ const COATS = {
     patches: [[0.05, 6, 16, 12, '#d98a45'], [0.42, 9, 11, 9, '#2f2a2a'], [0.78, 7, 10, 8, '#d98a45']], sitPatches: [[-22, -40, 13, 15, '#d98a45'], [-6, -60, 8, 8, '#2f2a2a'], [-28, -14, 10, 7, '#2f2a2a']], headPatches: [[-6.5, -7, 4, 7.5, '#d98a45'], [5, -10.5, 3, 4.2, '#2f2a2a']], tail: '#d98a45' },
   tuxedo: { base: '#26222a', shade: '#1a171d', far: '#121014', cream: '#f2efe8', creamS: '#d9d4ca', light: 'rgba(170,180,220,0.16)', stripe: null, line: '#0b090c', inner: 'rgba(0,0,0,0.6)', belly: 'rgba(250,248,242,0.95)', eye: '#e2c24c', nose: '#e39a9a', ear: '#5e4650' },
 };
-const HSR = 1.56, HSS = 1.5; // head scale (rig / sitting): a little big, so expressions read at film size
+const HSR = 1.68, HSS = 1.62; // head scale (rig / sitting): a little big, so expressions read at film size
 let CB = null, CB2 = null, CB3 = null, CB4 = null, CB5 = null;
 const CBW = 720, CBH = 560, COX = 360, COY = 470;
 function cbufs() { if (!CB) { CB = mkCanvas(CBW, CBH); CB2 = mkCanvas(CBW, CBH); CB3 = mkCanvas(CBW, CBH); CB4 = mkCanvas(CBW, CBH); CB5 = mkCanvas(CBW, CBH); } }
@@ -165,13 +165,22 @@ function earGeo(H, p, s) {
   return { b1, b2, tp, pts: [b1, b2, tp].map(v => { const q = H.pr(...v); return [q[0] + off[0], q[1] + off[1]]; }), dep };
 }
 /* head outline pieces as one path (skull, cheeks + fur tufts, muzzle, chin) */
+/* head outline: the skull, cheeks, muzzle and chin are merged into ONE smooth contour. A ray is cast from the head
+   centre every 5.6°, the outermost piece wins, then a radial closing + blur removes the notches between pieces. */
 function headPath(H, p) {
-  const sk = H.pr(0, -2, 0), w = Math.hypot(12 * H.cs, 11.5 * H.sn);
-  c.beginPath(); c.ellipse(sk[0], sk[1], w, 11, 0, 0, TAU);
-  [-1, 1].forEach(s => { const q = H.pr(s * 7.6, 3.2, 2.6); c.moveTo(q[0] + 6.4, q[1]); c.arc(q[0], q[1], 6.4, 0, TAU); });
-  const mz = H.pr(0, 3.3, 9), ch = H.pr(0, 6.2, 6.6);
-  c.moveTo(mz[0] + 5, mz[1]); c.arc(mz[0], mz[1], 5, 0, TAU); c.moveTo(ch[0] + 3.8, ch[1]); c.arc(ch[0], ch[1], 3.8, 0, TAU);
-  if ((p.mouth || 0) > 0.05) { const j = H.pr(0, 5.8 + 3.6 * p.mouth, 8.4); c.moveTo(j[0] + 4.2, j[1]); c.arc(j[0], j[1], 4.2, 0, TAU); }
+  const sk = H.pr(0, -2, 0), w = Math.hypot(12 * H.cs, 11.5 * H.sn), C = [sk[0], sk[1] + 1.5], circ = [];
+  [-1, 1].forEach(s => { const q = H.pr(s * 7.6, 3.2, 2.6); circ.push([q[0], q[1], 6.4]); });
+  const mz = H.pr(0, 3.3, 9), ch = H.pr(0, 6.2, 6.6); circ.push([mz[0], mz[1], 5], [ch[0], ch[1], 3.8]);
+  if ((p.mouth || 0) > 0.05) { const j = H.pr(0, 5.8 + 3.6 * p.mouth, 8.4); circ.push([j[0], j[1], 4.2]); }
+  const N = 64, r = [], dx0 = C[0] - sk[0], dy0 = C[1] - sk[1];
+  for (let i = 0; i < N; i++) { const a = i / N * TAU, ux = Math.cos(a), uy = Math.sin(a);
+    const A = (ux / w) ** 2 + (uy / 11) ** 2, Bq = 2 * (dx0 * ux / (w * w) + dy0 * uy / 121), Cq = (dx0 / w) ** 2 + (dy0 / 11) ** 2 - 1;
+    let best = (-Bq + Math.sqrt(Math.max(0, Bq * Bq - 4 * A * Cq))) / (2 * A);
+    for (const [cx, cy, R] of circ) { const ex = C[0] - cx, ey = C[1] - cy, bb = ex * ux + ey * uy, disc = bb * bb - (ex * ex + ey * ey - R * R); if (disc >= 0) best = Math.max(best, -bb + Math.sqrt(disc)); }
+    r.push(best); }
+  const win = (arr, k, f) => arr.map((_, i) => { let v = arr[i]; for (let d = -k; d <= k; d++) v = f(v, arr[(i + d + N) % N]); return v; });
+  const cl = win(win(r, 3, Math.max), 3, Math.min), rs = cl.map((_, i) => (cl[(i + N - 2) % N] + 2 * cl[(i + N - 1) % N] + 3 * cl[i] + 2 * cl[(i + 1) % N] + cl[(i + 2) % N]) / 9);
+  smoothClosed(rs.map((v, i) => [C[0] + Math.cos(i / N * TAU) * v, C[1] + Math.sin(i / N * TAU) * v]));
 }
 function headSil(p, P, hd, sc) {
   const H = headView(p);
@@ -198,8 +207,11 @@ function drawRig(p, P, k, fx) {
   const hk0 = hind3Geom(B, p.hn), ha = Math.atan2(B.t[1], B.t[0]), sw = [(hk0.kn[0] - hk0.root[0]) * 0.12, (hk0.kn[1] - hk0.root[1]) * 0.08];
   const hc = [B.H[0] - B.t[0] * 4 - B.n[0] * 1.5 + sw[0], B.H[1] - B.t[1] * 4 - B.n[1] * 1.5 + sw[1]];
   const haunch = () => { c.beginPath(); c.ellipse(hc[0], hc[1], 14, 14.2 * (p.g || 1), ha, 0, TAU); };
-  haunch(); c.fill(); hind3(B, p.hn, 1); fore3(B, p.fn, 1); hindWeb(B, hind3Geom(B, p.hn), hc, p);
+  haunch(); c.fill(); hind3(B, p.hn, 1); hindWeb(B, hind3Geom(B, p.hn), hc, p);
   c.save(); smoothClosed(B.pts); c.clip(); shadeBody3(B, p, P); c.restore();
+  if (!(p.tuck > 0.5)) { c.save(); c.beginPath(); for (let u = -0.3; u <= 1.6; u += 0.1) { const q = B.at(u, -6.5); u < -0.29 ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); }
+    const e1 = B.at(1.6, -90), e0 = B.at(-0.3, -90); c.lineTo(e1[0], e1[1]); c.lineTo(e0[0], e0[1]); c.closePath(); c.clip(); c.fillStyle = P.base; fore3(B, p.fn, 1); c.restore(); }
+  else { c.fillStyle = P.base; fore3(B, p.fn, 1); }
   // near legs on their own layer
   const g3 = CB3.getContext('2d'); g3.setTransform(1, 0, 0, 1, 0, 0); g3.globalCompositeOperation = 'source-over'; g3.clearRect(0, 0, CBW, CBH); g3.setTransform(k * fx, 0, 0, k, COX, COY);
   c = g3; c.fillStyle = P.base;
@@ -219,12 +231,13 @@ function drawRig(p, P, k, fx) {
   // neck + head
   const nb = B.at(1.0, 2), hd = p.head, ne = [lerp(nb[0], hd[0], 0.8), lerp(nb[1], hd[1], 0.8)];
   c.fillStyle = P.base; taper(nb, ne, 25, 21);
+  // one cream bib from the chin down the front of the chest (clipped to neck + body), then the head on top
+  { const dx = ne[0] - nb[0], dy = ne[1] - nb[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+    c.save(); c.beginPath(); c.moveTo(nb[0] + nx * 12.5, nb[1] + ny * 12.5); c.lineTo(ne[0] + nx * 10.5, ne[1] + ny * 10.5); c.lineTo(ne[0] - nx * 10.5, ne[1] - ny * 10.5); c.lineTo(nb[0] - nx * 12.5, nb[1] - ny * 12.5); c.closePath();
+    smoothClosed(B.pts); c.clip('nonzero');
+    const bib = [[ne[0] + nx * 4, ne[1] + ny * 4], [ne[0] + nx * 12, ne[1] + ny * 12], B.at(1.25, 2), B.at(1.25, -6), B.at(1.16, -14), B.at(1.0, -16), B.at(0.96, -8), [lerp(nb[0], ne[0], 0.5) + nx * 3, lerp(nb[1], ne[1], 0.5) + ny * 3]];
+    c.fillStyle = P.cream; smoothClosed(bib); c.fill(); c.restore(); }
   headSil(p, P, hd, HSR);
-  // cream throat, clipped to the neck
-  c.save(); const dx = ne[0] - nb[0], dy = ne[1] - nb[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
-  c.beginPath(); c.moveTo(nb[0] + nx * 12.5, nb[1] + ny * 12.5); c.lineTo(ne[0] + nx * 10.5, ne[1] + ny * 10.5); c.lineTo(ne[0] - nx * 10.5, ne[1] - ny * 10.5); c.lineTo(nb[0] - nx * 12.5, nb[1] - ny * 12.5); c.closePath(); c.clip();
-  c.fillStyle = P.cream; const tq = [lerp(nb[0], ne[0], 0.4) + nx * 8, lerp(nb[1], ne[1], 0.4) + ny * 8]; c.beginPath(); c.ellipse(tq[0], tq[1], 10, 4, Math.atan2(dy, dx), 0, TAU); c.fill();
-  c.restore();
   return { B, tp, hl, fl };
 }
 /* body shading, already clipped to the body: tabby stripes, cream underside, top light */
@@ -244,8 +257,6 @@ function shadeBody3(B, p, P) {
   c.fillStyle = P.creamS; c.globalAlpha = 0.7; c.beginPath(); first = true;
   for (let u = -0.3; u <= 1.32; u += 0.04) { const q = B.at(u, -B.bot(clamp(u, -0.14, 1.1)) + 2.2 * sm((u - 0.1) / 0.2)); first ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); first = false; }
   c.lineTo(e1[0], e1[1]); c.lineTo(e0[0], e0[1]); c.closePath(); c.fill(); c.globalAlpha = 1;
-  // chest ruff
-  c.fillStyle = P.cream; const ch = B.at(1.15, -8); c.beginPath(); c.ellipse(ch[0], ch[1], 6.5, 9, 0.2, 0, TAU); c.fill();
   // top light
   c.fillStyle = P.light; c.beginPath(); c.moveTo(B.TP[0][0] + B.n[0] * 10, B.TP[0][1] + B.n[1] * 10); B.TP.forEach(q => c.lineTo(q[0] - B.n[0] * 5, q[1] - B.n[1] * 5)); const lq = B.TP[B.TP.length - 1]; c.lineTo(lq[0] + B.n[0] * 10, lq[1] + B.n[1] * 10); c.closePath(); c.fill();
 }
@@ -343,7 +354,7 @@ function eye3(x, y, rx, ry, inner, q, P, sil, H) {
 }
 function face3(P, p, sil) {
   const q = { ...FACE0 }; for (const k in p) if (p[k] != null) q[k] = p[k];
-  const H = headView(q), m = q.mouth || 0, ES = 1.12, front = Math.cos((1 - H.tn) * 0.45 * Math.PI);
+  const H = headView(q), m = q.mouth || 0, ES = 1.25, front = Math.cos((1 - H.tn) * 0.45 * Math.PI);
   // inner ears (pink, with a cream tuft) on the ears that face us
   [-1, 1].forEach(s => { const e = earGeo(H, q, s), vis = clamp(H.d(s * 0.35, 1) * 1.4); if (e.dep < -2.5 || vis < 0.08) return;
     const mid = [(e.b1[0] + e.b2[0]) / 2, (e.b1[1] + e.b2[1]) / 2, (e.b1[2] + e.b2[2]) / 2], L3 = (u, a, b) => a.map((v, i) => v + (b[i] - v) * u);
