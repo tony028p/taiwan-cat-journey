@@ -39,7 +39,16 @@ h2 { font-family: var(--serif); font-size: 20px; letter-spacing: 0.2em; font-wei
 .cty { font-family: var(--serif); font-size: 17px; font-weight: 600; letter-spacing: 0.08em; }
 .pl { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 .note { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 68ch; margin: 0; }
-@media (prefers-reduced-motion: reduce) { .stops button { transition: none; } }
+.dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 560px) { .dl { grid-template-columns: 1fr; } }
+.dl a { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px; color: var(--ink); text-decoration: none; transition: border-color .2s, background .2s; }
+.dl a:hover { border-color: var(--accent); background: var(--accent-dim); }
+.dl a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dl .q { font-family: var(--serif); font-size: 17px; font-weight: 600; letter-spacing: 0.08em; }
+.dl .d { font-size: 12px; color: var(--muted); grid-column: 1; font-variant-numeric: tabular-nums; }
+.dl .ic { grid-row: span 2; grid-column: 2; font-size: 20px; color: var(--accent); }
+.note a { color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .stops button, .dl a { transition: none; } }
 </style>
 </head>
 <body>
@@ -65,6 +74,15 @@ h2 { font-family: var(--serif); font-size: 20px; letter-spacing: 0.2em; font-wei
   <h2>沿途二十二站</h2>
   <ol class="stops" id="stops"></ol>
   <p class="note">二十二個縣市之間，各接一段真實的沿途風景：陰陽海、蘇花海岸、花東縱谷、多良車站、高屏溪斜張橋、澎湖跨海大橋、北回歸線、阿里山林鐵、集集綠色隧道、彩虹眷村、勝興車站、永安漁港彩虹橋，再飛往金門、夜航到馬祖、降落臺北。配樂是起承轉合四段的原創鋼琴與弦樂。點選任一站即可跳到該段。</p>
+
+  <h2>下載</h2>
+  <div class="dl">
+    <a href="https://github.com/tony028p/taiwan-cat-journey/releases/latest/download/taiwan-cat-journey-1080p.mp4"><span class="q">1080p 高畫質</span><span class="ic" aria-hidden="true">↓</span><span class="d">1920×1080 · MP4 · 約 380 MB</span></a>
+    <a href="https://github.com/tony028p/taiwan-cat-journey/releases/latest/download/taiwan-cat-journey-1080p-small.mp4"><span class="q">1080p 精簡版</span><span class="ic" aria-hidden="true">↓</span><span class="d">1920×1080 · MP4 · 約 86 MB</span></a>
+    <a href="https://github.com/tony028p/taiwan-cat-journey/releases/latest/download/taiwan-cat-journey-1080p-master.mp4"><span class="q">母片</span><span class="ic" aria-hidden="true">↓</span><span class="d">1920×1080 · 最高畫質 · 約 970 MB</span></a>
+    <a href="media/film-720p.mp4" download="小貓環島記_720p.mp4"><span class="q">720p</span><span class="ic" aria-hidden="true">↓</span><span class="d">1280×720 · MP4 · 約 13 MB</span></a>
+  </div>
+  <p class="note">1080p 的三個檔案放在 <a href="https://github.com/tony028p/taiwan-cat-journey/releases/latest">GitHub Releases</a>，由 GitHub 的伺服器依同一份程式算圖後發布。</p>
 </div>
 
 <script>
