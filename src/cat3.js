@@ -13,7 +13,8 @@ const COATS = {
     patches: [[0.05, 6, 16, 12, '#d98a45'], [0.42, 9, 11, 9, '#2f2a2a'], [0.78, 7, 10, 8, '#d98a45']], sitPatches: [[-22, -40, 13, 15, '#d98a45'], [-6, -60, 8, 8, '#2f2a2a'], [-28, -14, 10, 7, '#2f2a2a']], headPatches: [[-6.5, -7, 4, 7.5, '#d98a45'], [5, -10.5, 3, 4.2, '#2f2a2a']], tail: '#d98a45' },
   tuxedo: { base: '#26222a', shade: '#1a171d', far: '#121014', cream: '#f2efe8', creamS: '#d9d4ca', light: 'rgba(170,180,220,0.16)', stripe: null, line: '#0b090c', inner: 'rgba(0,0,0,0.6)', belly: 'rgba(250,248,242,0.95)', eye: '#e2c24c', nose: '#e39a9a', ear: '#5e4650' },
 };
-const HSR = 1.68, HSS = 1.62; // head scale (rig / sitting): a little big, so expressions read at film size
+// head scale (rig / sitting) and eye scale: torso ≈ 2.4 head lengths (a real cat is ≈ 4, a chibi ≈ 1.5); eye height ≈ 0.28 of the head
+let HSR = 1.3, HSS = 1.36, EYE3 = 0.85, EARH = -20;   // EARH: ear-tip height in head units (skull top ≈ −11.5)
 let CB = null, CB2 = null, CB3 = null, CB4 = null, CB5 = null;
 const CBW = 720, CBH = 560, COX = 360, COY = 470;
 function cbufs() { if (!CB) { CB = mkCanvas(CBW, CBH); CB2 = mkCanvas(CBW, CBH); CB3 = mkCanvas(CBW, CBH); CB4 = mkCanvas(CBW, CBH); CB5 = mkCanvas(CBW, CBH); } }
@@ -36,8 +37,10 @@ const SLEEP3 = { ...LOAF3, head: [44, -28], hr: 0.25, eye: 0, ear: 0.15, tail: [
 /* Walk (lateral sequence) and trot (diagonal pairs). Stance feet move back at exactly the body speed (walkCyc3), so
    nothing slides. Secondary motion is derived from which legs are bearing weight: the withers and pelvis rise over a
    vertical supporting leg, the shoulder blade pokes above the topline, the head counter-bobs and nods with the forefeet. */
+/* half-stride of the walk / trot: a real cat's legs swing well fore and aft of the vertical (an inverted V), not shuffle */
+const WSX3 = 23, TSX3 = 26, WHX3 = 68, WHY3 = -60;   // WHX3/WHY3: head carried forward, just above the topline
 function walkPose3(cyc, o = {}) {
-  const trot = o.trot, duty = trot ? 0.45 : 0.64, Sx = trot ? 17 : 13.5, lift = trot ? 11 : 7.5, low = o.low || 0;
+  const trot = o.trot, duty = trot ? 0.45 : 0.64, Sx = trot ? TSX3 : WSX3, lift = trot ? 11 : 8, low = o.low || 0;
   const offs = trot ? { hn: 0, ff: 0.03, hf: 0.5, fn: 0.53 } : { hn: 0, fn: 0.25, hf: 0.5, ff: 0.75 };
   const sup = {};
   const foot = (k, base, fore) => {
@@ -51,11 +54,11 @@ function walkPose3(cyc, o = {}) {
   const sF = Math.max(sup.fn, sup.ff), sH = Math.max(sup.hn, sup.hf), amp = trot ? 3.2 : 2.2;
   const shY = -52 + low * 1.1 - (sF - 0.7) * amp, hipY = -50 + low - (sH - 0.7) * amp * 0.9;
   return { ...STAND3, hip: [-34, hipY], sh: [30, shY], arch: 3.5 + (sF - sH) * 0.6,
-    head: [54 + (o.headX || 0) + sF * 0.8, -72 + low * 1.3 + (shY + 52 - low * 1.1) * 0.35 + (o.headY || 0)], hr: (o.hr || 0) + (sF - 0.7) * 0.025,
-    fn, ff, hn, hf, sb: 1.2 + 2.6 * sF, hb: 0.8 + 1.6 * sH,
-    tail: o.tail || (trot ? [-2.3, 0.08, 0.1, 3, 0] : [-1.75, 0.12, 0.06, 1.6, 0]), eye: o.eye ?? 1, ear: o.ear || 0 };
+    head: [WHX3 + (o.headX || 0) + sF * 0.8, WHY3 + low * 1.3 + (shY + 52 - low * 1.1) * 0.35 + (o.headY || 0)], hr: (o.hr || 0) + (sF - 0.7) * 0.025,
+    fn, ff, hn, hf, sb: 0.8 + 1.6 * sF, hb: 0.8 + 1.4 * sH,
+    tail: o.tail || (trot ? [-2.3, 0.02, 0.1, 3, 0] : [-1.95, 0.06, 0.06, 1.6, 0]), eye: o.eye ?? 1, ear: o.ear || 0 };
 }
-function walkCyc3(dist, s, trot) { return dist / ((trot ? 34 / 0.45 : 27 / 0.64) * s * SPX); }
+function walkCyc3(dist, s, trot) { return dist / ((trot ? 2 * TSX3 / 0.45 : 2 * WSX3 / 0.64) * s * SPX); }
 /* Galloping lope (transverse sequence: far-hind, near-hind, near-fore, far-fore) with one gathered suspension.
    The spine stays almost the same length (±11%): extension is shown by the back flattening and the legs reaching,
    not by stretching the body. GLC = stride per cycle in pose units; drive it with gallopCyc3 so stance feet stay put. */
@@ -89,10 +92,12 @@ function gallopPose3(cyc) {
 }
 function gallopCyc3(dist, s) { return dist / (GLC * s * SPX); }
 /* rig poses are authored long; they are drawn compressed along x by SPX for a compact, cat-like torso */
-const SPX = 0.86;
+const SPX = 0.96;
+/* …and lowered by SPY with legs shortened to match (LEG), so the torso is as deep as the legs are long, not on stilts */
+const SPY = 0.93, LEG = 0.93;
 /* the head sits low on the shoulders (no giraffe neck): 20% closer to the withers than authored */
-function headPos3(p) { const sx = p.sh[0] * SPX, hx = p.head[0] * SPX; return [lerp(sx, hx, 0.8) + 2, lerp(p.sh[1], p.head[1], 0.8) + 2]; }
-function squashX(p) { if (p.sit) return p; const q = { ...p }; ['hip', 'sh'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1]]); q.head = headPos3(p); ['fn', 'ff', 'hn', 'hf'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1], p[k][2]]); return q; }
+function headPos3(p) { const sx = p.sh[0] * SPX, hx = p.head[0] * SPX; return [lerp(sx, hx, 0.8) + 2, lerp(p.sh[1], p.head[1], 0.8) * SPY + 2]; }
+function squashX(p) { if (p.sit) return p; const q = { ...p }; ['hip', 'sh'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1] * SPY]); q.head = headPos3(p); ['fn', 'ff', 'hn', 'hf'].forEach(k => q[k] = [p[k][0] * SPX, p[k][1] * SPY, p[k][2]]); return q; }
 
 function bodyGeom3(p) {
   const H = p.hip, Sh = p.sh, dx = Sh[0] - H[0], dy = Sh[1] - H[1], L = Math.hypot(dx, dy), t = [dx / L, dy / L], n = [t[1], -t[0]];
@@ -100,10 +105,11 @@ function bodyGeom3(p) {
   const sp = u => { const a = 4 * u * (1 - u) * (p.arch || 0); return [H[0] + dx * u + n[0] * a, H[1] + dy * u + n[1] * a]; };
   const at = (u, k) => { const q = sp(u); return [q[0] + n[0] * k, q[1] + n[1] * k]; };
   const top = u => (10.5 + 1.6 * Math.sin(clamp(u) * Math.PI) + 1.2 * sm(clamp((u - 0.7) / 0.3))) * g0 + sb * Math.exp(-Math.pow((u - 0.86) / 0.09, 2)) + hb * Math.exp(-Math.pow((u - 0.06) / 0.1, 2));
-  const bot = u => (u < 0.48 ? lerp(12, 8.6, sm(clamp((u + 0.05) / 0.5))) : lerp(8.6, 17, sm(clamp((u - 0.48) / 0.47)))) * br * g0;
+  // belly: a bean — deep round chest, a gentle rise toward the thigh (never a pinched wasp waist)
+  const bot = u => (12.8 + 1.2 * sm(clamp((u - 0.12) / 0.4)) + 4.2 * sm(clamp((u - 0.5) / 0.45)) - 2.6 * sm(clamp((0.08 - u) / 0.2))) * br * g0;
   const TP = [], BP = [];
   for (let u = -0.12; u <= 1.1001; u += 0.04) { TP.push(at(u, top(u))); BP.push(at(u, -bot(u))); }
-  const front = [at(1.19, 8), at(1.24, -3), at(1.17, -13)], rear = [at(-0.18, -9), at(-0.21, 1), at(-0.17, 10)];
+  const front = [at(1.19, 8), at(1.24, -3), at(1.17, -13)], rear = [at(-0.17, -9), at(-0.205, -3.5), at(-0.215, 2.5), at(-0.185, 8.5)];
   return { H, Sh, t, n, L, sp, at, top, bot, TP, BP, pts: [...TP, ...front, ...BP.slice().reverse(), ...rear] };
 }
 function taper(a, b, wa, wb) { const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
@@ -118,23 +124,23 @@ function fore3(B, tg, part = 3) {
   const f = tg[2], toe = [tg[0], tg[1]];
   const pas = f >= 0 ? lp([3, 7], [-6, 4], Math.min(1, f)) : lp([3, 7], [9, 2], Math.min(1, -f));
   const root = [B.Sh[0] - B.t[0] * 3 - B.n[0] * 2, B.Sh[1] - B.t[1] * 3 - B.n[1] * 2];
-  const W = reach(root, [toe[0] - pas[0], toe[1] - pas[1]], 40), el = ik(root, W, 19.5, 21, -1), T2 = [W[0] + pas[0], W[1] + pas[1]];
+  const W = reach(root, [toe[0] - pas[0], toe[1] - pas[1]], 40 * LEG), el = ik(root, W, 19.5 * LEG, 21 * LEG, -1), T2 = [W[0] + pas[0], W[1] + pas[1]];
   const pa = Math.atan2(pas[1], pas[0]) - Math.PI / 2 + 0.3;
   if (part & 1) limbSeg(root, el, 14, 8.6, 2);
-  if (part & 2) { limbSeg(el, W, 7.6, 5.4, 1); taper(W, T2, 5.3, 5); c.beginPath(); c.ellipse(T2[0] + 1.2, T2[1] - 2.3, 4.9, 3, pa, 0, TAU); c.fill(); }
+  if (part & 2) { limbSeg(el, W, 8.2, 5.9, 1); taper(W, T2, 5.7, 5.3); c.beginPath(); c.ellipse(T2[0] + 1.2, T2[1] - 2.3, 4.9, 3, pa, 0, TAU); c.fill(); }
   return { root, el, W, T2, pa };
 }
 function hind3(B, tg, part = 3) {
   const f = tg[2], toe = [tg[0], tg[1]];
-  const off = f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1));
+  const off = (f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1))).map(v => v * LEG);
   const root = [B.H[0] - B.t[0] * 1 - B.n[0] * 3, B.H[1] - B.t[1] * 1 - B.n[1] * 3];
-  const hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4), kn = ik(root, hk, 17.5, 19, 1);
+  const hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4 * LEG), kn = ik(root, hk, 17.5 * LEG, 19 * LEG, 1);
   if (part & 1) limbSeg(root, kn, 22, 10.5, 3);
-  if (part & 2) { limbSeg(kn, hk, 9.5, 5.6, 2.2); taper(hk, toe, 5.4, 4.8); c.beginPath(); c.ellipse(toe[0] + 1.5, toe[1] - 2.1, 5.1, 2.8, 0, 0, TAU); c.fill(); }
+  if (part & 2) { limbSeg(kn, hk, 10, 6, 2.2); taper(hk, toe, 5.8, 5.1); c.beginPath(); c.ellipse(toe[0] + 1.5, toe[1] - 2.1, 5.1, 2.8, 0, 0, TAU); c.fill(); }
   return { root, kn, hk, toe };
 }
-function hind3Geom(B, tg) { const f = tg[2], toe = [tg[0], tg[1]], off = f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1));
-  const root = [B.H[0] - B.t[0] * 1 - B.n[0] * 3, B.H[1] - B.t[1] * 1 - B.n[1] * 3], hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4); return { root, kn: ik(root, hk, 17.5, 19, 1), hk }; }
+function hind3Geom(B, tg) { const f = tg[2], toe = [tg[0], tg[1]], off = (f <= 1 ? lp([-6, -17.5], [-13, -10], clamp(f)) : lp([-13, -10], [-19, -3], clamp(f - 1))).map(v => v * LEG);
+  const root = [B.H[0] - B.t[0] * 1 - B.n[0] * 3, B.H[1] - B.t[1] * 1 - B.n[1] * 3], hk = reach(root, [toe[0] + off[0], toe[1] + off[1]], 36.4 * LEG); return { root, kn: ik(root, hk, 17.5 * LEG, 19 * LEG, 1), hk }; }
 /* fill the notch between the rump and the shin so the back of the hind leg reads as one convex contour (rump → heel) */
 function hindWeb(B, hl, hc, p) {
   const t = B.t, n = B.n, rx = 14, ry = 14.2 * (p.g || 1), dx = hl.hk[0] - hl.kn[0], dy = hl.hk[1] - hl.kn[1], L = Math.hypot(dx, dy) || 1;
@@ -158,18 +164,32 @@ function headView(p) {
   return { tn, cs, sn, pr: (x, y, z) => [z * sn + x * cs, y], d: (x, z) => z * cs - x * sn };
 }
 /* ear triangle for side s (±1): ear > 0 swivels back, < 0 pricks forward; earDown flattens it sideways */
+function hull2(P) { const p = P.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]), cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]), lo = [], up = [];
+  for (const q of p) { while (lo.length > 1 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (const q of p.reverse()) { while (up.length > 1 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+  return lo.slice(0, -1).concat(up.slice(0, -1)); }
 function earGeo(H, p, s) {
   const e = p.ear || 0, dn = p.earDown || 0;
-  const b1 = [s * 2.4, -11.2, 4.6], b2 = [s * 10.8, -6.8, -3.4], tp = [s * (8.4 + dn * 8), -24 + dn * 11 + Math.max(0, e) * 2.5, -0.6 - e * 7 - dn * 2];
-  const dep = H.d(s * 7, 0), off = dep < 0 ? [-5 * (1 - H.tn), -1 * (1 - H.tn)] : [0, 0];   // the far ear peeks out behind in profile
-  return { b1, b2, tp, pts: [b1, b2, tp].map(v => { const q = H.pr(...v); return [q[0] + off[0], q[1] + off[1]]; }), dep };
+  // ear ≈ 0.4 of the skull height, set wide at 10 and 2 o'clock with a softly rounded tip — tall spikes close together read as a fox
+  const b1 = [s * 3.4, -10.9, 4.4], b2 = [s * 12.2, -5.8, -3.4], tp = [s * (11 + dn * 7), EARH + dn * 9 + Math.max(0, e) * 2, -0.6 - e * 6 - dn * 2];
+  const dep = H.d(s * 7, 0), q1 = H.pr(...b1), q2 = H.pr(...b2), edge = clamp(1 - Math.hypot(q1[0] - q2[0], q1[1] - q2[1]) / 12.4);
+  // seen edge-on (or foreshortened behind the head) an ear would stand up as a thin spike: lower its tip
+  tp[1] += 3.2 * Math.max(edge, dep < 0 ? clamp(-dep / 5) : 0);
+  const L3 = (u, a, b) => a.map((v, i) => v + (b[i] - v) * u), tA = L3(0.16, tp, b1), tB = L3(0.16, tp, b2), tc = L3(0.05, tp, L3(0.5, b1, b2));
+  const off = dep < 0 ? [-5 * (1 - H.tn), -1 * (1 - H.tn)] : [0, 0];   // the far ear peeks out behind in profile
+  // the ear is a shallow cup, not a flat card: the hull of its rim and back keeps some width at every yaw
+  let pts = hull2([b1, b2, tB, tc, tA, [s * 6.4, -8.6, -4.6], [s * 6.2, -9.6, 3.2]].map(v => { const q = H.pr(...v); return [q[0] + off[0], q[1] + off[1]]; }));
+  // and never narrower than ~2/3 of its full width, so a turned ear reads as a smaller ear, not a spike
+  const xs = pts.map(q => q[0]), w = Math.max(...xs) - Math.min(...xs), cx = (Math.max(...xs) + Math.min(...xs)) / 2;
+  if (w < 6.5) pts = pts.map(q => [cx + (q[0] - cx) * 6.5 / Math.max(w, 0.5), q[1]]);
+  return { b1, b2, tp, pts, dep };
 }
 /* head outline pieces as one path (skull, cheeks + fur tufts, muzzle, chin) */
 /* head outline: the skull, cheeks, muzzle and chin are merged into ONE smooth contour. A ray is cast from the head
    centre every 5.6°, the outermost piece wins, then a radial closing + blur removes the notches between pieces. */
 function headPath(H, p) {
-  const sk = H.pr(0, -2, 0), w = Math.hypot(12 * H.cs, 11.5 * H.sn), C = [sk[0], sk[1] + 1.5], circ = [];
-  [-1, 1].forEach(s => { const q = H.pr(s * 7.6, 3.2, 2.6); circ.push([q[0], q[1], 6.4]); });
+  const sk = H.pr(0, -2, 0), w = Math.hypot(13.2 * H.cs, 11.5 * H.sn), C = [sk[0], sk[1] + 1.5], circ = [];
+  [-1, 1].forEach(s => { const q = H.pr(s * 7.4, 2.4, 2.6); circ.push([q[0], q[1], 6]); });   // cheeks: rounded, no square jowls
   const mz = H.pr(0, 3.3, 9), ch = H.pr(0, 6.2, 6.6); circ.push([mz[0], mz[1], 5], [ch[0], ch[1], 3.8]);
   if ((p.mouth || 0) > 0.05) { const j = H.pr(0, 5.8 + 3.6 * p.mouth, 8.4); circ.push([j[0], j[1], 4.2]); }
   const N = 64, r = [], dx0 = C[0] - sk[0], dy0 = C[1] - sk[1];
@@ -246,7 +266,8 @@ function shadeBody3(B, p, P) {
     c.strokeStyle = P.stripe; c.lineCap = 'round';
     [-0.06, 0.16, 0.38, 0.6, 0.8].forEach((u, i) => { const j = hash(i * 7.1) - 0.5, a = B.at(u + j * 0.03, B.top(u) + 1), b2 = B.at(u + 0.06, 2), d = B.at(u + 0.015 + j * 0.03, -5 - j * 6);
       c.lineWidth = (i === 0 ? 4.6 : 3.4) + j * 1.4; c.beginPath(); c.moveTo(a[0], a[1]); c.quadraticCurveTo(b2[0], b2[1], d[0], d[1]); c.stroke(); });
-    c.lineWidth = 2.2; const a = B.at(0.95, 8), b = B.at(0.2, 9); c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke();
+    // dorsal stripe follows the topline
+    c.lineWidth = 2.2; c.beginPath(); for (let u = 0.2; u <= 0.951; u += 0.05) { const q = B.at(u, B.top(u) - 3.2); u === 0.2 ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); } c.stroke();
   }
   if (P.patches) P.patches.forEach(([u, k, rx, ry, col]) => { const q = B.at(u, k); c.fillStyle = col; c.beginPath(); c.ellipse(q[0], q[1], rx, ry, Math.atan2(B.t[1], B.t[0]), 0, TAU); c.fill(); });
   // cream underside with a furry edge
@@ -258,7 +279,9 @@ function shadeBody3(B, p, P) {
   for (let u = -0.3; u <= 1.32; u += 0.04) { const q = B.at(u, -B.bot(clamp(u, -0.14, 1.1)) + 2.2 * sm((u - 0.1) / 0.2)); first ? c.moveTo(q[0], q[1]) : c.lineTo(q[0], q[1]); first = false; }
   c.lineTo(e1[0], e1[1]); c.lineTo(e0[0], e0[1]); c.closePath(); c.fill(); c.globalAlpha = 1;
   // top light
-  c.fillStyle = P.light; c.beginPath(); c.moveTo(B.TP[0][0] + B.n[0] * 10, B.TP[0][1] + B.n[1] * 10); B.TP.forEach(q => c.lineTo(q[0] - B.n[0] * 5, q[1] - B.n[1] * 5)); const lq = B.TP[B.TP.length - 1]; c.lineTo(lq[0] + B.n[0] * 10, lq[1] + B.n[1] * 10); c.closePath(); c.fill();
+  // top light, feathered in three bands so it has no hard lower edge
+  c.fillStyle = P.light; const lq = B.TP[B.TP.length - 1];
+  [[2.5, 0.45], [4.5, 0.35], [6.5, 0.25]].forEach(([d, al]) => { c.globalAlpha = al; c.beginPath(); c.moveTo(B.TP[0][0] + B.n[0] * 10, B.TP[0][1] + B.n[1] * 10); B.TP.forEach(q => c.lineTo(q[0] - B.n[0] * d, q[1] - B.n[1] * d)); c.lineTo(lq[0] + B.n[0] * 10, lq[1] + B.n[1] * 10); c.closePath(); c.fill(); }); c.globalAlpha = 1;
 }
 /* near-leg shading on CB3 (source-atop): stripes on thigh/forearm/shin, lighter paws, a shadow under the thigh */
 function shadeLegs3(B, hl, fl, p, P) {
@@ -354,7 +377,7 @@ function eye3(x, y, rx, ry, inner, q, P, sil, H) {
 }
 function face3(P, p, sil) {
   const q = { ...FACE0 }; for (const k in p) if (p[k] != null) q[k] = p[k];
-  const H = headView(q), m = q.mouth || 0, ES = 1.25, front = Math.cos((1 - H.tn) * 0.45 * Math.PI);
+  const H = headView(q), m = q.mouth || 0, ES = EYE3, front = Math.cos((1 - H.tn) * 0.45 * Math.PI);
   // inner ears (pink, with a cream tuft) on the ears that face us
   [-1, 1].forEach(s => { const e = earGeo(H, q, s), vis = clamp(H.d(s * 0.35, 1) * 1.4); if (e.dep < -2.5 || vis < 0.08) return;
     const mid = [(e.b1[0] + e.b2[0]) / 2, (e.b1[1] + e.b2[1]) / 2, (e.b1[2] + e.b2[2]) / 2], L3 = (u, a, b) => a.map((v, i) => v + (b[i] - v) * u);
@@ -374,7 +397,7 @@ function face3(P, p, sil) {
   }
   // eyes
   const N = H.pr(0, 0.8, 13.9);
-  [-1, 1].forEach(s => { const fw = H.d(s * 0.55, 0.83); if (fw < 0.05) return; const E = H.pr(s * 5.4, -2.6, 8.7), inner = N[0] >= E[0] ? 1 : -1;
+  [-1, 1].forEach(s => { const fw = H.d(s * 0.55, 0.83); if (fw < 0.05) return; const E = H.pr(s * 6.2, -2.6, 8.5), inner = N[0] >= E[0] ? 1 : -1;
     eye3(E[0], E[1], 3.9 * ES * (0.3 + 0.7 * fw), 2.9 * ES, inner, q, P, sil, H); });
   // mouth (open)
   if (m > 0.05) { const Mo = H.pr(0, 5.2 + 2.2 * m, 12.2), rx = lerp(2.2, 3.8, front), ry = 0.8 + 3.2 * m;
