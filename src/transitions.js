@@ -323,12 +323,16 @@ V('T16', '新竹縣 · 峨眉', '客家茶園', 'Hakka tea hills', '24.69°N 121
 /* T17 南寮 17 公里海岸 風箏 */
 V('T17', '新竹市', '南寮 · 十七公里海岸', 'Nanliao kites', '24.85°N 120.92°E', ['新竹的風，讓風箏飛得好高。', 'Hsinchu’s famous wind sends the kites soaring.'], [1.02, 1.06, 0, 0, 0, 0], function (lt) {
   L('sky', 0, () => { sky([[0, '#3f86c8'], [1, '#d9e8ee']]); cumulus(250, 230, 300, 60, 471, '#ffffff', '#cad5e0', 0.3); }, { blur: 2 });
-  D(0.1, () => { [[420, 170, '#e74c3c', 0], [760, 120, '#f39c12', 1], [1020, 200, '#3498db', 2]].forEach(([x, y, col, k]) => { const xx = x + Math.sin(T * 0.8 + k) * 20, yy = y + Math.cos(T * 1.1 + k) * 10; c.save(); c.translate(xx, yy); c.rotate(Math.sin(T + k) * 0.1);
-      if (k === 1) { oval(0, 0, 50, 30, 0, col); disc(-16, -6, 6, '#ffffff'); disc(-16, -6, 3, '#222'); for (let t = 0; t < 6; t++) { c.strokeStyle = col; c.lineWidth = 6; c.beginPath(); c.moveTo(-30 + t * 12, 20); c.quadraticCurveTo(-30 + t * 12 + Math.sin(T * 4 + t) * 10, 60, -30 + t * 12 + Math.sin(T * 3 + t) * 16, 100); c.stroke(); } }
-      else { poly([[0, -40], [30, 0], [0, 46], [-30, 0]], col); line(0, -40, 0, 46, 'rgba(255,255,255,0.7)', 1.5); line(-30, 0, 30, 0, 'rgba(255,255,255,0.7)', 1.5); c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); c.moveTo(0, 46); for (let t = 1; t < 8; t++) c.lineTo(Math.sin(T * 5 + t) * 8, 46 + t * 12); c.stroke(); }
-      c.restore(); line(xx, yy + 40, 300 + k * 120, 600, 'rgba(255,255,255,0.5)', 0.8); }); });
-  L('shore', 0.4, () => { c.fillStyle = vg(400, 470, [[0, '#4a8fb0'], [1, '#6fb2c4']]); c.fillRect(-M, 420, W + 2 * M, 60); c.fillStyle = vg(470, H, [[0, '#d8c9a2'], [1, '#a99a74']]); c.fillRect(-M, 470, W + 2 * M, H); for (let x = -M; x < W + M; x += 200) { line(x + 80, 470, x + 80, 300, '#e8e8e8', 3); for (let k = 0; k < 3; k++) { c.save(); c.translate(x + 80, 300); c.rotate(T * 2 + k * TAU / 3 + x); poly([[0, -2], [40, 0], [0, 2]], '#f2f2f2'); c.restore(); } } });
-  D(0.4, () => { grassTufts(560, 620, 100, ['#b8a868', '#8f8a4c'], 472, 3, 18); drawCat3({ x: 520, y: 604, s: 1.15, pose: sit3(lt, { ...ex('delighted'), hr: -0.55 + Math.sin(lt * 1.3) * 0.15, ear: 0.35, ts: 3 }), emote: emoAt(lt, [[1.0, 2.6, 'spark']]) }); });
+  D(0.1, () => { const K = [[300, 190, 'octo', '#f39c12'], [520, 140, 'fish', '#3fa0d8'], [760, 200, 'dragon', '#e74c3c'], [960, 130, 'whale', '#5b7fd8'], [1120, 220, 'octo', '#e84393'], [640, 300, 'fish', '#2ecc71'], [200, 320, 'dia', '#f1c40f'], [880, 330, 'dia', '#9b59b6'], [420, 260, 'dia', '#e67e22'], [1060, 300, 'fish', '#e74c3c']];
+    K.forEach(([x, y, kind, col], k) => { const xx = x + Math.sin(T * 0.7 + k) * 18, yy = y + Math.cos(T * 0.9 + k) * 10, sc = y > 280 ? 0.6 : 1; c.save(); c.translate(xx, yy); c.scale(sc, sc); c.rotate(Math.sin(T * 0.8 + k) * 0.08);
+      if (kind === 'octo') { oval(0, 0, 40, 30, 0, col); disc(-12, -4, 6, '#ffffff'); disc(12, -4, 6, '#ffffff'); disc(-12, -4, 3, '#222'); disc(12, -4, 3, '#222'); for (let t = 0; t < 7; t++) { c.strokeStyle = col; c.lineWidth = 7; c.lineCap = 'round'; c.beginPath(); c.moveTo(-30 + t * 10, 20); c.quadraticCurveTo(-30 + t * 10 + Math.sin(T * 3 + t) * 12, 70, -34 + t * 10 + Math.sin(T * 2 + t) * 16, 120); c.stroke(); } }
+      else if (kind === 'fish') { c.fillStyle = col; c.beginPath(); c.ellipse(0, 0, 50, 20, 0, 0, TAU); c.fill(); poly([[44, 0], [76, -20 + Math.sin(T * 4) * 5], [76, 20 + Math.sin(T * 4) * 5]], col); disc(-30, -4, 6, '#ffffff'); disc(-30, -4, 3, '#222'); c.strokeStyle = 'rgba(255,255,255,0.6)'; c.lineWidth = 2; for (let t = 0; t < 4; t++) { c.beginPath(); c.arc(-6 + t * 12, 0, 10, -1, 1); c.stroke(); } }
+      else if (kind === 'dragon') { c.strokeStyle = col; c.lineWidth = 16; c.lineCap = 'round'; c.beginPath(); for (let t = 0; t <= 10; t++) { const px = t * 22, py = Math.sin(T * 2 + t * 0.8) * 12; t ? c.lineTo(px, py) : c.moveTo(px, py); } c.stroke(); c.strokeStyle = '#f1c40f'; c.lineWidth = 4; c.stroke(); oval(-10, 0, 22, 16, 0, col); disc(-16, -4, 4, '#ffffff'); disc(-16, -4, 2, '#222'); }
+      else if (kind === 'whale') { c.fillStyle = col; c.beginPath(); c.ellipse(0, 0, 70, 30, 0, 0, TAU); c.fill(); c.fillStyle = '#e8f2ff'; c.beginPath(); c.ellipse(-8, 12, 54, 14, 0, 0, Math.PI); c.fill(); poly([[64, -4], [96, -26], [92, 10]], col); disc(-40, -6, 5, '#222'); }
+      else { poly([[0, -30], [24, 0], [0, 34], [-24, 0]], col); line(0, -30, 0, 34, 'rgba(255,255,255,0.7)', 1.5); c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); c.moveTo(0, 34); for (let t = 1; t < 8; t++) c.lineTo(Math.sin(T * 3 + t) * 5, 34 + t * 8); c.stroke(); }
+      c.restore(); line(xx, yy + 20, 200 + (k % 5) * 220, 560, 'rgba(255,255,255,0.4)', 0.7); }); });
+  L('shore', 0.4, () => { c.fillStyle = vg(400, 470, [[0, '#4a8fb0'], [1, '#6fb2c4']]); c.fillRect(-M, 420, W + 2 * M, 60); c.fillStyle = vg(470, H, [[0, '#8fbf5a'], [1, '#5f8f38']]); c.fillRect(-M, 470, W + 2 * M, H); for (let x = -M; x < W + M; x += 200) { line(x + 80, 470, x + 80, 300, '#e8e8e8', 3); for (let k = 0; k < 3; k++) { c.save(); c.translate(x + 80, 300); c.rotate(T * 2 + k * TAU / 3 + x); poly([[0, -2], [40, 0], [0, 2]], '#f2f2f2'); c.restore(); } } });
+  D(0.4, () => { grassTufts(560, 620, 100, ['#6f9f42', '#4f7f2a'], 472, 3, 14); drawCat3({ x: 520, y: 604, s: 1.15, pose: sit3(lt, { ...ex('delighted'), hr: -0.55 + Math.sin(lt * 1.3) * 0.15, ear: 0.35, ts: 3 }), emote: emoAt(lt, [[1.0, 2.6, 'spark']]) }); });
 });
 /* T18 永安漁港 彩虹橋 */
 V('T18', '桃園市 · 新屋', '永安漁港彩虹橋', 'Rainbow Bridge, Yong’an', '24.99°N 121.01°E', ['永安漁港的彩虹橋，夜裡會一直換顏色。', 'Yong’an’s Rainbow Bridge keeps changing colour through the night.'], [1.02, 1.07, 0, 0, 0, 0], function (lt) {
@@ -358,9 +362,14 @@ V('T20', '臺灣海峽', '夜航往馬祖', 'Night boat to Matsu', '25.60°N 120
 });
 /* T21 降落松山 */
 V('T21', '臺北市上空', '降落松山機場', 'Landing in Taipei', '25.07°N 121.55°E', ['看到 101 了，快到家了。', 'There’s Taipei 101. Almost home.'], [1.0, 1.02, 0, 0, 0, 0], function (lt) {
-  D(0, () => { sky([[0, '#0a1024'], [1, '#2a2846']]); const r = rng(511); c.fillStyle = '#0f1226'; c.fillRect(-M, 380, W + 2 * M, H);
-    for (let k = 0; k < 900; k++) { const x = mod(r() * 1800 - lt * 90 * (1 + r()), 1800) - 200, y = 390 + Math.pow(r(), 0.8) * 300; disc(x, y, 0.8 + r() * 1.4, `rgba(255,${190 + r() * 60},${120 + r() * 80},${0.5 + r() * 0.5})`); }
-    tower101(820 - lt * 40, 470, 120, { light: '#4a5a7a', dark: '#262c44', night: true });
+  D(0, () => { sky([[0, '#9fb4c8'], [1, '#dfe4e2']]); stratus(640, 260, 1200, 80, 'rgba(255,255,255,0.6)');
+    mountain({ fn: x => 330 - 50 * Math.abs(Math.sin(x * 0.004)) - fbm1(x * 0.01) * 20, floor: 360, top: '#8a9ea4', bot: '#a8b6b8', bottom: 360, haze: 'rgba(220,226,228,0.5)' });
+    const r = rng(511), ox = lt * 60; c.fillStyle = '#9aa29a'; c.fillRect(-M, 350, W + 2 * M, H);
+    for (let k = 0; k < 900; k++) { const x = mod(r() * 1800 - ox * (0.4 + r() * 0.6), 1800) - 200, y = 352 + Math.pow(r(), 0.8) * 330, sz = 2 + (y - 350) * 0.05; c.fillStyle = mix('#c8c6be', '#eceae2', r()); c.fillRect(x, y, sz * (1 + r()), sz * 0.7); }
+    c.strokeStyle = 'rgba(80,90,90,0.5)'; c.lineWidth = 3; c.beginPath(); c.moveTo(-M, 520); c.quadraticCurveTo(640, 470 + Math.sin(lt) * 4, W + M, 540); c.stroke();
+    tower101(840 - lt * 24, 352, 110, { light: '#8a9aa8', dark: '#5a6878' });
+    // wing tip in the lower left of the window
+    c.fillStyle = '#e8eaec'; c.beginPath(); c.moveTo(420, 520); c.lineTo(820, 470); c.lineTo(830, 486); c.lineTo(440, 560); c.closePath(); c.fill(); c.fillStyle = '#2a4a8a'; c.beginPath(); c.moveTo(800, 470); c.lineTo(840, 430); c.lineTo(846, 480); c.closePath(); c.fill();
     c.save(); c.fillStyle = '#d8d4cc'; c.beginPath(); c.rect(-M, 0, W + 2 * M, H); c.ellipse(640, 360, 210, 270, 0, 0, TAU); c.fill('evenodd'); c.strokeStyle = '#bdb8ae'; c.lineWidth = 26; c.beginPath(); c.ellipse(640, 360, 220, 280, 0, 0, TAU); c.stroke(); c.restore(); });
   D(1, () => drawCat3({ x: 470, y: 640, s: 1.4, pose: sit3(lt, { ...ex('happy'), hr: 0.05, ear: -0.1, turn: turnAt(lt, [[1.0, 3.2, 1]]) }), emote: emoAt(lt, [[1.2, 3.0, 'heart']]), shadow: false }));
 });
