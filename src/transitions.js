@@ -90,11 +90,22 @@ V('T2', '新北市 · 東北角', '鼻頭角', 'Bitou Cape', '25.13°N 121.92°E
 /* T3 蘇花 by train */
 V('T3', '宜蘭 → 花蓮', '蘇花海岸 · 臺鐵', 'Along the Suhua coast by train', '24.30°N 121.75°E', ['搭上火車，沿著蘇花海岸的懸崖往南。', 'By train, south along the cliffs of the Suhua coast.'], [1.0, 1.02, 0, 0, 0, 0], function (lt) {
   D(0, () => trainWindow(lt, () => {
-    sky([[0, '#6d9cc8'], [1, '#d7e4e6']]);
-    c.fillStyle = vg(380, 560, [[0, '#2f8db0'], [1, '#1f6f8f']]); c.fillRect(-M, 380, W + 2 * M, 300); shimmer(382, 520, 120, '255,255,255', 331, { a: 0.4 });
-    const off = lt * 260; const f = x => 300 + 140 * Math.abs(Math.sin((x + off) * 0.004)) + fbm1((x + off) * 0.01) * 40;
-    c.beginPath(); c.moveTo(-M, H); for (let x = -M; x <= W + M; x += 6) { const y = f(x); c.lineTo(x, (x + off) % 900 < 520 ? y : 420); } c.lineTo(W + M, H); c.closePath(); c.fillStyle = vg(250, 520, [[0, '#4f7a4a'], [1, '#3a5d3c']]); c.fill();
+    sky([[0, '#5e98cc'], [1, '#d7e6ea']]); cumulus(860, 200, 300, 50, 333, '#ffffff', '#ccd6e0', 0.2);
+    // the Pacific: deep blue far out, turquoise in, a white surf line and a strip of grey gravel beach
+    c.fillStyle = vg(330, 470, [[0, '#2a7cb8'], [0.6, '#2f9cc4'], [1, '#5fc4c8']]); c.fillRect(-M, 330, W + 2 * M, 200); shimmer(332, 440, 120, '255,255,255', 331, { a: 0.4 });
+    const off = lt * 260;
+    for (let w = 0; w < 3; w++) { const u = mod(lt * 0.5 + w / 3, 1); c.strokeStyle = `rgba(255,255,255,${0.8 * (1 - u)})`; c.lineWidth = 3; c.beginPath(); for (let x = -M; x <= W + M; x += 10) { const y = 462 - u * 10 + Math.sin((x + off) * 0.02 + w) * 3; x === -M ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke(); }
+    c.fillStyle = vg(462, 500, [[0, '#b8b4aa'], [1, '#8e8a80']]); c.fillRect(-M, 466, W + 2 * M, 40);
+    // cliffs on the right side of the line, sliding past (distant headlands slow, near cliff fast)
+    const ridge = (x, o, sp, base, amp) => base - amp * Math.abs(Math.sin((x + o * sp) * 0.003)) - fbm1((x + o * sp) * 0.006) * 50 + (sp === 1 ? Math.max(0, 880 - x) * 0.55 : 0);
+    c.fillStyle = '#7f9faa'; c.beginPath(); c.moveTo(W + M, 340); for (let x = W + M; x >= 300; x -= 8) c.lineTo(x, Math.min(340, ridge(x, off, 0.15, 330, 120) + (x - 300) * 0.02)); c.lineTo(300, 340); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(-M, H); for (let x = -M; x <= W + M; x += 6) c.lineTo(x, ridge(x, off, 1, 300, 180)); c.lineTo(W + M, H); c.closePath(); c.fillStyle = vg(120, 500, [[0, '#3f6e3a'], [0.6, '#4a7444'], [1, '#6a6a60']]); c.fill();
+    const r = rng(Math.floor(off / 400)); c.save(); c.beginPath(); c.moveTo(-M, H); for (let x = -M; x <= W + M; x += 6) c.lineTo(x, ridge(x, off, 1, 300, 180)); c.lineTo(W + M, H); c.closePath(); c.clip();
+    for (let k = 0; k < 140; k++) { const x = mod(r() * 1600 - off, 1600) - 160, y = 160 + r() * 340; c.fillStyle = r() < 0.35 ? 'rgba(150,146,136,0.6)' : mix('#2e5a2c', '#7fae5c', r(), 0.8); c.beginPath(); c.ellipse(x, y, 10 + r() * 20, 6 + r() * 12, 0, 0, TAU); c.fill(); }
+    c.restore();
+    // track bed + tunnel portal sweeping by
     c.fillStyle = '#6b6b6b'; c.fillRect(-M, 500, W + 2 * M, 40); for (let x = -mod(off * 2, 80); x < W; x += 80) { c.fillStyle = '#4a4a4a'; c.fillRect(x, 500, 6, 40); }
+    const tp = mod(off * 1.6, 2600) - 400; if (tp < 1400) { c.fillStyle = '#9a968c'; c.fillRect(tp - 10, 300, 160, 240); c.fillStyle = '#121212'; c.beginPath(); c.moveTo(tp + 20, 540); c.lineTo(tp + 20, 400); c.arc(tp + 70, 400, 50, Math.PI, 0); c.lineTo(tp + 120, 540); c.closePath(); c.fill(); }
   }, '#d8cfc0', '#857a6c'));
   D(1, () => drawCat3({ x: 470, y: 512, s: 1.25, pose: sit3(lt, { ...ex('delighted'), hr: -0.05, ear: -0.1, turn: turnAt(lt, [[1.6, 3.0, 0.9]]) }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
 });
