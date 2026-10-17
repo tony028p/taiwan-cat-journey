@@ -168,10 +168,21 @@ V('T8', '澎湖縣 · 白沙', '澎湖跨海大橋', 'Penghu Great Bridge', '23.
 V('T9', '嘉義縣 · 水上', '北回歸線標誌', 'Tropic of Cancer Monument', '23.46°N 120.42°E', ['北回歸線上，夏至正午的影子會消失。', 'On the Tropic of Cancer, shadows vanish at noon on midsummer’s day.'], [1.02, 1.08, 0, 0, 0, 0], function (lt) {
   L('sky', 0, () => { sky([[0, '#3f7cc6'], [1, '#e1ecf0']]); cumulus(1050, 200, 300, 70, 391, '#ffffff', '#cbd6e2', -0.3); }, { blur: 2 });
   L('mon', 0.4, () => { c.fillStyle = vg(450, H, [[0, '#7fae5a'], [1, '#4f7e34']]); c.fillRect(-M, 470, W + 2 * M, H); bushes(40, -M, W + M, () => 470, 392, '#3f6a32', '#6f9a4e', 18);
-    const x = 640, y = 470; [[-110, 0], [110, 0], [0, 20]].forEach(([dx, dz]) => { poly([[x + dx * 0.25, y - 170], [x + dx - 8, y + dz], [x + dx + 8, y + dz]], '#f2f2ee'); });
-    c.fillStyle = hg(x - 120, x + 120, [[0, '#ffffff'], [1, '#c9c9c4']]); c.beginPath(); c.ellipse(x, y - 190, 120, 26, 0, 0, TAU); c.fill(); c.beginPath(); c.ellipse(x, y - 210, 60, 36, 0, Math.PI, 0); c.fill();
-    c.fillStyle = '#7b8a9a'; for (let k = 0; k < 10; k++) c.fillRect(x - 54 + k * 11, y - 200, 7, 6); line(x, y - 246, x, y + 20, '#e8e8e2', 4);
-    c.fillStyle = hg(880, 920, [[0, '#ffffff'], [1, '#cfcfca']]); c.fillRect(880, 180, 40, 290); c.fillStyle = '#c0392b'; for (let k = 0; k < 6; k++) c.fillRect(896, 220 + k * 34, 8, 16); });
+    // Sun Exploration Hall: a broad white dome on a wide base, a glass band, a grand central stair
+    const x = 600, y = 470; c.fillStyle = vg(y - 60, y, [[0, '#f0f0ec'], [1, '#c9c9c2']]); c.fillRect(x - 230, y - 60, 460, 60);
+    c.fillStyle = hg(x - 210, x + 210, [[0, '#ffffff'], [0.6, '#e6e8e8'], [1, '#bfc4c6']]); c.beginPath(); c.moveTo(x - 210, y - 60); c.quadraticCurveTo(x - 190, y - 230, x - 40, y - 250); c.lineTo(x + 40, y - 250); c.quadraticCurveTo(x + 190, y - 230, x + 210, y - 60); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(70,110,150,0.85)'; c.beginPath(); c.moveTo(x - 140, y - 150); c.quadraticCurveTo(x, y - 168, x + 140, y - 150); c.lineTo(x + 150, y - 128); c.quadraticCurveTo(x, y - 146, x - 150, y - 128); c.closePath(); c.fill();
+    for (let k = 0; k < 14; k++) line(x - 130 + k * 20, y - 162 + Math.abs(k - 6.5) * 1.2, x - 132 + k * 20, y - 132 + Math.abs(k - 6.5) * 1, 'rgba(230,240,250,0.6)', 1);
+    c.fillStyle = '#f7f7f4'; c.fillRect(x - 46, y - 268, 92, 20); c.fillStyle = '#d0d4d6'; c.fillRect(x - 46, y - 252, 92, 4);
+    // central staircase
+    for (let k = 0; k < 10; k++) { const yy = y - 6 - k * 6, w = 120 - k * 6; c.fillStyle = k % 2 ? '#d8d6ce' : '#c6c4bc'; c.fillRect(x - w / 2, yy, w, 6); }
+    c.fillStyle = '#3d5a8a'; c.fillRect(x - 30, y - 96, 60, 36);
+    // the white monument: a tall slender tower with a ball and arrow on top
+    const mx = 930; c.fillStyle = hg(mx - 14, mx + 14, [[0, '#ffffff'], [1, '#c9cbc8']]); c.beginPath(); c.moveTo(mx - 16, y); c.lineTo(mx - 8, y - 270); c.lineTo(mx + 8, y - 270); c.lineTo(mx + 16, y); c.closePath(); c.fill();
+    c.fillStyle = '#d8d8d2'; c.fillRect(mx - 26, y - 24, 52, 24); disc(mx, y - 280, 12, '#f2f2ee'); line(mx, y - 292, mx, y - 320, '#e8e8e2', 3); poly([[mx - 8, y - 314], [mx, y - 330], [mx + 8, y - 314]], '#e8e8e2');
+    line(mx, y - 280, mx + 40, y - 280, '#d0d0ca', 2);
+    // palms and trees around the hall
+    [[300, y], [380, y], [860, y], [1060, y], [1140, y]].forEach(([px, py], k) => { line(px, py, px + 4, py - 90 - k * 6, '#6a5a44', 4); for (let a = 0; a < 7; a++) { const an = -Math.PI / 2 + (a - 3) * 0.5; c.strokeStyle = '#3f7a3a'; c.lineWidth = 4; c.beginPath(); c.moveTo(px + 4, py - 90 - k * 6); c.quadraticCurveTo(px + 4 + Math.cos(an) * 30, py - 90 - k * 6 + Math.sin(an) * 18, px + 4 + Math.cos(an) * 46, py - 90 - k * 6 + Math.sin(an) * 10 + 14); c.stroke(); } }); });
   D(0.4, () => { const t = Math.min(lt, 2.2), q = { x: 380 + t * 34, y: 520, s: 1.0 }; q.pose = lt < 2.2 ? walkPose3(walkCyc3(t * 34, 1)) : lp(walkPose3(walkCyc3(2.2 * 34, 1)), { ...STAND3, hr: -0.75, head: [52, -74] }, sm((lt - 2.2) / 0.5)); Object.assign(q.pose, exSeq(lt, [[0, 'neutral'], [2.2, 'curious']])); q.emote = emoAt(lt, [[2.4, 3.6, '?']]); drawCat3(q); });
 });
 /* T10 阿里山林鐵 */
@@ -194,14 +205,30 @@ V('T11', '嘉義 → 雲林', '台灣高鐵', 'Taiwan High Speed Rail', '23.74°
   L('fg', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#7aa84c'], [1, '#4f7a2c']]); c.fillRect(-M, 600, W + 2 * M, 200); });
   D(0.95, () => { const u = clamp((lt - 0.9) / 1.0); drawCat3({ x: 620, y: 606, s: 1.15, face: -1, pose: sit3(lt, { ...exSeq(lt, [[0, 'neutral'], [0.9, 'surprised'], [2.1, 'curious']]), hr: lerp(0.3, -0.5, sm(u)), ear: u > 0.1 && u < 0.9 ? 0.3 : 0, ts: 3 }), emote: emoAt(lt, [[0.95, 1.8, '!'], [2.2, 3.4, '?']]) }); grassTufts(600, 640, 100, ['#5f8f35', '#86b452'], 414, 1, 14); });
 });
-/* T12 八卦山大佛 */
+/* T12 八卦山大佛 — the bronze-brown seated Buddha on a golden lotus throne, temple roofs and palms, blue sky */
 V('T12', '彰化縣', '八卦山大佛', 'Great Buddha of Baguashan', '24.08°N 120.55°E', ['八卦山的大佛，在山上看了好久的風景。', 'The Great Buddha of Baguashan has watched over this view for a long time.'], [1.02, 1.07, 20, -20, 0, 0], function (lt) {
-  L('sky', 0, () => { sky([[0, '#5a6ea2'], [0.6, '#e2a787'], [1, '#f6cf9c']]); glow(300, 420, 400, '255,190,130', 0.4); });
-  L('hill', 0.3, () => { mountain({ base: 520, amp: 60, f: 0.004, seed: 421, top: '#2f3b38', bot: '#24302d' }); const x = 760, y = 470;
-    c.fillStyle = '#3c3a40'; c.beginPath(); c.ellipse(x, y, 120, 46, 0, Math.PI, 0); c.fill(); c.beginPath(); c.moveTo(x - 90, y); c.quadraticCurveTo(x - 92, y - 140, x - 50, y - 170); c.lineTo(x + 50, y - 170); c.quadraticCurveTo(x + 92, y - 140, x + 90, y); c.fill(); c.beginPath(); c.ellipse(x, y - 210, 40, 46, 0, 0, TAU); c.fill(); c.beginPath(); c.ellipse(x, y - 252, 26, 18, 0, 0, TAU); c.fill(); c.fillRect(x - 100, y - 4, 200, 30); c.strokeStyle = 'rgba(255,190,140,0.6)'; c.lineWidth = 2; c.beginPath(); c.arc(x, y - 210, 41, Math.PI * 1.1, Math.PI * 1.6); c.stroke();
-    bushes(60, -M, W + M, xx => 510 + Math.sin(xx * 0.01) * 8, 422, '#1c2624', '#2b3a36', 20); });
-  L('path', 0.9, () => { c.fillStyle = vg(580, H, [[0, '#4b4440'], [1, '#2a2522']]); c.fillRect(-M, 590, W + 2 * M, 200); for (let x = -M; x < W + M; x += 90) { line(x, 560, x, 594, '#5b524b', 4); glow(x, 556, 16, '255,200,140', 0.6); } });
-  D(0.9, () => { const q = { x: 260 + lt * 28, y: 594, s: 1.0, rim: '255,180,120' }; q.pose = { ...walkPose3(walkCyc3(lt * 28, 1), { hr: -0.15 }), ...ex('content') }; drawCat3(q); });
+  L('sky', 0, () => { sky([[0, '#3f82c8'], [0.6, '#a8cce6'], [1, '#e6eef0']]); cumulus(300, 200, 360, 70, 421, '#ffffff', '#ccd6e2', 0.3); cumulus(1060, 170, 300, 56, 423, '#ffffff', '#ccd6e2', 0.3); }, { blur: 1.5 });
+  L('temple', 0.2, () => { const r = rng(424); [[160, 430, 220], [1040, 420, 240]].forEach(([x, y, w]) => { c.fillStyle = '#e8dcc0'; c.fillRect(x, y - 60, w, 60); for (let k = 0; k < 3; k++) { poly([[x - 20 + k * 8, y - 60 - k * 26], [x + w / 2, y - 92 - k * 26], [x + w + 20 - k * 8, y - 60 - k * 26], [x + w + 8 - k * 8, y - 52 - k * 26], [x + 12 + k * 8, y - 52 - k * 26]], '#c0412e'); c.fillStyle = '#9a8a6a'; c.fillRect(x + 10 + k * 8, y - 52 - k * 26, w - 20 - k * 16, 26); } }); c.fillStyle = vg(470, H, [[0, '#7aa858'], [1, '#4f7e34']]); c.fillRect(-M, 470, W + 2 * M, H); bushes(40, -M, W + M, () => 470, 425, '#3a6a32', '#6f9a4e', 22); }, { blur: 0.8 });
+  L('buddha', 0.4, () => { const x = 650, y = 500;
+    // lotus throne: layered golden petals
+    for (let row = 0; row < 3; row++) for (let k = -6; k <= 6; k++) { const px = x + k * (26 - row * 4), py = y - row * 18; c.fillStyle = hg(px - 18, px + 18, [[0, '#f4c84a'], [1, '#c48a1e']]); c.beginPath(); c.moveTo(px - 16 + row * 2, py); c.quadraticCurveTo(px, py - 40 + row * 4, px + 16 - row * 2, py); c.closePath(); c.fill(); }
+    c.fillStyle = '#b8862a'; c.fillRect(x - 170, y, 340, 16);
+    // seated figure: crossed legs, robe, torso, shoulders, head with curls and ushnisha
+    const br = (a, b) => hg(x - 120, x + 120, [[0, a], [0.55, b], [1, '#4a2e1a']]);
+    c.fillStyle = br('#a0683a', '#7a4a28'); c.beginPath(); c.ellipse(x, y - 52, 128, 40, 0, 0, TAU); c.fill();
+    // torso: broad rounded shoulders tapering to the waist, arms down to the lap
+    c.beginPath(); c.moveTo(x - 110, y - 62); c.bezierCurveTo(x - 118, y - 150, x - 104, y - 214, x - 34, y - 232); c.lineTo(x + 34, y - 232); c.bezierCurveTo(x + 104, y - 214, x + 118, y - 150, x + 110, y - 62); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(40,22,10,0.25)'; c.beginPath(); c.moveTo(x + 40, y - 228); c.bezierCurveTo(x + 104, y - 210, x + 118, y - 150, x + 110, y - 62); c.lineTo(x + 60, y - 70); c.bezierCurveTo(x + 70, y - 140, x + 60, y - 200, x + 40, y - 228); c.closePath(); c.fill();
+    c.fillStyle = br('#a86e3e', '#80502c'); c.beginPath(); c.ellipse(x, y - 236, 34, 14, 0, 0, TAU); c.fill();
+    c.strokeStyle = 'rgba(60,34,16,0.5)'; c.lineWidth = 3; for (let k = 0; k < 5; k++) { c.beginPath(); c.moveTo(x - 70 + k * 6, y - 200 + k * 26); c.quadraticCurveTo(x, y - 180 + k * 26, x + 70 - k * 6, y - 200 + k * 26); c.stroke(); }
+    c.fillStyle = br('#a86e3e', '#80502c'); c.beginPath(); c.ellipse(x, y - 284, 38, 46, 0, 0, TAU); c.fill(); [-1, 1].forEach(sd => { c.beginPath(); c.ellipse(x + sd * 38, y - 270, 8, 22, sd * 0.1, 0, TAU); c.fill(); });
+    const r = rng(426); for (let k = 0; k < 46; k++) disc(x + (r() - 0.5) * 66, y - 312 - r() * 20, 5, '#5a3820'); disc(x, y - 336, 13, '#5a3820');
+    c.fillStyle = 'rgba(255,230,180,0.3)'; c.beginPath(); c.ellipse(x - 18, y - 290, 9, 20, 0.2, 0, TAU); c.fill();
+    c.strokeStyle = 'rgba(50,28,12,0.7)'; c.lineWidth = 2.4; c.beginPath(); c.moveTo(x - 18, y - 286); c.quadraticCurveTo(x - 10, y - 282, x - 4, y - 286); c.moveTo(x + 4, y - 286); c.quadraticCurveTo(x + 10, y - 282, x + 18, y - 286); c.stroke(); line(x, y - 284, x - 2, y - 268, 'rgba(50,28,12,0.4)', 2); line(x - 6, y - 260, x + 6, y - 260, 'rgba(50,28,12,0.55)', 2);
+    // hands in the lap
+    c.fillStyle = br('#b07444', '#86542e'); c.beginPath(); c.ellipse(x, y - 96, 46, 16, 0, 0, TAU); c.fill(); });
+  L('path', 0.9, () => { c.fillStyle = vg(580, H, [[0, '#a89c88'], [1, '#6a604e']]); c.fillRect(-M, 590, W + 2 * M, 200); for (let x = -M; x < W + M; x += 90) line(x, 560, x, 594, '#8a8070', 4); line(-M, 560, W + M, 560, '#8a8070', 3); });
+  D(0.9, () => { const q = { x: 260 + lt * 28, y: 594, s: 1.0 }; q.pose = { ...walkPose3(walkCyc3(lt * 28, 1), { hr: -0.15 }), ...ex('content') }; drawCat3(q); });
 });
 /* T13 集集綠色隧道 */
 V('T13', '南投縣 · 集集', '綠色隧道', 'Jiji Green Tunnel', '23.83°N 120.78°E', ['集集的樟樹，排成了一條綠色隧道。', 'In Jiji, camphor trees arch over the road into a green tunnel.'], [1.02, 1.05, 30, -30, 0, 0], function (lt) {
