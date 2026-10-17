@@ -283,8 +283,8 @@ function actCat(o) {
       emo(q, lt, [[1.8, 3.4, 'note']]); break;
     }
     case 13: { // Roundhouse: strolling past the engines when one lets off steam — TOOT — Halloween-cat leap, then a huff
-      const loX = 640, wt = 3.2, wd = Math.min(lt, wt) * 30 + Math.max(0, lt - 5.2) * 30; q.x = 300 + wd;
-      q.after = () => { if (lt > 3.0 && lt < 5.2) { puff(loX, 320, (lt - 3.0) / 2, 1.2); emote3('note', loX + 30, 300, 1.2, clamp((lt - 3.05) / 0.3), 1 - sm((lt - 4.2) / 0.3)); } };
+      const loX = 437, wt = 3.2, wd = Math.min(lt, wt) * 30 + Math.max(0, lt - 5.2) * 30; q.x = 300 + wd;
+      q.after = () => { if (lt > 3.0 && lt < 5.2) { puff(loX, 420, (lt - 3.0) / 2, 1.3); emote3('note', loX + 30, 400, 1.2, clamp((lt - 3.05) / 0.3), 1 - sm((lt - 4.2) / 0.3)); } };
       emo(q, lt, [[3.3, 4.4, '!'], [4.8, 5.8, 'drop']]);
       if (lt < wt) { q.pose = walkPose3(walkCyc3(wd, s)); Object.assign(q.pose, ex('content', 0.6)); }
       else if (lt < 5.2) { const jump = bumpT(lt, 3.25, 3.75), puffd = sm((lt - 3.25) / 0.15) * (1 - sm((lt - 4.5) / 0.6));
@@ -481,6 +481,9 @@ function bgCat(o) {
 const HZ = { day: '205,218,228,0.32', far: '200,214,226,0.55', warm: '255,200,160,0.3', dusk: '120,80,110,0.35', night: '30,40,80,0.4' };
 const CROWD = {
   L0: [{ d: 0.92, x: 200, y: 494, s: 0.62, act: 'photo', sil: true, rim: '255,185,140', seed: 1 }],
+  // tea drinkers seen through the paper windows of the teahouse
+  L1: [{ after: 'tea', d: 0.75, x: 130, y: 412, s: 0.34, act: 'sit', sil: true, face: 1, seed: 70 }, { after: 'tea', d: 0.75, x: 166, y: 412, s: 0.34, act: 'sit', sil: true, face: -1, build: 'chonk', seed: 71 },
+    { after: 'tea', d: 0.75, x: 470, y: 272, s: 0.32, act: 'look', sil: true, build: 'aloof', seed: 72 }, { after: 'tea', d: 0.75, x: 300, y: 557, s: 0.36, act: 'eat', sil: true, seed: 73 }],
   L2: [{ after: 'houses', d: 0.3, x: 985, y: 443, s: 0.3, act: 'pose', coat: 'bicolor', build: 'kitten', haze: HZ.far, seed: 2 }, { after: 'houses', d: 0.3, x: 1060, y: 444, s: 0.3, act: 'photo', coat: 'grey', face: -1, haze: HZ.far, seed: 3 }],
   L4: [{ d: 0.5, x: 640, y: 596, s: 0.36, act: 'kayak', coat: 'cream', v: 9, haze: HZ.day, seed: 4 }, { d: 0.5, x: 720, y: 604, s: 0.34, act: 'kayak', coat: 'black', v: 9, col: '#d9573a', haze: HZ.day, seed: 5 }],
   L5: [{ d: 0.6, x: 975, y: 526, s: 0.36, act: 'pose', coat: 'siamese', build: 'aloof', haze: HZ.day, seed: 6 }, { d: 0.6, x: 880, y: 532, s: 0.38, act: 'photo', coat: 'brown', haze: HZ.day, seed: 7 }],
@@ -490,8 +493,12 @@ const CROWD = {
   L10: [{ d: 0.95, x: 150, y: 584, s: 0.62, act: 'photo', sil: true, rim: '255,195,140', seed: 14 }, { d: 0.95, x: 270, y: 586, s: 0.45, act: 'sit', sil: true, build: 'kitten', rim: '255,195,140', seed: 15 }, { d: 0.95, x: 650, y: 588, s: 0.6, act: 'loaf', sil: true, build: 'chonk', rim: '255,195,140', seed: 16 }],
   L11: [{ d: 0.95, x: 990, y: 516, s: 0.72, act: 'ice', coat: 'white', build: 'goofy', face: -1, seed: 17 }, { d: 0.95, x: 1120, y: 516, s: 0.75, act: 'sleep', coat: 'grey', build: 'chonk', seed: 18 }],
   L12: [{ after: 'bridge', d: 0.4, x: 300, y: 392, s: 0.24, act: 'walk', v: 16, coat: 'black', haze: HZ.far, seed: 19 }, { after: 'bridge', d: 0.4, x: 420, y: 392, s: 0.24, act: 'bike', v: 40, coat: 'white', haze: HZ.far, seed: 20 }, { d: 0.95, x: 1080, y: 598, s: 0.6, act: 'fish', coat: 'brown', face: -1, tx: 960, ty: 572, seed: 21 }],
+  L13: [{ d: 0.95, x: 110, y: 612, s: 0.62, act: 'photo', coat: 'grey', seed: 74 }, { d: 0.95, x: 1170, y: 612, s: 0.64, act: 'photo', coat: 'brown', build: 'chonk', face: -1, seed: 75 },
+    { d: 0.75, x: 590, y: 465, s: 0.45, act: 'loaf', coat: 'black', build: 'aloof', seed: 76 }, { after: 'house', d: 0.35, x: 1010, y: 470, s: 0.3, act: 'walk', v: -10, face: -1, coat: 'cream', haze: HZ.day, seed: 77 }],
   L14: [{ d: 0.95, x: 95, y: 598, s: 0.62, act: 'eat', coat: 'grey', build: 'chonk', col: '#c9a074', seed: 22 }],
   L15: [{ d: 0.8, x: 990, y: 562, s: 0.52, act: 'photo', sil: true, face: -1, rim: '255,165,110', seed: 23 }, { d: 0.8, x: 1110, y: 560, s: 0.5, act: 'sit', sil: true, build: 'aloof', face: -1, rim: '255,165,110', seed: 24 }],
+  L16: [{ d: 0.5, x: 760, y: 556, s: 0.3, act: 'hike', v: 10, coat: 'grey', haze: HZ.day, seed: 78 }, { d: 0.5, x: 728, y: 558, s: 0.28, act: 'hike', v: 10, coat: 'bicolor', col: '#d9573a', haze: HZ.day, seed: 79 },
+    { d: 0.9, x: 1060, y: 598, s: 0.55, act: 'photo', coat: 'cream', face: -1, seed: 80 }],
   L17: [{ d: 0.85, x: 880, y: 560, s: 0.6, act: 'pick', coat: 'calico', face: -1, seed: 25 }, { d: 0.95, x: 1130, y: 604, s: 0.66, act: 'eat', coat: 'cream', build: 'chonk', col: '#e8893a', face: -1, seed: 26 }],
   L18: [{ d: 0.95, x: 300, y: 600, s: 0.62, act: 'eat', coat: 'tuxedo', build: 'goofy', seed: 27 }, { d: 0.6, x: 760, y: 470, s: 0.32, act: 'walk', v: 12, coat: 'cream', haze: HZ.night, seed: 28 }, { d: 0.6, x: 800, y: 470, s: 0.3, act: 'walk', v: 12, coat: 'siamese', haze: HZ.night, seed: 29 }],
   L19: [{ d: 0.9, x: 820, y: 470, s: 0.55, act: 'photo', sil: true, rim: '255,175,120', seed: 30 }],
@@ -505,6 +512,8 @@ const CROWD = {
   T5: [{ d: 0.95, x: 150, y: 600, s: 0.66, act: 'photo', coat: 'grey', seed: 41 }, { d: 0.95, x: 1160, y: 600, s: 0.66, act: 'photo', coat: 'brown', build: 'chonk', face: -1, seed: 42 }],
   T6: [{ d: 0.95, x: 1110, y: 602, s: 0.6, act: 'fish', coat: 'black', face: -1, tx: 990, ty: 566, seed: 43 }],
   T7: [{ d: 0.95, x: 660, y: 598, s: 0.66, act: 'sit', coat: 'cream', build: 'goofy', emote: { k: 'drop', u: 1, a: 1 }, seed: 44 }, { d: 0.95, x: 1020, y: 598, s: 0.62, act: 'photo', coat: 'bicolor', build: 'kitten', seed: 45 }],
+  T8: [{ after: 'deck', d: 0.6, x: 120, y: 556, s: 0.55, act: 'fish', coat: 'brown', tx: 200, ty: 470, seed: 81 }, { after: 'deck', d: 0.6, x: 600, y: 556, s: 0.55, act: 'fish', coat: 'grey', build: 'chonk', tx: 690, ty: 476, seed: 82 },
+    { after: 'deck', d: 0.6, x: 1040, y: 562, s: 0.58, act: 'ice', coat: 'calico', build: 'goofy', col: '#c45aa8', face: -1, seed: 83 }, { after: 'far', d: 0.3, x: 900, y: 466, s: 0.16, act: 'bike', v: -30, face: -1, coat: 'black', haze: HZ.far, seed: 84 }],
   T9: [{ d: 0.8, x: 640, y: 516, s: 0.45, act: 'pose', coat: 'calico', build: 'kitten', haze: HZ.day, seed: 46 }, { d: 0.85, x: 790, y: 540, s: 0.5, act: 'photo', coat: 'grey', face: -1, seed: 47 }],
   T10: [{ d: 1, x: 820, y: 528, s: 0.72, act: 'look', coat: 'siamese', build: 'aloof', face: -1, seed: 48 }],
   T11: [{ d: 0.95, x: 760, y: 598, s: 0.5, act: 'look', coat: 'brown', seed: 49 }, { d: 0.95, x: 830, y: 600, s: 0.42, act: 'look', coat: 'bicolor', build: 'kitten', seed: 50 }],
