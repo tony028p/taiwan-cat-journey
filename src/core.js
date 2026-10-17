@@ -165,10 +165,10 @@ function flock(n, x0, y0, vx, s, col, seed, lt) {
   const r = rng(seed);
   for (let k = 0; k < n; k++) { const ox = (r() - 0.5) * 160, oy = (r() - 0.5) * 60; bird(x0 + ox + lt * vx + Math.sin(lt * 0.7 + k) * 6, y0 + oy + Math.sin(lt * 1.3 + k * 2) * 5, s * (0.7 + r() * 0.5), lt * (9 + r() * 4) + k, col); }
 }
-function grassTufts(y0, y1, n, cols, seed, wind = 1, h = 14) {
+function grassTufts(y0, y1, n, cols, seed, wind = 1, h = 14, xr = null) {
   const r = rng(seed); c.save(); c.lineCap = 'round';
   for (let k = 0; k < n; k++) {
-    const x = r() * (W + 2 * M) - M, pr = r(), y = y0 + pr * (y1 - y0), hh = h * (0.5 + r()) * (0.6 + pr), sw = Math.sin(T * 1.8 + x * 0.02) * 3 * wind * (hh / h);
+    const x = xr ? xr[0] + r() * (xr[1] - xr[0]) : r() * (W + 2 * M) - M, pr = r(), y = y0 + pr * (y1 - y0), hh = h * (0.5 + r()) * (0.6 + pr), sw = Math.sin(T * 1.8 + x * 0.02) * 3 * wind * (hh / h);
     c.strokeStyle = cols[Math.floor(r() * cols.length)]; c.lineWidth = 0.8 + pr * 1.4;
     c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + sw * 0.3, y - hh * 0.6, x + sw + (r() - 0.5) * 4, y - hh); c.stroke();
   }

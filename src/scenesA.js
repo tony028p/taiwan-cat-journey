@@ -6,13 +6,31 @@ function tower101(x, y, h, o = {}) {
   seg(70 * u, 66 * u, y, y - 34 * u); seg(46 * u, 36 * u, y - 34 * u, y - 120 * u);
   for (let k = 0; k < 8; k++) {
     const yb = y - 120 * u - k * 30 * u; seg(30 * u, 44 * u, yb, yb - 30 * u);
-    if (o.night) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,${190 + k * 6},${120 + k * 10},0.5)`; c.fillRect(x - 15 * u, yb - 6 * u, 30 * u, 3 * u); c.fillStyle = 'rgba(255,220,170,0.25)'; c.fillRect(x - 20 * u, yb - 22 * u, 40 * u, 2 * u); c.restore(); }
+    if (o.night) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = 'rgba(120,200,255,0.42)'; c.fillRect(x - 21 * u, yb - 29 * u, 42 * u, 27 * u); c.fillStyle = 'rgba(210,245,255,0.7)'; c.fillRect(x - 22 * u, yb - 30 * u, 44 * u, 2.4 * u);
+      for (let w = 0; w < 6; w++) c.fillRect(x - 13 * u + w * 5.2 * u, yb - 24 * u, 1.2 * u, 18 * u); c.restore(); }
     else { c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(x - 18 * u, yb - 14 * u, 36 * u, 1.2 * u); }
   }
   const tp = y - 360 * u; seg(30 * u, 24 * u, tp, tp - 22 * u); seg(18 * u, 14 * u, tp - 22 * u, tp - 36 * u);
   line(x, tp - 36 * u, x, tp - 92 * u, Dc, 2.2 * u);
   return tp - 92 * u;
 }
+/* Xinyi district towers around 101 as seen from Xiangshan: Nanshan Plaza (dark slab, right), the Farglory/Cathay towers,
+   with lit crowns at night */
+function xinyiTowers(y, night, c1, c2) {
+  const T = [[742, 150, 26, 'cyan'], [776, 118, 22, 'white'], [906, 216, 40, 'nanshan'], [960, 128, 24, 'magenta'], [996, 168, 30, 'white'], [1046, 112, 22, 'gold'], [700, 96, 26, 'gold'], [1100, 140, 26, 'cyan'], [640, 84, 30, 'white'], [1150, 92, 30, 'gold']];
+  const crown = { cyan: '120,220,255', white: '240,245,255', magenta: '255,120,210', gold: '255,200,120', nanshan: '255,255,255' };
+  const r = rng(77);
+  T.forEach(([x, h, w, kind]) => { c.fillStyle = kind === 'nanshan' ? mix(c1, '#000000', 0.25) : mix(c1, c2, r()); c.fillRect(x - w / 2, y - h, w, h + 40);
+    if (kind === 'nanshan') { c.fillStyle = mix(c1, c2, 0.6); c.fillRect(x - w / 2, y - h - 10, w * 0.62, 12); }
+    if (night) { for (let yy = y - h + 8; yy < y; yy += 4) for (let xx = x - w / 2 + 2; xx < x + w / 2 - 2; xx += 3) if (r() < (kind === 'nanshan' ? 0.08 : 0.3)) { c.fillStyle = `rgba(255,${210 + r() * 40},${160 + r() * 80},${0.35 + r() * 0.5})`; c.fillRect(xx, yy, 1.4, 1.8); }
+      c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(${crown[kind]},0.75)`; c.fillRect(x - w / 2, y - h, w, kind === 'nanshan' ? 3 : 6); glow(x, y - h, w * 1.1, crown[kind], 0.25); c.restore(); }
+    else { c.fillStyle = 'rgba(255,230,210,0.18)'; c.fillRect(x - w / 2, y - h, w * 0.4, h); } });
+}
+/* dense city lights spread over the basin floor (night) */
+function cityLights(y0, y1, n, seed) { const r = rng(seed); c.save(); c.globalCompositeOperation = 'lighter';
+  for (let k = 0; k < n; k++) { const pr = Math.pow(r(), 0.7), y = y0 + pr * (y1 - y0), x = r() * (W + 2 * M) - M, cool = r() < 0.35, col = cool ? '200,230,255' : r() < 0.08 ? '255,90,90' : `255,${190 + r() * 50},${120 + r() * 60}`;
+    c.fillStyle = `rgba(${col},${0.35 + r() * 0.55})`; c.fillRect(x, y, 1 + pr * 1.4, 1 + pr * 1.2); }
+  c.restore(); }
 function skyline(y, seed, c1, c2, o = {}) {
   const r = rng(seed); let x = -M;
   while (x < W + M) {
@@ -22,6 +40,9 @@ function skyline(y, seed, c1, c2, o = {}) {
     x += w + r() * 2;
   }
 }
+/* overhanging tree branch silhouette in the top-right corner (clear of the location card) (Xiangshan viewpoint), leaves sway gently */
+function treeBranch(col, a0) { c.save(); c.translate(W, 0); c.scale(-1, 1); c.fillStyle = col; c.strokeStyle = col; c.lineCap = 'round'; c.lineWidth = 9; c.beginPath(); c.moveTo(-M, 60); c.quadraticCurveTo(80, 70, 190, 132); c.stroke(); c.lineWidth = 5; c.beginPath(); c.moveTo(70, 80); c.quadraticCurveTo(110, 120, 120, 170); c.stroke(); c.beginPath(); c.moveTo(150, 112); c.quadraticCurveTo(230, 120, 280, 150); c.stroke();
+  const r = rng(91); for (let k = 0; k < 90; k++) { const t = r(), bx = lerp(-M, 280, t), by = 60 + t * 90 + (r() - 0.5) * 70, sw = Math.sin(T * 1.2 + k) * 1.5; c.beginPath(); c.ellipse(bx + sw, by, 7 + r() * 9, 4 + r() * 5, r() * 3, 0, TAU); c.fill(); } c.restore(); }
 function rockFG(pts, top, bot, rim, seed) {
   poly(pts); c.fillStyle = vg(Math.min(...pts.map(p => p[1])), H, [[0, top], [1, bot]]); c.fill();
   c.save(); poly(pts); c.clip(); const r = rng(seed);
@@ -99,7 +120,7 @@ SCENES.push({ county: '臺北市', place: '象山', sun: () => [880, 470, 0.45],
     L('sky', 0, () => { sky([[0, '#17223d'], [0.3, '#3b4872'], [0.52, '#a27c88'], [0.64, '#eba985'], [0.74, '#f6cd9c'], [1, '#f3dcb8']]); glow(880, 470, 520, '255,185,140', 0.35); stars(80, 1, 220, 0.6);
       stratus(420, 260, 900, 50, 'rgba(235,160,160,0.35)'); stratus(980, 310, 700, 36, 'rgba(255,195,160,0.45)'); stratus(700, 360, 1100, 30, 'rgba(255,210,170,0.35)'); });
     L('far', 0.08, () => mountain({ base: 470, amp: 120, f: 0.0032, seed: 1, oct: 5, top: '#6c6e92', bot: '#b9949b', haze: 'rgba(240,180,160,0.45)', rim: 'rgba(255,200,170,0.5)' }), { blur: 1.2 });
-    L('city', 0.3, () => { skyline(540, 7, '#575a7a', '#857b96', { hmin: 14, hvar: 70, win: 0.05 }); tower101(860, 540, 360, { light: '#8d8fae', dark: '#4d5170' });
+    L('city', 0.3, () => { skyline(540, 7, '#575a7a', '#857b96', { hmin: 14, hvar: 70, win: 0.05 }); xinyiTowers(540, false, '#5d5f80', '#7f7896'); tower101(860, 540, 360, { light: '#8d8fae', dark: '#4d5170' });
       c.fillStyle = vg(440, 560, [[0, 'rgba(236,170,160,0)'], [1, 'rgba(236,180,165,0.6)']]); c.fillRect(-M, 440, W + 2 * M, 140); }, { blur: 0.6 });
     D(0.3, () => { const blink = Math.sin(T * 3) > 0.3; if (blink) glow(860, 540 - 360 * 1.0, 10, '255,60,50', 0.9); });
     L('mist', 0.36, () => { for (let k = 0; k < 7; k++) stratus(k * 230 - 40, 520 + (k % 3) * 14, 520, 26, 'rgba(255,225,215,0.55)'); }, { blur: 5, dx: lt * 7 });
@@ -108,7 +129,8 @@ SCENES.push({ county: '臺北市', place: '象山', sun: () => [880, 470, 0.45],
       rockFG(pts, '#3a3140', '#120f16', 'rgba(255,175,135,0.65)', 3);
       bushes(40, -M, 250, x => 470 + Math.abs(x - 140) * 0.18, 4, '#1a1820', '#2b2632', 16);
     });
-    D(0.92, () => { grassTufts(505, 530, 60, ['#3a3040', '#4a3c48', '#5b4650'], 5, 1, 12); actCat({ x: 410, y: 524, s: 1.05, pose: 'sit', sil: true, rim: '255,185,140', look: -0.06, blink: blinkAt(lt) }); });
+    D(0.92, () => { grassTufts(505, 530, 50, ['#3a3040', '#4a3c48', '#5b4650'], 5, 1, 12, [-M, 455]); actCat({ x: 410, y: 524, s: 1.05, pose: 'sit', sil: true, rim: '255,185,140', look: -0.06, blink: blinkAt(lt) }); });
+    D(1, () => treeBranch('#141018', 0));
   } });
 
 /* 1 — 新北市 九份 rain at dusk */
