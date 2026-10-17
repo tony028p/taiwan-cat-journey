@@ -11,16 +11,47 @@ function trainWindow(lt, outside, wall = '#cfc6b6', frame = '#7d7468') {
   c.fillStyle = mix(wall, '#000000', 0.15); c.fillRect(220, 506, 820, 18); c.restore();
 }
 
-/* T0 新北 陰陽海 */
+/* T0 新北 陰陽海 — Shuinandong: the green hillside of the Thirteen Levels smelter ruins (grey terraces stepping down,
+   the arched wall, the long flues climbing the ridge), the bay where golden mineral water meets the blue sea behind a
+   breakwater, Keelung Mountain in the haze, and the coast road */
+function yyTerraces() {
+  // hillside on the left, rising off the top of the frame
+  c.fillStyle = vg(120, 520, [[0, '#55804e'], [1, '#3e6440']]); c.beginPath(); c.moveTo(-M, 520); c.lineTo(-M, 150); c.bezierCurveTo(200, 120, 420, 230, 560, 470); c.lineTo(620, 520); c.closePath(); c.fill();
+  const r = rng(305); c.save(); c.beginPath(); c.moveTo(-M, 520); c.lineTo(-M, 150); c.bezierCurveTo(200, 120, 420, 230, 560, 470); c.lineTo(620, 520); c.closePath(); c.clip();
+  for (let k = 0; k < 900; k++) { const x = r() * 760 - M, y = 60 + r() * 460; oval(x, y, 3 + r() * 5, 2 + r() * 3, 0, mix('#2e4c30', '#8fb57a', r(), 0.85)); }
+  // thirteen grey terraces stepping down the slope (top-left to lower-right), overgrown on their treads
+  for (let k = 0; k < 13; k++) { const u = k / 12, x0 = 150 + u * 250 - hash(k * 3) * 20, y0 = 236 + u * 220, w = 190 - u * 40 + hash(k) * 30, h = 15;
+    c.fillStyle = mix('#a9a59c', '#8a867e', hash(k)); c.fillRect(x0, y0, w, h); c.fillStyle = 'rgba(255,255,250,0.25)'; c.fillRect(x0, y0, w, 2);
+    c.fillStyle = 'rgba(40,38,34,0.45)'; c.fillRect(x0, y0 + h - 5, w, 5); for (let a = 0; a < w / 14; a++) { c.fillStyle = 'rgba(40,38,34,0.35)'; c.fillRect(x0 + 4 + a * 14, y0 + 4, 6, 6); }
+    for (let t = 0; t < 7; t++) oval(x0 + r() * w, y0 - 2 + r() * 4, 5 + r() * 8, 3 + r() * 3, 0, mix('#46703e', '#9cc07c', r(), 0.95)); }
+  // the arched ruin wall near the top
+  c.fillStyle = '#7d7972'; c.fillRect(170, 196, 170, 40); c.fillStyle = 'rgba(30,28,26,0.55)'; for (let a = 0; a < 9; a++) { c.beginPath(); c.moveTo(180 + a * 18, 232); c.lineTo(180 + a * 18, 214); c.arc(186 + a * 18, 214, 6, Math.PI, 0); c.lineTo(192 + a * 18, 232); c.closePath(); c.fill(); }
+  c.fillStyle = '#6a6660'; c.fillRect(170, 192, 170, 5); for (let t = 0; t < 26; t++) oval(170 + r() * 170, 192 + r() * 6, 4 + r() * 7, 2 + r() * 3, 0, mix('#46703e', '#9cc07c', r(), 0.95));
+  // the long flues climbing over the ridge
+  c.strokeStyle = '#8c887f'; c.lineWidth = 7; c.lineCap = 'round'; c.beginPath(); c.moveTo(300, 230); c.quadraticCurveTo(200, 180, 60, 150); c.stroke(); c.beginPath(); c.moveTo(330, 240); c.quadraticCurveTo(260, 200, 150, 150); c.stroke();
+  c.strokeStyle = 'rgba(40,38,34,0.4)'; c.lineWidth = 2; c.beginPath(); c.moveTo(304, 234); c.quadraticCurveTo(204, 184, 64, 154); c.stroke();
+  // lower buildings by the shore
+  c.fillStyle = '#cfc9bb'; c.fillRect(420, 476, 70, 26); poly([[416, 476], [455, 462], [494, 476]], '#8a5a44'); c.fillStyle = '#b8b2a4'; c.fillRect(470, 486, 60, 18);
+  c.restore();
+}
 V('T0', '新北市 · 瑞芳', '陰陽海', 'Yin-Yang Sea', '25.12°N 121.86°E', ['沿著海岸往東，海一半藍、一半金。', 'Heading east along the coast — the sea is half blue, half gold.'], [1.02, 1.06, 30, -30, 0, 0], function (lt) {
-  L('sky', 0, () => { sky([[0, '#7aa6cf'], [0.55, '#cfdde3'], [1, '#e9e6da']]); cumulus(900, 190, 360, 70, 301, '#ffffff', '#c9d1db', -0.3); }, { blur: 2 });
-  L('sea', 0.15, () => { c.fillStyle = vg(330, H, [[0, '#5d8fae'], [1, '#2f6f92']]); c.fillRect(-M, 330, W + 2 * M, H);
-    c.fillStyle = 'rgba(205,160,70,0.85)'; c.beginPath(); c.moveTo(380, 470); c.bezierCurveTo(520, 420, 700, 430, 820, 470); c.bezierCurveTo(760, 500, 540, 520, 380, 470); c.fill();
-    c.fillStyle = 'rgba(160,140,90,0.45)'; c.beginPath(); c.ellipse(600, 480, 300, 40, 0, 0, TAU); c.fill(); });
-  D(0.15, () => shimmer(335, 560, 160, '255,255,255', 302, { a: 0.35 }));
-  L('hills', 0.3, () => { mountain({ fn: x => x < 380 ? 360 - (380 - x) * 0.9 - fbm1(x * 0.01) * 30 : 470, floor: 480, top: '#4e7550', bot: '#3e5f40', tex: 'forest', dark: '#2e4a30', mid: '#4b6e45', light: '#8fb17a', depth: 200, n: 1600, r: 4, seed: 303 });
-    mountain({ fn: x => x > 820 ? 470 - (x - 820) * 0.7 - fbm1(x * 0.012 + 5) * 26 : 480, floor: 480, top: '#557b55', bot: '#44663f', tex: 'forest', dark: '#33503a', mid: '#557a4c', light: '#9cbc84', depth: 200, n: 1300, r: 4, seed: 304 });
-    for (let k = 0; k < 18; k++) { c.fillStyle = mix('#d9d3c6', '#9da9b0', hash(k)); c.fillRect(870 + k * 16, 420 - hash(k + 3) * 30, 14, 20 + hash(k + 3) * 30); } });
+  L('sky', 0, () => { sky([[0, '#6fa2d2'], [0.55, '#c8dce6'], [1, '#e9e8dc']]); cumulus(980, 170, 380, 70, 301, '#ffffff', '#c9d1db', -0.3); stratus(700, 260, 900, 40, 'rgba(255,255,255,0.45)'); }, { blur: 2 });
+  // Keelung Mountain: the pyramid peak in the haze, with the ridge behind
+  L('far', 0.06, () => { mountain({ fn: x => 372 - 92 * Math.max(0, 1 - Math.abs(x - 1080) / 130) - 24 * Math.max(0, 1 - Math.abs(x - 880) / 240) - fbm1(x * 0.01 + 3) * 10, floor: 380, top: '#7f9ca6', bot: '#9fb4b8', haze: 'rgba(220,232,236,0.5)', bottom: 380 }); }, { blur: 1.4 });
+  // the sea: open blue, with the golden-brown mineral water filling the bay and bleeding out past the breakwater
+  L('sea', 0.15, () => { const hz = 372; c.fillStyle = vg(hz, H, [[0, '#6b9cbb'], [0.3, '#3d86b0'], [1, '#2a6f96']]); c.fillRect(-M, hz, W + 2 * M, H);
+    // breakwater
+    c.fillStyle = '#9a968c'; c.beginPath(); c.moveTo(700, 498); c.lineTo(1140, 452); c.lineTo(1150, 460); c.lineTo(710, 506); c.closePath(); c.fill(); const r = rng(306); for (let k = 0; k < 60; k++) disc(700 + r() * 440, 498 - r() * 44 + (r() - 0.5) * 6, 2 + r() * 3, mix('#b8b4aa', '#6e6a62', r()));
+ }, { blur: 0.4 });
+  L('shallow', 0.15, () => { oval(940, 500, 220, 30, -0.1, 'rgba(90,200,200,0.55)'); oval(1050, 520, 200, 40, -0.1, 'rgba(110,210,205,0.5)'); }, { blur: 12 });
+  L('gold', 0.15, () => { [[620, 540, 300, 60, 0.95], [700, 500, 260, 40, 0.8], [820, 478, 220, 22, 0.55], [560, 580, 260, 50, 0.95]].forEach(([x, y, rx, ry, a]) => oval(x, y, rx, ry, -0.06, `rgba(204,152,66,${a})`));
+    c.strokeStyle = 'rgba(220,175,96,0.7)'; c.lineWidth = 5; for (let k = 0; k < 5; k++) { c.beginPath(); c.moveTo(760 + k * 50, 470 + k * 6); c.quadraticCurveTo(800 + k * 50, 456 + k * 6, 850 + k * 50, 472 + k * 8); c.stroke(); } }, { blur: 14, alpha: 0.95 });
+  L('shore', 0.17, () => { const r = rng(307); c.fillStyle = vg(540, 590, [[0, '#8a867a'], [1, '#64605a']]); c.beginPath(); c.moveTo(360, 592); c.quadraticCurveTo(480, 548, 690, 556); c.lineTo(700, 592); c.closePath(); c.fill();
+    for (let k = 0; k < 50; k++) oval(380 + r() * 310, 556 + r() * 30, 4 + r() * 9, 3 + r() * 5, r(), mix('#5a564e', '#9a968a', r())); });
+  D(0.15, () => { shimmer(380, 470, 140, '255,255,255', 302, { a: 0.4 }); for (let k = 0; k < 5; k++) { const u = mod(lt * 0.4 + k / 5, 1); c.strokeStyle = `rgba(255,255,255,${(1 - u) * 0.6})`; c.lineWidth = 2; c.beginPath(); c.moveTo(390 + k * 60, 540 - u * 8); c.quadraticCurveTo(420 + k * 60, 532 - u * 12, 450 + k * 60, 540 - u * 8); c.stroke(); } });
+  L('hills', 0.3, () => yyTerraces());
+  // haze in front of the hillside
+  L('haze', 0.32, () => { const g = c.createLinearGradient(0, 300, 0, 560); g.addColorStop(0, 'rgba(225,235,238,0)'); g.addColorStop(1, 'rgba(225,235,238,0.25)'); c.fillStyle = g; c.fillRect(-M, 300, W + 2 * M, 260); });
   L('road', 0.9, () => { c.fillStyle = vg(560, H, [[0, '#5a5a5e'], [1, '#2e2e32']]); c.fillRect(-M, 590, W + 2 * M, 200); for (let k = 0; k < 20; k++) c.fillStyle = '#f2e7c6', c.fillRect(-M + k * 120, 640, 60, 4);
     c.fillStyle = '#c9c9c9'; c.fillRect(-M, 572, W + 2 * M, 8); c.fillStyle = '#8f8f8f'; c.fillRect(-M, 580, W + 2 * M, 4); for (let k = 0; k < 30; k++) c.fillRect(-M + k * 60, 572, 5, 22); });
   D(0.9, () => { const q = { x: 200 + lt * 46, y: 574, s: 1.0 }; q.pose = { ...walkPose3(walkCyc3(lt * 46, 1, true), { trot: 1 }), ...ex('happy', 0.8) }; q.emote = emoAt(lt, [[1.0, 2.6, 'note']]); drawCat3(q); });
