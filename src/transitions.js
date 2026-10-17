@@ -61,11 +61,20 @@ V('T1', '基隆市', '基隆港', 'Port of Keelung', '25.13°N 121.74°E', ['港
   L('sky', 0, () => { sky([[0, '#88a9c6'], [1, '#e2e2da']]); cumulus(350, 200, 320, 60, 311, '#ffffff', '#c9cfd8', 0.3); }, { blur: 2 });
   L('hill', 0.1, () => { mountain({ base: 340, amp: 110, f: 0.004, seed: 312, top: '#5e7d63', bot: '#6f8a72', tex: 'forest', dark: '#466048', mid: '#5f7d5c', light: '#9db48d', depth: 160, n: 1500, r: 3 });
     c.fillStyle = '#ffffff'; c.font = `700 22px Arial, sans-serif`; c.save(); c.translate(520, 268); c.rotate(-0.05); c.fillText('K E E L U N G', 0, 0); c.restore();
-    skyline(400, 313, '#b8bcbe', '#e2ddd2', { hmin: 20, hvar: 50 }); });
+    // dense city climbing the hillsides round the inner harbour
+    const r = rng(315); for (let row = 4; row >= 0; row--) for (let x = -M; x < W + M; x += 14 + r() * 18) { const y = 402 - row * 11 - (1 - Math.abs(x - 640) / 900) * row * 4, h = 10 + r() * 16, w = 12 + r() * 16;
+      c.fillStyle = mix('#c8ccc8', '#ece6d8', r()); c.fillRect(x, y - h, w, h + 2); c.fillStyle = 'rgba(80,90,100,0.35)'; for (let yy = y - h + 3; yy < y; yy += 5) c.fillRect(x + 2, yy, w - 4, 1.4); }
+    skyline(404, 313, '#b8bcbe', '#e2ddd2', { hmin: 20, hvar: 60 }); c.fillStyle = '#d8d4cc'; c.fillRect(100, 300, 26, 104); c.fillRect(1100, 290, 30, 114); });
   L('port', 0.3, () => { c.fillStyle = vg(400, H, [[0, '#4f7584'], [1, '#2c4b57']]); c.fillRect(-M, 402, W + 2 * M, H);
     [[880, 1.0], [1010, 0.9], [1120, 1.05]].forEach(([x, s]) => { c.save(); c.translate(x, 402); c.scale(s, s); c.fillStyle = '#c9402f'; c.fillRect(-30, -150, 6, 150); c.fillRect(24, -150, 6, 150); c.fillRect(-60, -160, 130, 10); c.fillRect(-30, -110, 60, 6); c.fillStyle = '#e8e8e8'; c.fillRect(40, -170, 30, 16); c.restore(); });
     for (let k = 0; k < 24; k++) { c.fillStyle = ['#c0392b', '#2c6e9b', '#d4a017', '#3f8b5a', '#7f8c8d'][k % 5]; c.fillRect(830 + (k % 8) * 26, 392 - Math.floor(k / 8) * 11, 24, 10); } });
-  D(0.3, () => { shimmer(405, H, 150, '255,255,255', 314, { a: 0.3 }); const sx = 760 - lt * 22; c.save(); c.translate(sx, 470); poly([[-220, 0], [200, 0], [240, -30], [-230, -26]], '#f4f4f2'); c.fillStyle = '#1f3a5a'; c.fillRect(-222, -8, 450, 8); c.fillStyle = '#ffffff'; c.fillRect(-150, -70, 300, 44); c.fillRect(-100, -98, 200, 30); c.fillStyle = '#36506a'; for (let k = 0; k < 14; k++) c.fillRect(-140 + k * 20, -60, 12, 8); c.fillStyle = '#c7372c'; c.fillRect(60, -128, 26, 32); c.restore(); });
+  D(0.3, () => { shimmer(405, H, 150, '255,255,255', 314, { a: 0.3 }); const sx = 720 - lt * 6; c.save(); c.translate(sx, 470);
+    // cruise ship: tall white superstructure in tiers, rows of balconies, blue hull stripe, funnel
+    c.fillStyle = '#1e3a5a'; c.beginPath(); c.moveTo(-300, -10); c.lineTo(280, -10); c.lineTo(320, -40); c.lineTo(-310, -36); c.closePath(); c.fill();
+    c.fillStyle = '#f6f6f4'; c.beginPath(); c.moveTo(-310, -36); c.lineTo(320, -40); c.lineTo(300, -70); c.lineTo(-300, -70); c.closePath(); c.fill();
+    for (let tier = 0; tier < 5; tier++) { const x0 = -280 + tier * 18, x1 = 250 - tier * 34, y0 = -70 - tier * 16; c.fillStyle = tier % 2 ? '#eeeeec' : '#fafafa'; c.fillRect(x0, y0 - 16, x1 - x0, 16); c.fillStyle = 'rgba(40,70,100,0.7)'; for (let w = x0 + 4; w < x1 - 4; w += 7) c.fillRect(w, y0 - 12, 4, 7); }
+    c.fillStyle = '#1e3a5a'; c.fillRect(140, -160, 34, 30); c.fillStyle = '#d23a2e'; c.fillRect(140, -168, 34, 8); c.fillStyle = 'rgba(30,50,80,0.85)'; c.fillRect(230, -128, 50, 10);
+    c.restore(); });
   L('fg', 0.95, () => { c.fillStyle = vg(580, H, [[0, '#8a8580'], [1, '#4c4844']]); c.fillRect(-M, 586, W + 2 * M, 200); c.fillStyle = '#2e2c2b'; c.fillRect(250, 548, 40, 42); c.beginPath(); c.ellipse(270, 548, 26, 8, 0, 0, TAU); c.fill(); });
   D(0.95, () => drawCat3({ x: 262, y: 542, s: 1.05, pose: sit3(lt, { ...exSeq(lt, [[0, 'curious'], [1.2, 'delighted'], [2.6, 'content']]), look: [0.8, -0.3], hr: -0.05 + Math.sin(lt * 0.6) * 0.1 }), emote: emoAt(lt, [[1.2, 2.6, 'spark']]), shadow: false }));
 });
