@@ -103,15 +103,35 @@ V('T7', '臺灣海峽', '高雄 → 馬公 渡輪', 'Ferry to Penghu', '23.00°N
     c.strokeStyle = '#f4f4f2'; line(-M, 520, W + M, 520, '#f4f4f2', 5); line(-M, 545, W + M, 545, '#f4f4f2', 3); for (let x = -M; x < W + M; x += 60) line(x, 520, x, 572, '#f4f4f2', 4); });
   D(0.95, () => drawCat3({ x: 420, y: 588, s: 1.1, pose: sit3(lt, { ...ex('annoyed'), earDown: 1, hr: -0.1 + Math.sin(lt * 9) * 0.02, ts: 4, turn: turnAt(lt, [[1.4, 3.0, 0.85]]) }), emote: emoAt(lt, [[0.9, 2.6, 'drop']]) }));
 });
-/* T8 澎湖跨海大橋 */
+/* T8 澎湖跨海大橋 — shallow turquoise lagoon over reef patches, the long low bridge running away to Xiyu on the horizon,
+   the white arch at this end, people fishing off the railing */
 V('T8', '澎湖縣 · 白沙', '澎湖跨海大橋', 'Penghu Great Bridge', '23.65°N 119.53°E', ['澎湖跨海大橋，把兩座島連在一起。', 'The Penghu Great Bridge joins two islands together.'], [1.03, 1.08, 0, 0, 0, 0], function (lt) {
-  L('sky', 0, () => { sky([[0, '#3f88d0'], [1, '#d6ecf3']]); cumulus(300, 190, 300, 60, 381, '#ffffff', '#cdd8e3', 0.3); }, { blur: 2 });
-  L('sea', 0.15, () => { c.fillStyle = vg(400, H, [[0, '#2a8fc0'], [1, '#56c6c9']]); c.fillRect(-M, 400, W + 2 * M, H); c.fillStyle = '#c9c4b6'; c.fillRect(-M, 396, W + 2 * M, 8); for (let x = -M; x < W + M; x += 40) { c.fillStyle = '#b2ad9f'; c.fillRect(x, 404, 6, 18); } });
-  D(0.15, () => shimmer(420, H, 200, '255,255,255', 382, { a: 0.4 }));
-  L('arch', 0.6, () => { c.fillStyle = vg(560, H, [[0, '#9a9a96'], [1, '#55534f']]); c.fillRect(-M, 560, W + 2 * M, 200); c.fillStyle = '#f2f0ea'; c.fillRect(-M, 556, W + 2 * M, 8);
-    c.strokeStyle = '#f7f6f2'; c.lineWidth = 34; c.beginPath(); c.moveTo(340, 562); c.bezierCurveTo(380, 150, 900, 150, 940, 562); c.stroke(); c.strokeStyle = 'rgba(160,160,155,0.5)'; c.lineWidth = 6; c.beginPath(); c.moveTo(356, 562); c.bezierCurveTo(396, 170, 884, 170, 924, 562); c.stroke();
-    c.fillStyle = '#4a4a4a'; c.font = `700 26px ${FONTS}`; c.textAlign = 'center'; c.save(); c.translate(640, 270); c.fillText('澎 湖 跨 海 大 橋', 0, 0); c.restore(); });
+  SC.sc.sun = SC.sc.sun || (() => [1000, 110, 0.5]);
+  L('sky', 0, () => { sky([[0, '#2f7cc8'], [0.55, '#8cc4e6'], [1, '#e2f2f6']]); cumulus(260, 200, 340, 60, 381, '#ffffff', '#c9d6e2', 0.3); cumulus(820, 170, 420, 70, 383, '#ffffff', '#cdd8e3', 0.3); }, { blur: 1.5 });
+  L('sea', 0.1, () => { const hz = 410; c.fillStyle = vg(hz, H, [[0, '#2b7fb8'], [0.25, '#2f9cc4'], [0.6, '#43bfc6'], [1, '#7fdcd0']]); c.fillRect(-M, hz, W + 2 * M, H);
+    // reef and sand patches seen through the shallow water, flattened by perspective
+    const r = rng(384); for (let k = 0; k < 70; k++) { const y = hz + 20 + Math.pow(r(), 0.7) * 260, x = r() * (W + 2 * M) - M, sc = (y - hz) / 260; oval(x, y, (20 + r() * 60) * sc, (3 + r() * 6) * sc, 0, r() < 0.55 ? `rgba(30,70,90,${0.25 + r() * 0.2})` : `rgba(220,240,220,${0.18 + r() * 0.15})`); }
+    // Xiyu, low on the horizon, with a few white houses
+    c.fillStyle = '#7d9a96'; c.beginPath(); c.moveTo(-M, hz); c.bezierCurveTo(100, hz - 14, 420, hz - 18, 700, hz - 6); c.lineTo(760, hz); c.closePath(); c.fill(); for (let k = 0; k < 18; k++) { c.fillStyle = 'rgba(240,240,236,0.8)'; c.fillRect(60 + k * 34 + r() * 10, hz - 10 - r() * 6, 5, 4); }
+    c.fillStyle = 'rgba(230,240,245,0.5)'; c.fillRect(-M, hz - 22, W + 2 * M, 22); }, { blur: 0.6 });
+  D(0.1, () => shimmer(420, H, 260, '255,255,255', 382, { a: 0.5, xc: 1000, spread: 900 }));
+  // the bridge running away to the left: deck on many short piers, shrinking into the haze
+  L('far', 0.3, () => { const A = [1380, 486], B = [-260, 416];
+    for (let k = 0; k <= 46; k++) { const u = Math.pow(k / 46, 0.62), x = lerp(A[0], B[0], u), y = lerp(A[1], B[1], u), sc = lerp(1, 0.18, u), hz = clamp(u * 1.3);
+      c.fillStyle = mix('#c8c4b8', '#dce8ee', hz); c.fillRect(x - 3 * sc, y, 6 * sc, 26 * sc); c.fillStyle = `rgba(40,80,100,${0.25 * (1 - hz)})`; c.fillRect(x - 3 * sc, y + 26 * sc, 6 * sc, 4 * sc); }
+    c.fillStyle = vg(410, 490, [[0, '#dfe9ec'], [1, '#e9e6de']]); c.beginPath(); c.moveTo(A[0], A[1] - 14); c.lineTo(B[0], B[1] - 3); c.lineTo(B[0], B[1]); c.lineTo(A[0], A[1]); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(120,130,140,0.6)'; c.lineWidth = 1; c.beginPath(); c.moveTo(A[0], A[1] - 18); c.lineTo(B[0], B[1] - 4); c.stroke(); });
+  // white arch at this end of the bridge
+  L('arch', 0.55, () => { const ped = (x) => { c.fillStyle = vg(500, 560, [[0, '#b8b0a0'], [1, '#8a8274']]); c.fillRect(x - 46, 506, 92, 52); c.fillStyle = '#6a3a2c'; c.fillRect(x - 46, 506, 92, 8); const r = rng(x); for (let k = 0; k < 14; k++) { c.strokeStyle = 'rgba(80,74,64,0.5)'; c.lineWidth = 0.8; c.strokeRect(x - 46 + (k % 7) * 13, 516 + Math.floor(k / 7) * 20, 13, 20); } };
+    c.strokeStyle = '#f7f6f2'; c.lineWidth = 28; c.beginPath(); c.moveTo(720, 512); c.bezierCurveTo(760, 160, 1160, 160, 1200, 512); c.stroke(); c.strokeStyle = 'rgba(150,150,145,0.4)'; c.lineWidth = 5; c.beginPath(); c.moveTo(734, 512); c.bezierCurveTo(774, 176, 1146, 176, 1186, 512); c.stroke(); ped(720); ped(1200);
+    c.fillStyle = '#4a4a4a'; c.font = `700 22px ${FONTS}`; c.textAlign = 'center'; c.save(); c.translate(1080, 262); c.rotate(0.38); c.fillText('澎 湖 跨 海 大 橋', 0, 0); c.restore(); });
+  // our deck: railing in front of the sea, road surface
+  L('deck', 0.6, () => { c.fillStyle = vg(556, H, [[0, '#a6a49e'], [1, '#5c5a55']]); c.fillRect(-M, 556, W + 2 * M, 200); c.fillStyle = '#f2f0ea'; c.fillRect(-M, 552, W + 2 * M, 8);
+    for (let x = -M; x < W + M; x += 36) { c.fillStyle = '#e9e7e0'; c.fillRect(x, 512, 6, 44); c.fillStyle = 'rgba(0,0,0,0.12)'; c.fillRect(x + 5, 514, 2, 42); }
+    c.fillStyle = '#f7f6f2'; c.fillRect(-M, 508, W + 2 * M, 6); c.fillStyle = '#4f8fb8'; c.fillRect(-M, 530, W + 2 * M, 3);
+    const r = rng(385); for (let k = 0; k < 300; k++) disc(r() * (W + 2 * M) - M, 566 + r() * 70, 0.6 + r(), `rgba(${r() < 0.5 ? '60,58,54' : '220,218,210'},0.35)`); line(-M, 600, W + M, 600, 'rgba(255,255,255,0.65)', 3); });
   D(0.6, () => { const q = { x: 300 + lt * 70, y: 560, s: 0.95 }; q.pose = { ...walkPose3(walkCyc3(lt * 70, 0.95, true), { trot: 1 }), ...ex('happy', 0.8) }; drawCat3(q); });
+  D(1, () => { c.save(); c.filter = `blur(${6 * S}px)`; c.fillStyle = 'rgba(240,238,232,0.9)'; c.fillRect(-M, 640, W + 2 * M, 14); c.restore(); });
 });
 /* T9 北回歸線標誌 */
 V('T9', '嘉義縣 · 水上', '北回歸線標誌', 'Tropic of Cancer Monument', '23.46°N 120.42°E', ['北回歸線上，夏至正午的影子會消失。', 'On the Tropic of Cancer, shadows vanish at noon on midsummer’s day.'], [1.02, 1.08, 0, 0, 0, 0], function (lt) {

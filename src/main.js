@@ -24,6 +24,7 @@ function renderScene(target, i, lt) {
   SC = { i, lt, dur: DURS[i], cam: FILM[i].cam, sc: FILM[i] };
   c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
   FILM[i].draw(lt);
+  if (typeof crowdHook === 'function') crowdHook(null);   // background cats on top of the scene
 }
 function txt(s, x, y, size, col, o = {}) {
   c.save(); c.font = `${o.w || 600} ${size}px ${o.font || FONTS}`; c.textAlign = o.align || 'center'; c.textBaseline = 'middle';

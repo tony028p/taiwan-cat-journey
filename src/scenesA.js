@@ -112,36 +112,87 @@ SCENES.push({ county: '臺北市', place: '象山', sun: () => [880, 470, 0.45],
   } });
 
 /* 1 — 新北市 九份 rain at dusk */
-SCENES.push({ county: '新北市', place: '九份老街', en: 'Jiufen Old Street', ll: '25.11°N 121.84°E', cam: [1.04, 1.1, -20, 20, 0, 0],
+/* Jiufen at night in the rain: a three-storey wooden teahouse on the left, the stepped alley (Shuqi Road) climbing away
+   on the right with lantern strings across it that shrink into the mist, wet flagstones mirroring the lanterns. */
+function jfTeahouse(x0, x1, yb) {
+  const fl = [[yb - 150, yb], [yb - 290, yb - 150], [yb - 410, yb - 290]];
+  fl.forEach(([y0, y1], k) => { const inset = k * 10;
+    c.fillStyle = vg(y0, y1, [[0, '#3a241b'], [1, '#22140f']]); c.fillRect(x0 + inset, y0, x1 - x0 - 2 * inset, y1 - y0);
+    for (let bx2 = x0 + inset; bx2 < x1 - inset; bx2 += 7) line(bx2, y0, bx2, y1, `rgba(${hash(bx2) < 0.5 ? '0,0,0' : '120,80,50'},0.18)`, 1);
+    // paper-lattice windows, lit warm
+    const n = Math.floor((x1 - x0 - 2 * inset) / 84), ww = 58, wh = (y1 - y0) * 0.5;
+    for (let w = 0; w < n; w++) { const wx = x0 + inset + 16 + w * 84, wy = y0 + (y1 - y0) * 0.24;
+      const lit = hash(w * 3.1 + k * 7.7); c.fillStyle = lit < 0.18 ? vg(wy, wy + wh, [[0, '#3a2a26'], [1, '#2a1c18']]) : vg(wy, wy + wh, [[0, lit < 0.5 ? '#ffd38e' : '#ffe6b4'], [1, lit < 0.5 ? '#e0803e' : '#f2a660']]); c.fillRect(wx, wy, ww, wh);
+      if (lit >= 0.18) glow(wx + ww / 2, wy + wh / 2, ww * 0.9, '255,170,90', 0.12);
+      c.strokeStyle = 'rgba(60,32,18,0.85)'; c.lineWidth = 1.2; for (let g = 1; g < 4; g++) line(wx + g * ww / 4, wy, wx + g * ww / 4, wy + wh, 'rgba(60,32,18,0.7)', 1); for (let g = 1; g < 5; g++) line(wx, wy + g * wh / 5, wx + ww, wy + g * wh / 5, 'rgba(60,32,18,0.55)', 0.8);
+      c.strokeStyle = '#1c100b'; c.lineWidth = 3; c.strokeRect(wx, wy, ww, wh); }
+    // balcony rail
+    if (k < 2) { const ry = y0 + (y1 - y0) * 0.86; c.fillStyle = '#1a0f0b'; c.fillRect(x0 + inset - 8, ry, x1 - x0 - 2 * inset + 16, 6); for (let b = x0 + inset - 6; b < x1 - inset + 6; b += 11) c.fillRect(b, ry + 6, 3, 18); c.fillRect(x0 + inset - 8, ry + 22, x1 - x0 - 2 * inset + 16, 4); }
+    // deep eave with turned-up corners
+    const ey = y0 - 2, L0 = x0 + inset - 46, R0 = x1 - inset + 46; c.fillStyle = '#120c0e'; c.beginPath(); c.moveTo(L0 - 18, ey - 16); c.quadraticCurveTo(L0 + 10, ey + 2, L0 + 40, ey - 4); c.lineTo(R0 - 40, ey - 4); c.quadraticCurveTo(R0 - 10, ey + 2, R0 + 18, ey - 16); c.lineTo(R0, ey + 10); c.lineTo(L0, ey + 10); c.closePath(); c.fill();
+    for (let t = 0; t < 40; t++) line(L0 + t * (R0 - L0) / 40, ey - 3, L0 + t * (R0 - L0) / 40 - 4, ey + 9, 'rgba(70,64,72,0.55)', 1);
+    // planters on the balcony
+    if (k < 2) { const r = rng(k + 31); for (let t = 0; t < 18; t++) oval(x0 + inset + r() * (x1 - x0 - 2 * inset), y0 + (y1 - y0) * 0.84 - r() * 6, 7 + r() * 8, 5 + r() * 4, 0, mix('#2c4d2a', '#6c9348', r(), 0.95)); }
+  });
+  c.fillStyle = '#9a2a20'; c.fillRect(x1 - 70, yb - 380, 34, 170); c.strokeStyle = '#d9a648'; c.lineWidth = 2; c.strokeRect(x1 - 70, yb - 380, 34, 170);
+  c.font = `700 24px ${FONTS}`; c.fillStyle = '#f4d9a0'; c.textAlign = 'center'; '茶樓'.split('').forEach((ch, i) => c.fillText(ch, x1 - 53, yb - 334 + i * 56));
+  c.fillStyle = '#1b120e'; c.fillRect(x0 + 120, yb - 168, 190, 30); c.font = `700 18px ${FONTS}`; c.fillStyle = '#e8c27a'; c.fillText('悲 情 茶 坊', x0 + 215, yb - 147);
+}
+const JF = { vp: [905, 300], l0: 690, r0: 1080, yb: 598 };
+function jfAlley(z) { const { vp, l0, r0, yb } = JF; return { l: lerp(l0, vp[0] - 26, z), r: lerp(r0, vp[0] + 26, z), y: lerp(yb, vp[1] + 20, z), s: 1 - z * 0.9 }; }
+SCENES.push({ county: '新北市', place: '九份老街', sun: () => [905, 300, 0.25], en: 'Jiufen Old Street', ll: '25.11°N 121.84°E', cam: [1.04, 1.1, -20, 20, 0, 0],
   sub: ['九份的雨，把燈籠洗得更紅了。', 'In Jiufen, the rain makes the lanterns glow redder.'],
   draw(lt) {
-    L('sky', 0, () => { sky([[0, '#18202e'], [0.45, '#3a4357'], [0.7, '#6b6977'], [1, '#857a7e']]); stratus(900, 330, 900, 80, 'rgba(160,160,175,0.4)'); });
-    L('far', 0.08, () => { c.fillStyle = vg(380, 470, [[0, '#4d566a'], [1, '#3a4152']]); c.fillRect(-M, 380, W + 2 * M, 200);
-      mountain({ base: 440, amp: 150, f: 0.003, seed: 4, oct: 5, top: '#343b4c', bot: '#4b5163', shape: (x, n) => n * clamp(1.4 - x / 900, 0.15, 1), haze: 'rgba(120,125,140,0.6)' }); }, { blur: 1.5 });
-    L('houses', 0.35, () => { const r = rng(11);
-      for (let k = 0; k < 70; k++) { const x = r() * (W + 2 * M) - M, y = 360 + r() * 170 + (x < 600 ? (600 - x) * -0.12 : 0), w = 30 + r() * 40, h = 22 + r() * 22;
-        c.fillStyle = mix('#3d3a44', '#58525a', r()); c.fillRect(x, y, w, h); poly([[x - 3, y], [x + w / 2, y - 9], [x + w + 3, y]], '#25222a');
-        for (let q = 0; q < 3; q++) if (r() < 0.6) { c.fillStyle = `rgba(255,${180 + r() * 50},110,0.85)`; c.fillRect(x + 4 + q * w / 3, y + 6, w / 5, h / 3); } } }, { blur: 0.8 });
-    D(0.35, () => { const r = rng(12); for (let k = 0; k < 30; k++) glow(r() * W, 380 + r() * 150, 20, '255,170,90', 0.15 + 0.05 * Math.sin(T * 3 + k)); });
-    L('tea', 0.75, () => {
-      const tiers = [[60, 470, 600, 130], [110, 340, 520, 130], [170, 220, 420, 120]];
-      tiers.forEach(([x, y, w, h], ti) => {
-        c.fillStyle = vg(y, y + h, [[0, '#3b2620'], [1, '#22150f']]); c.fillRect(x, y, w, h + 10);
-        for (let k = 0; k < Math.floor(w / 78); k++) { const wx = x + 18 + k * 78; c.fillStyle = vg(y + 26, y + 96, [[0, '#ffd590'], [1, '#e8914c']]); c.fillRect(wx, y + 30, 56, 64); c.strokeStyle = '#2a1a12'; c.lineWidth = 3; c.strokeRect(wx, y + 30, 56, 64); line(wx + 28, y + 30, wx + 28, y + 94, '#2a1a12', 2); line(wx, y + 52, wx + 56, y + 52, '#2a1a12', 1.2); line(wx, y + 73, wx + 56, y + 73, '#2a1a12', 1.2); }
-        c.fillStyle = '#1b1210'; c.fillRect(x - 10, y + h - 6, w + 20, 7); for (let b = 0; b < (w + 20) / 14; b++) c.fillRect(x - 8 + b * 14, y + h, 3, 16); c.fillRect(x - 10, y + h + 14, w + 20, 3);
-        const r = rng(ti + 50); for (let k = 0; k < 26; k++) { const px = x + r() * w, py = y + h + 4 - r() * 8; oval(px, py, 6 + r() * 8, 5 + r() * 5, 0, mix('#2f5a2c', '#6f9a4a', r(), 0.95)); }
-        const ry = y - 4; c.fillStyle = '#121014'; c.beginPath(); c.moveTo(x - 50, ry + 6); c.quadraticCurveTo(x - 20, ry + 4, x - 10, ry - 18); c.lineTo(x + w + 10, ry - 18); c.quadraticCurveTo(x + w + 20, ry + 4, x + w + 50, ry + 6); c.lineTo(x + w + 30, ry + 12); c.lineTo(x - 30, ry + 12); c.closePath(); c.fill();
-        for (let k = 0; k < 24; k++) line(x - 6 + k * (w + 12) / 24, ry - 16, x - 18 + k * (w + 36) / 24, ry + 9, 'rgba(60,60,70,0.5)', 1);
-      });
-      c.fillStyle = '#9a2a20'; c.fillRect(600, 230, 34, 160); c.font = `700 24px ${FONTS}`; c.fillStyle = '#f4d9a0'; c.textAlign = 'center'; '茶樓'.split('').forEach((ch, i) => c.fillText(ch, 617, 272 + i * 50));
-      c.fillStyle = vg(160, 620, [[0, '#2d2a33'], [1, '#191720']]); c.fillRect(720, 280, 640, 340); for (let k = 0; k < 7; k++) { c.fillStyle = 'rgba(255,190,110,0.7)'; c.fillRect(760 + k * 80, 320 + (k % 2) * 60, 36, 46); }
-      poly([[710, 290], [740, 256], [1360, 256], [1360, 290]], '#141216');
+    L('sky', 0, () => { sky([[0, '#0f2550'], [0.35, '#1d3f7a'], [0.6, '#3d5a92'], [0.78, '#6a6a98'], [1, '#5a5070']]); stratus(880, 260, 1000, 90, 'rgba(150,160,200,0.3)'); stars(30, 43, 200, 0.4); });
+    L('far', 0.05, () => { c.fillStyle = vg(330, 420, [[0, '#4a5068'], [1, '#2f3448']]); c.fillRect(-M, 330, W + 2 * M, 120);
+      mountain({ base: 360, amp: 110, f: 0.0042, seed: 41, oct: 4, top: '#2a3044', bot: '#3c4258', shape: (x, n) => n * Math.exp(-Math.pow((x - 980) / 220, 2)) * 1.4, haze: 'rgba(120,120,145,0.55)' });
+      for (let k = 0; k < 40; k++) line(-M, 340 + k * 2.2, W + M, 340 + k * 2.2, `rgba(255,190,140,${0.03 * Math.sin(k * 0.7) ** 2})`, 1); }, { blur: 2.2 });
+    L('houses', 0.3, () => { const r = rng(11);
+      for (let k = 0; k < 90; k++) { const x = 560 + r() * 760, y = 300 + r() * 130 + (x - 560) * 0.12, w = 22 + r() * 30, h = 14 + r() * 16;
+        c.fillStyle = mix('#2c2a36', '#45404c', r()); c.fillRect(x, y, w, h); poly([[x - 3, y], [x + w / 2, y - 7], [x + w + 3, y]], '#1d1a22');
+        for (let q = 0; q < 3; q++) if (r() < 0.55) { c.fillStyle = `rgba(255,${170 + r() * 60},110,0.85)`; c.fillRect(x + 3 + q * w / 3, y + 4, w / 5, h / 3); } } }, { blur: 1.4 });
+    D(0.3, () => { const r = rng(12); for (let k = 0; k < 26; k++) glow(600 + r() * 680, 320 + r() * 140, 14, '255,170,90', 0.12 + 0.04 * Math.sin(T * 3 + k)); });
+    // the stepped alley climbing to the vanishing point, facades on both sides receding into rain mist
+    L('alley', 0.55, () => { const { vp, yb } = JF, zs = []; for (let k = 0; k <= 26; k++) zs.push(1 - 1 / (1 + k * 0.22));
+      // steps
+      for (let k = 0; k < zs.length - 1; k++) { const a = jfAlley(zs[k]), b = jfAlley(zs[k + 1]), mid = (a.y + b.y) / 2;
+        poly([[a.l, a.y], [a.r, a.y], [b.r, b.y], [b.l, b.y]], mix('#3a3438', '#625a5a', 0.4 + 0.2 * (k % 2)));
+        poly([[a.l, a.y], [a.r, a.y], [a.r, mid], [a.l, mid]], mix('#2a2428', '#4a4246', 0.5)); line(a.l, a.y, a.r, a.y, 'rgba(255,200,150,0.18)', 1); }
+      // facades along each side
+      [-1, 1].forEach(sd => { for (let k = 0; k < 7; k++) { const z0 = 0.06 + k * 0.13, z1 = z0 + 0.11, A = jfAlley(z0), B = jfAlley(z1), xa = sd < 0 ? A.l : A.r, xb = sd < 0 ? B.l : B.r, ha = 330 * A.s, hb = 330 * B.s;
+        const out = sd < 0 ? -70 * A.s : 70 * A.s, outB = sd < 0 ? -70 * B.s : 70 * B.s, haze = 0.15 + 0.6 * z0;
+        poly([[xa, A.y], [xb, B.y], [xb, B.y - hb], [xa, A.y - ha]], mix('#2e1c16', '#5a4e58', haze));
+        // windows (warm) in perspective
+        for (let fl2 = 0; fl2 < 3; fl2++) { const u0 = 0.18 + fl2 * 0.3, u1 = u0 + 0.16, wa = [lerp(xa, xb, 0.2), lerp(xa, xb, 0.8)];
+          const ya = (t, u) => lerp(lerp(A.y, B.y, t), lerp(A.y - ha, B.y - hb, t), u);
+          poly([[wa[0], ya(0.2, u0)], [wa[1], ya(0.8, u0)], [wa[1], ya(0.8, u1)], [wa[0], ya(0.2, u1)]], `rgba(255,${180 + fl2 * 15},110,${0.85 - haze * 0.6})`); }
+        // eave
+        poly([[xa + out, A.y - ha - 4], [xb + outB, B.y - hb - 4], [xb, B.y - hb + 6 * B.s], [xa, A.y - ha + 6 * A.s]], mix('#140e10', '#4a4450', haze)); } });
+      // rain mist down the alley
+      const g = c.createRadialGradient(vp[0], vp[1] + 40, 10, vp[0], vp[1] + 40, 420); g.addColorStop(0, 'rgba(150,140,160,0.55)'); g.addColorStop(1, 'rgba(150,140,160,0)'); c.fillStyle = g; c.fillRect(vp[0] - 420, vp[1] - 380, 840, 840);
     });
-    D(0.75, () => { [[60, 470, 600], [110, 340, 520], [170, 220, 420]].forEach(([x, y, w], row) => { for (let k = 0; k * 64 < w; k++) lantern(x + 20 + k * 64, y + 20, 11, Math.sin(T * 1.6 + k + row) * 0.08); }); for (let k = 0; k < 7; k++) lantern(760 + k * 82, 310, 10, Math.sin(T * 1.5 + k) * 0.08); });
-    L('ground', 0.95, () => { c.fillStyle = vg(600, H, [[0, '#2a2830'], [1, '#141218']]); c.fillRect(-M, 598, W + 2 * M, 200); for (let k = 0; k < 5; k++) line(-M, 612 + k * 22, W + M, 612 + k * 22, 'rgba(0,0,0,0.5)', 2); });
-    D(0.95, () => { c.save(); c.beginPath(); c.rect(-M, 600, W + 2 * M, 200); c.clip(); for (let k = 0; k < 7; k++) { const x = 110 + k * 84; c.save(); c.translate(x, 620); c.scale(1, 3); glow(0, 0, 18, '255,120,60', 0.18 + 0.06 * Math.sin(T * 5 + k)); c.restore(); } shimmer(604, 680, 60, '255,170,110', 13, { a: 0.35, len: 10 }); c.restore();
+    // lantern strings across the alley, shrinking with distance (dynamic: they sway)
+    D(0.55, () => { [0.1, 0.22, 0.35, 0.48, 0.6, 0.72].forEach((z, k) => { const A = jfAlley(z), h = 190 * A.s, yA = A.y - h, n = Math.max(3, Math.round(6 * A.s + 2));
+      c.strokeStyle = `rgba(30,18,14,${0.8 - z * 0.5})`; c.lineWidth = 1.2 * A.s + 0.3; c.beginPath(); c.moveTo(A.l, yA); c.quadraticCurveTo((A.l + A.r) / 2, yA + 40 * A.s, A.r, yA); c.stroke();
+      for (let t = 1; t < n; t++) { const u = t / n, x = lerp(A.l, A.r, u), y = yA + 4 * 40 * A.s * u * (1 - u) * 0.5 + 10 * A.s; c.save(); c.globalAlpha = 1 - z * 0.45; lantern(x, y, 11 * A.s + 1.5, Math.sin(T * 1.4 + k + t) * 0.08, 1 - z * 0.4); c.restore(); } }); });
+    L('tea', 0.75, () => { jfTeahouse(-70, 690, 598); });
+    D(0.75, () => { [[598 - 150, 690], [598 - 290, 680], [598 - 410, 670]].forEach(([y, x1], row) => { for (let k = 0; k * 42 < x1 + 90; k++) lantern(-60 + k * 42, y + 22 + (k % 2) * 4, 10, Math.sin(T * 1.6 + k + row) * 0.07); }); });
+    // near wall on the right of the alley mouth (where the black cat shelters)
+    L('right', 0.8, () => { c.fillStyle = vg(240, 600, [[0, '#2b2026'], [1, '#17121a']]); c.fillRect(1080, 250, 360, 350); for (let k = 0; k < 4; k++) { c.fillStyle = 'rgba(255,190,110,0.72)'; c.fillRect(1110 + k * 70, 300 + (k % 2) * 70, 34, 46); }
+      c.fillStyle = '#120c0e'; c.beginPath(); c.moveTo(1040, 262); c.quadraticCurveTo(1060, 248, 1090, 244); c.lineTo(1400, 244); c.lineTo(1400, 262); c.closePath(); c.fill(); });
+    D(0.8, () => { for (let k = 0; k < 5; k++) lantern(1100 + k * 62, 278, 10, Math.sin(T * 1.5 + k) * 0.08); });
+    L('ground', 0.95, () => { c.fillStyle = vg(598, H, [[0, '#2c2830'], [1, '#121016']]); c.fillRect(-M, 596, W + 2 * M, 200); const r = rng(19);
+      for (let y = 600; y < H; y += 14) { line(-M, y, W + M, y, 'rgba(0,0,0,0.45)', 1.2); for (let x = -M + (y % 28) * 2; x < W + M; x += 56 + r() * 20) line(x, y, x - 4, y + 14, 'rgba(0,0,0,0.35)', 1); } });
+    D(0.95, () => { c.save(); c.beginPath(); c.rect(-M, 598, W + 2 * M, 200); c.clip();
+      // lantern reflections in the wet flagstones: long soft vertical streaks under every lantern row
+      for (let k = 0; k < 12; k++) { const x = -40 + k * 66; c.save(); c.translate(x, 616); c.scale(1, 3.2); glow(0, 0, 16, '255,110,60', 0.2 + 0.06 * Math.sin(T * 5 + k)); c.restore(); }
+      for (let k = 0; k < 5; k++) { c.save(); c.translate(1100 + k * 62, 612); c.scale(1, 2.6); glow(0, 0, 13, '255,140,70', 0.16); c.restore(); }
+      c.save(); c.translate(JF.vp[0], 612); c.scale(1, 2); glow(0, 0, 90, '255,170,110', 0.12); c.restore();
+      shimmer(602, 690, 70, '255,180,120', 13, { a: 0.35, len: 12 }); c.restore();
       const x = 660 + lt * 34; actCat({ x, y: 604, s: 0.95, pose: 'walk', ph: walkPh(lt * 34, 0.95), rim: '255,160,90', look: -0.05, blink: blinkAt(lt, 2) }); });
-    D(1, () => rain(260, 14, 0.25));
+    D(1, () => { rain(300, 14, 0.25);
+      // out-of-focus lanterns right in front of the lens (shallow depth of field)
+      [[-30, 150, 70], [1240, 170, 60], [1290, 520, 80]].forEach(([x, y, r], k) => { glow(x, y, r * 1.7, '255,110,60', 0.32 + 0.04 * Math.sin(T * 2 + k)); c.save(); c.globalAlpha = 0.5; c.filter = `blur(${10 * S}px)`; oval(x, y, r * 0.55, r * 0.66, 0, '#d8442e'); c.restore(); }); });
   } });
 
 /* 2 — 基隆市 正濱漁港 */

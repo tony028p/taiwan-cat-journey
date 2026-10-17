@@ -283,8 +283,8 @@ function actCat(o) {
       emo(q, lt, [[1.8, 3.4, 'note']]); break;
     }
     case 13: { // Roundhouse: strolling past the engines when one lets off steam — TOOT — Halloween-cat leap, then a huff
-      const loX = 640, wt = 3.2, wd = Math.min(lt, wt) * 30 + Math.max(0, lt - 5.2) * 30; q.x = 300 + wd;
-      q.after = () => { if (lt > 3.0 && lt < 5.2) { puff(loX, 320, (lt - 3.0) / 2, 1.2); emote3('note', loX + 30, 300, 1.2, clamp((lt - 3.05) / 0.3), 1 - sm((lt - 4.2) / 0.3)); } };
+      const loX = 437, wt = 3.2, wd = Math.min(lt, wt) * 30 + Math.max(0, lt - 5.2) * 30; q.x = 300 + wd;
+      q.after = () => { if (lt > 3.0 && lt < 5.2) { puff(loX, 420, (lt - 3.0) / 2, 1.3); emote3('note', loX + 30, 400, 1.2, clamp((lt - 3.05) / 0.3), 1 - sm((lt - 4.2) / 0.3)); } };
       emo(q, lt, [[3.3, 4.4, '!'], [4.8, 5.8, 'drop']]);
       if (lt < wt) { q.pose = walkPose3(walkCyc3(wd, s)); Object.assign(q.pose, ex('content', 0.6)); }
       else if (lt < 5.2) { const jump = bumpT(lt, 3.25, 3.75), puffd = sm((lt - 3.25) / 0.15) * (1 - sm((lt - 4.5) / 0.6));
@@ -414,3 +414,116 @@ function actCat(o) {
   if (q.before) q.before();
   drawCat3(q); if (q.after) q.after();
 }
+
+/* ---------- background cats: other travellers doing what visitors really do at each place ----------
+   bgCat({ x, y, s, t, act, coat, build, mood, face, seed, haze, blur, ... }) — t is scene time (lt). Builds give the
+   cast different bodies (chonk / aloof / kitten / goofy), moods give them a personality. Props are drawn here too. */
+const MOODS = {
+  chonk: { ...ex('content') }, kitten: { ...ex('delighted') },
+  aloof: { ...ex('neutral'), eye: 0.55, lid: 0.55, look: [0.7, -0.35], ear: 0.08, whisk: -0.15, hr: -0.13 },
+  goofy: { ...ex('neutral'), eye: 1.3, pupil: 1.35, tongue: 0.6, look: [-0.35, 0.25], ear: -0.12, hr: 0.28 },
+  happy: ex('happy'), curious: ex('curious'), sleepy: ex('sleepy'), content: ex('content'), focused: ex('focused'),
+};
+function camProp(x, y, s, flash) { c.save(); c.translate(x, y); c.scale(s, s); c.fillStyle = '#26262a'; c.fillRect(-6, -4.5, 12, 8.5); c.fillRect(-3, -6.5, 5, 2.5); disc(1, 0, 3.2, '#4c5866'); disc(1, 0, 1.8, '#9fc0dc'); disc(1.8, -0.8, 0.6, '#ffffff');
+  if (flash > 0) { glow(0, -3, 26 * flash, '255,255,245', 0.9 * flash); disc(-4, -5.6, 1.4, `rgba(255,255,250,${flash})`); } c.restore(); }
+function bowlProp(x, y, s, t, col = '#f3ead8') { c.save(); c.translate(x, y); c.scale(s, s); c.fillStyle = col; c.beginPath(); c.ellipse(0, -5, 9, 3, 0, 0, Math.PI * 2); c.fill();
+  c.beginPath(); c.moveTo(-9, -5); c.quadraticCurveTo(-8, 3, 0, 3); c.quadraticCurveTo(8, 3, 9, -5); c.fill(); c.fillStyle = '#a8423a'; c.fillRect(-9, -3.6, 18, 1.4);
+  [['#e9d6a4', -4], ['#b98fbf', 0], ['#e0b77a', 4]].forEach(([cl, dx]) => disc(dx, -6, 2.4, cl)); c.restore(); puff(x, y - 8 * s, mod(t * 0.4, 1), s * 0.3); }
+function rodProp(x, y, s, tx, ty, t) { c.save(); c.strokeStyle = '#5b4632'; c.lineWidth = 1.6 * s; c.lineCap = 'round'; const ex2 = x + 36 * s, ey = y - 30 * s; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + 20 * s, y - 24 * s, ex2, ey); c.stroke();
+  c.strokeStyle = 'rgba(240,240,240,0.7)'; c.lineWidth = 0.6; const by = ty + Math.sin(t * 2.4) * 1.5; c.beginPath(); c.moveTo(ex2, ey); c.quadraticCurveTo(ex2 + 4, (ey + by) / 2, tx, by); c.stroke(); disc(tx, by, 1.6 * s + 0.6, '#e8453a'); c.restore(); }
+function kiteProp(x, y, s, t, col = '#e2553a') { c.save(); c.translate(x, y); c.rotate(Math.sin(t * 1.3) * 0.15); c.scale(s, s); poly([[0, -16], [11, 0], [0, 18], [-11, 0]], col); poly([[0, -16], [11, 0], [0, 0]], 'rgba(255,255,255,0.35)'); line(0, -16, 0, 18, 'rgba(0,0,0,0.3)', 0.8); line(-11, 0, 11, 0, 'rgba(0,0,0,0.3)', 0.8);
+  c.strokeStyle = col; c.lineWidth = 1.2; c.beginPath(); c.moveTo(0, 18); for (let k = 1; k <= 6; k++) c.lineTo(Math.sin(t * 3 + k) * 4, 18 + k * 7); c.stroke(); c.restore(); }
+function packProp(x, y, s, col = '#4f7a9a') { c.save(); c.translate(x, y); c.scale(s, s); c.fillStyle = col; c.beginPath(); c.roundRect(-8, -12, 14, 15, 3); c.fill(); c.fillStyle = 'rgba(0,0,0,0.18)'; c.fillRect(-7, -4, 12, 4); line(-6, -10, 4, -10, 'rgba(255,255,255,0.4)', 1); c.restore(); }
+function rakeProp(x, y, s, a) { c.save(); c.translate(x, y); c.rotate(a); c.scale(s, s); line(0, 0, 34, 18, '#8a6a42', 2); line(28, 22, 40, 14, '#6b5234', 3); c.restore(); }
+function teaBush(x, y, s) { const r = rng(Math.floor(x * 7)); for (let k = 0; k < 9; k++) oval(x + (r() - 0.5) * 30 * s, y - r() * 12 * s, (8 + r() * 6) * s, (5 + r() * 3) * s, 0, mix('#3f7a3a', '#7fb35a', r())); }
+function iceProp(x, y, s, col = '#9fd38a') { c.save(); c.translate(x, y); c.scale(s, s); poly([[-3, 0], [3, 0], [0, 10]], '#d9a45a'); disc(0, -2, 4, col); disc(-1.4, -3.2, 1.2, 'rgba(255,255,255,0.6)'); c.restore(); }
+
+function bgCat(o) {
+  const t = o.t, sd = o.seed || 0, s = o.s || 0.55, f = o.face || 1, bd = BUILDS[o.build] || { bx: 1, by: 1 };
+  const mood = MOODS[o.mood || o.build || 'content'] || MOODS.content;
+  const q = { x: o.x, y: o.y, s, coat: o.coat, build: o.build, face: f, haze: o.haze, blur: o.blur, shadowA: o.shadowA ?? 0.2, bseed: sd + 0.5, rim: o.rim, sil: o.sil, shadow: o.shadow };
+  const sitAt = (px, py) => [q.x + f * s * bd.bx * px, q.y + s * bd.by * py];        // sitting-silhouette coords -> world
+  const ph = t + hash(sd) * 7; let after = null;
+  switch (o.act) {
+    case 'walk': case 'hike': { const v = o.v ?? 22, d = v * t; q.x = o.x + f * d; q.pose = { ...walkPose3(walkCyc3(Math.abs(d), s, o.trot), { trot: o.trot }), ...mood };
+      if (o.act === 'hike') after = () => { const p = q.pose, b = [q.x + f * s * (p.hip[0] + p.sh[0]) / 2 * SPX, q.y + s * ((p.hip[1] + p.sh[1]) / 2 - 12) * SPY]; packProp(b[0], b[1], s * 1.1, o.col); }; break; }
+    case 'loaf': q.pose = { ...LOAFT3, ...mood, turn: o.turn || 0 }; break;
+    case 'sleep': q.pose = { ...SLEEPT3 }; q.emote = { k: 'z', u: 1, a: 0.5 + 0.5 * Math.sin(ph * 1.5), s: 0.8 }; break;
+    case 'groom': q.pose = groom3(mod(ph, 6), 0.5, 4.5); break;
+    case 'pose': q.pose = { ...STAND3, ...ex('happy'), turn: 1, tail: [-1.6, 0.16, 0.05, 1.4, 0] }; break;
+    case 'photo': { const fl = clamp(1 - mod(ph, 2.6) / 0.25); q.pose = sit3(0, { ...ex('focused'), paw: [24, -66], hr: -0.05, ts: 1.4 });
+      after = () => { const w = sitAt(24, -70); camProp(w[0] + f * 3 * s, w[1], s * 1.2 * f, fl); }; break; }
+    case 'eat': { const nod = Math.max(0, Math.sin(ph * 2.2)); q.pose = sit3(0, { ...ex('content'), hdy: 6 * nod, hdx: 3 * nod, hr: 0.25 * nod, tongue: nod > 0.7 ? 0.4 : 0 });
+      after = () => { const w = sitAt(30, -2); bowlProp(w[0], w[1], s * 1.1, ph, o.col); }; break; }
+    case 'fish': { q.pose = sit3(0, { ...mood, paw: [22, -46] }); after = () => { const w = sitAt(24, -48); rodProp(w[0], w[1], s * 1.2 * f, o.tx ?? w[0] + f * 70 * s, o.ty ?? q.y + 30 * s, ph); }; break; }
+    case 'kite': { q.pose = sit3(0, { ...ex('delighted'), paw: [18, -70], hr: -0.35 }); after = () => { const w = sitAt(20, -74), kx = o.kx ?? w[0] + f * 90, ky = o.ky ?? w[1] - 120;
+      c.strokeStyle = 'rgba(255,255,255,0.75)'; c.lineWidth = 0.6; c.beginPath(); c.moveTo(w[0], w[1]); c.quadraticCurveTo((w[0] + kx) / 2, (w[1] + ky) / 2 + 30, kx, ky + 16 * s); c.stroke(); kiteProp(kx, ky, s * 1.3, ph, o.col); }; break; }
+    case 'pick': { const r2 = Math.max(0, Math.sin(ph * 1.8)); q.pose = sit3(0, { ...ex('focused'), paw: [26 + 6 * r2, -38 - 10 * r2] }); after = () => { const w = sitAt(-30, -40); basket(w[0], w[1] + 12 * s, s * 0.9); }; break; }
+    case 'rake': { const sw = Math.sin(ph * 1.6); q.pose = { ...STAND3, ...ex('focused'), fn: [36 + sw * 6, 0, 0], ff: [28 - sw * 6, 0, 0] };
+      after = () => { const a = [q.x + f * s * 40, q.y - s * 46]; rakeProp(a[0], a[1], s * f, 0.1 + sw * 0.08); }; break; }
+    case 'ice': { const lick = Math.max(0, Math.sin(ph * 3)); q.pose = sit3(0, { ...mood, paw: [22, -60], tongue: lick > 0.6 ? 0.5 : 0 }); after = () => { const w = sitAt(24, -66); iceProp(w[0], w[1], s * 1.1, o.col); }; break; }
+    case 'look': q.pose = sit3(0, { ...mood, turn: turnAt(mod(ph, 7), [[2, 4.5, 1]]) }); break;
+    case 'bike': { const v = o.v ?? 60; q.x = o.x + f * v * t; const bx0 = q.x; q.x -= f * 8 * s; q.y = o.y - 30 * s; q.s = s * 0.8; q.shadow = false; q.pose = sit3(0, { ...ex('happy'), ts: 2 });
+      c.save(); c.translate(bx0, o.y); c.scale(f, 1); bicycle(0, 0, s, o.col); c.restore(); break; }
+    case 'kayak': { const bob = Math.sin(ph * 1.8) * 1.5, v = o.v ?? 10; q.x = o.x + f * v * t; q.y = o.y + bob + 4 * s; q.shadow = false; q.pose = sit3(0, { ...ex('happy') });
+      after = () => { c.save(); c.translate(q.x + f * 4 * s, q.y - 4 * s); c.scale(f, 1); c.fillStyle = o.col || '#e8b23a'; c.beginPath(); c.moveTo(-46 * s, -2 * s); c.quadraticCurveTo(0, 16 * s, 46 * s, -2 * s); c.quadraticCurveTo(0, 2 * s, -46 * s, -2 * s); c.fill(); c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(-4 * s, 0, 14 * s, 3 * s, 0, 0, Math.PI * 2); c.fill();
+        const pa = Math.sin(ph * 3) * 0.7; c.rotate(pa); line(-30 * s, 10 * s, 30 * s, -16 * s, '#3a3a3a', 1.6 * s); c.restore(); }; break; }
+    default: q.pose = sit3(0, { ...mood, ts: 0.9 + hash(sd + 1) * 0.8 });                 // 'sit'
+  }
+  if (o.emote) q.emote = o.emote;
+  if (o.blur) { c.save(); c.filter = `blur(${o.blur * S}px)`; }
+  drawCat3({ ...q, blur: 0 }); if (after) after();
+  if (o.blur) c.restore();
+}
+
+/* who is where: background cats per scene. `after` draws a spec right after that cached layer (so nearer layers can
+   cover it), otherwise after the scene; `d` is its parallax depth. Times come from the scene (lt). */
+const HZ = { day: '205,218,228,0.32', far: '200,214,226,0.55', warm: '255,200,160,0.3', dusk: '120,80,110,0.35', night: '30,40,80,0.4' };
+const CROWD = {
+  L0: [{ d: 0.92, x: 200, y: 494, s: 0.62, act: 'photo', sil: true, rim: '255,185,140', seed: 1 }],
+  // tea drinkers seen through the paper windows of the teahouse
+  L1: [{ after: 'tea', d: 0.75, x: 130, y: 412, s: 0.34, act: 'sit', sil: true, face: 1, seed: 70 }, { after: 'tea', d: 0.75, x: 166, y: 412, s: 0.34, act: 'sit', sil: true, face: -1, build: 'chonk', seed: 71 },
+    { after: 'tea', d: 0.75, x: 470, y: 272, s: 0.32, act: 'look', sil: true, build: 'aloof', seed: 72 }, { after: 'tea', d: 0.75, x: 300, y: 557, s: 0.36, act: 'eat', sil: true, seed: 73 }],
+  L2: [{ after: 'houses', d: 0.3, x: 985, y: 443, s: 0.3, act: 'pose', coat: 'bicolor', build: 'kitten', haze: HZ.far, seed: 2 }, { after: 'houses', d: 0.3, x: 1060, y: 444, s: 0.3, act: 'photo', coat: 'grey', face: -1, haze: HZ.far, seed: 3 }],
+  L4: [{ d: 0.5, x: 640, y: 596, s: 0.36, act: 'kayak', coat: 'cream', v: 9, haze: HZ.day, seed: 4 }, { d: 0.5, x: 720, y: 604, s: 0.34, act: 'kayak', coat: 'black', v: 9, col: '#d9573a', haze: HZ.day, seed: 5 }],
+  L5: [{ d: 0.6, x: 975, y: 526, s: 0.36, act: 'pose', coat: 'siamese', build: 'aloof', haze: HZ.day, seed: 6 }, { d: 0.6, x: 880, y: 532, s: 0.38, act: 'photo', coat: 'brown', haze: HZ.day, seed: 7 }],
+  L6: [{ d: 0.8, x: 880, y: 350, s: 0.42, act: 'photo', sil: true, face: -1, seed: 8 }, { d: 0.8, x: 960, y: 346, s: 0.4, act: 'sit', sil: true, face: -1, build: 'chonk', seed: 9 }],
+  L7: [{ d: 0.5, x: 520, y: 478, s: 0.34, act: 'walk', v: 14, coat: 'grey', haze: HZ.day, seed: 10 }, { d: 0.5, x: 470, y: 480, s: 0.28, act: 'walk', v: 14, coat: 'cream', build: 'kitten', haze: HZ.day, seed: 11 }],
+  L9: [{ d: 0.5, x: 720, y: 470, s: 0.42, act: 'rake', coat: 'brown', haze: HZ.warm, seed: 12 }, { d: 0.8, x: 1060, y: 520, s: 0.55, act: 'photo', coat: 'tortie', build: 'chonk', face: -1, haze: HZ.warm, seed: 13 }],
+  L10: [{ d: 0.95, x: 150, y: 584, s: 0.62, act: 'photo', sil: true, rim: '255,195,140', seed: 14 }, { d: 0.95, x: 270, y: 586, s: 0.45, act: 'sit', sil: true, build: 'kitten', rim: '255,195,140', seed: 15 }, { d: 0.95, x: 650, y: 588, s: 0.6, act: 'loaf', sil: true, build: 'chonk', rim: '255,195,140', seed: 16 }],
+  L11: [{ d: 0.95, x: 990, y: 516, s: 0.72, act: 'ice', coat: 'white', build: 'goofy', face: -1, seed: 17 }, { d: 0.95, x: 1120, y: 516, s: 0.75, act: 'sleep', coat: 'grey', build: 'chonk', seed: 18 }],
+  L12: [{ after: 'bridge', d: 0.4, x: 300, y: 392, s: 0.24, act: 'walk', v: 16, coat: 'black', haze: HZ.far, seed: 19 }, { after: 'bridge', d: 0.4, x: 420, y: 392, s: 0.24, act: 'bike', v: 40, coat: 'white', haze: HZ.far, seed: 20 }, { d: 0.95, x: 1080, y: 598, s: 0.6, act: 'fish', coat: 'brown', face: -1, tx: 960, ty: 572, seed: 21 }],
+  L13: [{ d: 0.95, x: 110, y: 612, s: 0.62, act: 'photo', coat: 'grey', seed: 74 }, { d: 0.95, x: 1170, y: 612, s: 0.64, act: 'photo', coat: 'brown', build: 'chonk', face: -1, seed: 75 },
+    { d: 0.75, x: 590, y: 465, s: 0.45, act: 'loaf', coat: 'black', build: 'aloof', seed: 76 }, { after: 'house', d: 0.35, x: 1010, y: 470, s: 0.3, act: 'walk', v: -10, face: -1, coat: 'cream', haze: HZ.day, seed: 77 }],
+  L14: [{ d: 0.95, x: 95, y: 598, s: 0.62, act: 'eat', coat: 'grey', build: 'chonk', col: '#c9a074', seed: 22 }],
+  L15: [{ d: 0.8, x: 990, y: 562, s: 0.52, act: 'photo', sil: true, face: -1, rim: '255,165,110', seed: 23 }, { d: 0.8, x: 1110, y: 560, s: 0.5, act: 'sit', sil: true, build: 'aloof', face: -1, rim: '255,165,110', seed: 24 }],
+  L16: [{ d: 0.5, x: 760, y: 556, s: 0.3, act: 'hike', v: 10, coat: 'grey', haze: HZ.day, seed: 78 }, { d: 0.5, x: 728, y: 558, s: 0.28, act: 'hike', v: 10, coat: 'bicolor', col: '#d9573a', haze: HZ.day, seed: 79 },
+    { d: 0.9, x: 1060, y: 598, s: 0.55, act: 'photo', coat: 'cream', face: -1, seed: 80 }],
+  L17: [{ d: 0.85, x: 880, y: 560, s: 0.6, act: 'pick', coat: 'calico', face: -1, seed: 25 }, { d: 0.95, x: 1130, y: 604, s: 0.66, act: 'eat', coat: 'cream', build: 'chonk', col: '#e8893a', face: -1, seed: 26 }],
+  L18: [{ d: 0.95, x: 300, y: 600, s: 0.62, act: 'eat', coat: 'tuxedo', build: 'goofy', seed: 27 }, { d: 0.6, x: 760, y: 470, s: 0.32, act: 'walk', v: 12, coat: 'cream', haze: HZ.night, seed: 28 }, { d: 0.6, x: 800, y: 470, s: 0.3, act: 'walk', v: 12, coat: 'siamese', haze: HZ.night, seed: 29 }],
+  L19: [{ d: 0.9, x: 820, y: 470, s: 0.55, act: 'photo', sil: true, rim: '255,175,120', seed: 30 }],
+  L20: [{ d: 0.95, x: 560, y: 600, s: 0.6, act: 'photo', coat: 'bicolor', face: -1, seed: 31 }, { d: 0.6, x: 870, y: 403, s: 0.4, act: 'loaf', coat: 'black', build: 'aloof', haze: HZ.day, seed: 32 }],
+  L21: [{ d: 0.95, x: 1060, y: 558, s: 0.58, act: 'photo', coat: 'grey', face: -1, haze: HZ.night, seed: 33 }],
+  T0: [{ d: 0.95, x: 1130, y: 588, s: 0.6, act: 'photo', coat: 'brown', face: -1, seed: 34 }],
+  T1: [{ d: 0.95, x: 1060, y: 600, s: 0.6, act: 'fish', coat: 'tortie', build: 'chonk', tx: 1180, ty: 566, seed: 35 }],
+  T2: [{ d: 0.3, x: 880, y: 330, s: 0.16, act: 'hike', v: 8, coat: 'grey', haze: HZ.far, seed: 36 }, { d: 0.3, x: 905, y: 326, s: 0.15, act: 'hike', v: 8, coat: 'cream', col: '#d9573a', haze: HZ.far, seed: 37 }],
+  T3: [{ d: 1, x: 890, y: 528, s: 0.72, act: 'sleep', coat: 'grey', build: 'chonk', seed: 38 }],
+  T4: [{ d: 0.5, x: 860, y: 470, s: 0.28, act: 'look', coat: 'black', haze: HZ.day, seed: 39 }, { d: 0.5, x: 900, y: 472, s: 0.22, act: 'look', coat: 'cream', build: 'kitten', haze: HZ.day, seed: 40 }],
+  T5: [{ d: 0.95, x: 150, y: 600, s: 0.66, act: 'photo', coat: 'grey', seed: 41 }, { d: 0.95, x: 1160, y: 600, s: 0.66, act: 'photo', coat: 'brown', build: 'chonk', face: -1, seed: 42 }],
+  T6: [{ d: 0.95, x: 1110, y: 602, s: 0.6, act: 'fish', coat: 'black', face: -1, tx: 990, ty: 566, seed: 43 }],
+  T7: [{ d: 0.95, x: 660, y: 598, s: 0.66, act: 'sit', coat: 'cream', build: 'goofy', emote: { k: 'drop', u: 1, a: 1 }, seed: 44 }, { d: 0.95, x: 1020, y: 598, s: 0.62, act: 'photo', coat: 'bicolor', build: 'kitten', seed: 45 }],
+  T8: [{ after: 'deck', d: 0.6, x: 120, y: 556, s: 0.55, act: 'fish', coat: 'brown', tx: 200, ty: 470, seed: 81 }, { after: 'deck', d: 0.6, x: 600, y: 556, s: 0.55, act: 'fish', coat: 'grey', build: 'chonk', tx: 690, ty: 476, seed: 82 },
+    { after: 'deck', d: 0.6, x: 1040, y: 562, s: 0.58, act: 'ice', coat: 'calico', build: 'goofy', col: '#c45aa8', face: -1, seed: 83 }, { after: 'far', d: 0.3, x: 900, y: 466, s: 0.16, act: 'bike', v: -30, face: -1, coat: 'black', haze: HZ.far, seed: 84 }],
+  T9: [{ d: 0.8, x: 640, y: 516, s: 0.45, act: 'pose', coat: 'calico', build: 'kitten', haze: HZ.day, seed: 46 }, { d: 0.85, x: 790, y: 540, s: 0.5, act: 'photo', coat: 'grey', face: -1, seed: 47 }],
+  T10: [{ d: 1, x: 820, y: 528, s: 0.72, act: 'look', coat: 'siamese', build: 'aloof', face: -1, seed: 48 }],
+  T11: [{ d: 0.95, x: 760, y: 598, s: 0.5, act: 'look', coat: 'brown', seed: 49 }, { d: 0.95, x: 830, y: 600, s: 0.42, act: 'look', coat: 'bicolor', build: 'kitten', seed: 50 }],
+  T12: [{ d: 0.9, x: 880, y: 568, s: 0.48, act: 'sit', sil: true, rim: '255,190,150', seed: 51 }, { d: 0.9, x: 990, y: 570, s: 0.5, act: 'sit', sil: true, build: 'chonk', rim: '255,190,150', seed: 52 }],
+  T13: [{ d: 0.9, x: 760, y: 588, s: 0.5, act: 'bike', v: -50, face: -1, coat: 'cream', col: '#d9573a', seed: 53 }, { d: 0.9, x: 980, y: 590, s: 0.48, act: 'bike', v: -50, face: -1, coat: 'black', seed: 54 }],
+  T14: [{ d: 0.95, x: 930, y: 600, s: 0.6, act: 'pose', coat: 'tortie', build: 'goofy', seed: 55 }, { d: 0.95, x: 1090, y: 600, s: 0.6, act: 'photo', coat: 'white', face: -1, seed: 56 }],
+  T15: [{ d: 0.95, x: 700, y: 600, s: 0.5, act: 'walk', v: 16, coat: 'grey', seed: 57 }, { d: 0.95, x: 650, y: 600, s: 0.42, act: 'walk', v: 16, coat: 'cream', build: 'kitten', seed: 58 }, { d: 0.9, x: 960, y: 574, s: 0.55, act: 'eat', coat: 'brown', build: 'chonk', col: '#9cb86a', seed: 59 }],
+  T16: [{ d: 0.7, x: 700, y: 540, s: 0.45, act: 'pick', coat: 'calico', haze: HZ.day, seed: 60 }, { d: 0.6, x: 880, y: 480, s: 0.36, act: 'pick', coat: 'grey', haze: HZ.day, seed: 61 }, { d: 0.5, x: 1040, y: 440, s: 0.3, act: 'pick', coat: 'cream', haze: HZ.far, seed: 62 }],
+  T17: [{ d: 0.95, x: 720, y: 560, s: 0.58, act: 'kite', coat: 'grey', ky: 280, kx: 820, col: '#3fa0d8', seed: 63 }, { d: 0.95, x: 1010, y: 566, s: 0.46, act: 'kite', coat: 'bicolor', build: 'kitten', kx: 1090, ky: 330, col: '#f2c14e', seed: 64 }],
+  T18: [{ d: 0.9, x: 1150, y: 512, s: 0.4, act: 'photo', sil: true, face: -1, rim: '200,120,255', seed: 65 }],
+};
+function crowdHook(key) { const L2 = SC && SC.sc && CROWD[SC.sc.id]; if (!L2) return;
+  for (const o of L2) if ((o.after || null) === key) D(o.d ?? 1, () => bgCat({ ...o, t: SC.lt })); }

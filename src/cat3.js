@@ -12,7 +12,19 @@ const COATS = {
   calico: { base: '#f4eee4', shade: '#d8cfc1', far: '#c6bcae', cream: '#fbf8f2', creamS: '#e7e0d4', light: 'rgba(255,255,255,0.3)', stripe: null, line: '#5a4a3e', inner: 'rgba(90,74,62,0.7)', belly: 'rgba(255,252,246,0.9)', eye: '#d6ad3c', nose: '#e39a92', ear: '#eeaaa2',
     patches: [[0.05, 6, 16, 12, '#d98a45'], [0.42, 9, 11, 9, '#2f2a2a'], [0.78, 7, 10, 8, '#d98a45']], sitPatches: [[-22, -40, 13, 15, '#d98a45'], [-6, -60, 8, 8, '#2f2a2a'], [-28, -14, 10, 7, '#2f2a2a']], headPatches: [[-6.5, -7, 4, 7.5, '#d98a45'], [5, -10.5, 3, 4.2, '#2f2a2a']], tail: '#d98a45' },
   tuxedo: { base: '#26222a', shade: '#1a171d', far: '#121014', cream: '#f2efe8', creamS: '#d9d4ca', light: 'rgba(170,180,220,0.16)', stripe: null, line: '#0b090c', inner: 'rgba(0,0,0,0.6)', belly: 'rgba(250,248,242,0.95)', eye: '#e2c24c', nose: '#e39a9a', ear: '#5e4650' },
+  // background cats along the way
+  cream: { base: '#ecc893', shade: '#d1a96f', far: '#bf975f', cream: '#fbf1e0', creamS: '#e8d6b8', light: 'rgba(255,245,225,0.35)', stripe: 'rgba(190,124,62,0.38)', line: '#6a4a2c', inner: 'rgba(106,74,44,0.7)', belly: 'rgba(255,248,236,0.9)', eye: '#c9a43a', nose: '#e0958a', ear: '#efb0a4' },
+  brown: { base: '#8c6c4c', shade: '#6d5139', far: '#5a422e', cream: '#e8dcc6', creamS: '#cbbba1', light: 'rgba(240,225,200,0.25)', stripe: 'rgba(42,28,18,0.55)', line: '#2e2016', inner: 'rgba(46,32,22,0.8)', belly: 'rgba(240,230,212,0.9)', eye: '#9cb24a', nose: '#b07466', ear: '#cf968c' },
+  siamese: { base: '#efe3cf', shade: '#d7c6aa', far: '#5c4536', cream: '#f8f0e2', creamS: '#e3d4bb', light: 'rgba(255,250,240,0.3)', stripe: null, line: '#4a3528', inner: 'rgba(74,53,40,0.7)', belly: 'rgba(0,0,0,0)', eye: '#5aa0e6', nose: '#4a3428', ear: '#8a6a58', earOut: '#5a4032', tail: '#5a4032',
+    headPatches: [[0, 3, 10.8, 6.4, 'rgba(84,60,46,0.9)'], [0, -1, 10, 4.6, 'rgba(84,60,46,0.5)']] },
+  bicolor: { base: '#f6f1e8', shade: '#dcd3c5', far: '#c9bfb0', cream: '#ffffff', creamS: '#e8e2d7', light: 'rgba(255,255,255,0.3)', stripe: null, line: '#5e4a3a', inner: 'rgba(94,74,58,0.7)', belly: 'rgba(255,255,255,0.9)', eye: '#d0a83a', nose: '#e8a09a', ear: '#f0b0a8',
+    patches: [[0.1, 6, 22, 12, '#e09a52'], [0.62, 8, 14, 9, '#e09a52']], sitPatches: [[-20, -42, 15, 17, '#e09a52']], headPatches: [[0, -8.5, 0, 8.5, '#e09a52']], tail: '#e09a52' },
+  tortie: { base: '#2f2622', shade: '#231c19', far: '#191412', cream: '#3a2e29', creamS: '#30261f', light: 'rgba(220,170,120,0.14)', stripe: null, line: '#100b09', inner: 'rgba(0,0,0,0.6)', belly: 'rgba(0,0,0,0)', eye: '#d9a43a', nose: '#5a3e36', ear: '#6e4a44',
+    patches: [[0.0, 8, 7, 5, 'rgba(184,103,47,0.85)'], [0.18, 3, 5, 4, 'rgba(154,90,44,0.8)'], [0.36, 9, 6, 4, 'rgba(201,132,70,0.85)'], [0.58, 5, 5, 3.5, 'rgba(184,103,47,0.8)'], [0.76, 9, 5.5, 4, 'rgba(168,93,42,0.85)'], [0.94, 4, 4.5, 3.5, 'rgba(201,132,70,0.8)']], sitPatches: [[-26, -36, 7, 8, 'rgba(184,103,47,0.85)'], [-10, -50, 5, 5, 'rgba(201,132,70,0.8)'], [-30, -16, 6, 5, 'rgba(168,93,42,0.85)'], [-2, -62, 4, 4, 'rgba(184,103,47,0.8)']], headPatches: [[-5, -7, 4, 5, '#c07438'], [6, 1, 3, 3.5, '#b8672f']] },
 };
+/* body types for background cats: bx/by stretch the whole cat, g girth (rig), hs head and eyes scale */
+const BUILDS = { chonk: { bx: 1.1, by: 0.9, g: 1.55, hs: 1.0, eyes: 0.88 }, aloof: { bx: 0.93, by: 1.08, g: 0.9, hs: 0.94, eyes: 0.95 },
+  kitten: { bx: 1, by: 1, g: 0.95, hs: 1.32, eyes: 1.25 }, goofy: { bx: 1.04, by: 0.98, g: 1.08, hs: 1.08, eyes: 1.3 } };
 // head scale (rig / sitting) and eye scale: torso ≈ 2.4 head lengths (a real cat is ≈ 4, a chibi ≈ 1.5); eye height ≈ 0.28 of the head
 let HSR = 1.3, HSS = 1.36, EYE3 = 0.85, EARH = -20;   // EARH: ear-tip height in head units (skull top ≈ −11.5)
 let CB = null, CB2 = null, CB3 = null, CB4 = null, CB5 = null;
@@ -205,14 +217,14 @@ function headPath(H, p) {
 function headSil(p, P, hd, sc) {
   const H = headView(p);
   c.save(); c.translate(hd[0], hd[1]); c.rotate(p.hr || 0); c.scale(sc, sc); c.fillStyle = P.base;
-  [-1, 1].map(s => earGeo(H, p, s)).sort((a, b) => a.dep - b.dep).forEach(e => poly(e.pts, P.base));
-  headPath(H, p); c.fill('nonzero');
+  [-1, 1].map(s => earGeo(H, p, s)).sort((a, b) => a.dep - b.dep).forEach(e => poly(e.pts, P.earOut || P.base));
+  c.fillStyle = P.base; headPath(H, p); c.fill('nonzero');
   c.restore();
 }
 /* Rig cat, drawn into CB (current context) in three depth groups so that each reads as its own value:
    far legs (dark, in shadow) -> tail + body (orange, cream underside) -> near legs (own layer, with a thin inner
    contour wherever they overlap the body or the far legs) -> neck and head. */
-function drawRig(p, P, k, fx) {
+function drawRig(p, P, k, fx, ky = k) {
   const B = bodyGeom3(p), main = c;
   c.fillStyle = P.far; const ffl = fore3(B, p.ff), fhl = hind3(B, p.hf);
   hindWeb(B, fhl, [B.H[0] - B.t[0] * 4 - B.n[0] * 1.5, B.H[1] - B.t[1] * 4 - B.n[1] * 1.5], p);
@@ -233,7 +245,7 @@ function drawRig(p, P, k, fx) {
     const e1 = B.at(1.6, -90), e0 = B.at(-0.3, -90); c.lineTo(e1[0], e1[1]); c.lineTo(e0[0], e0[1]); c.closePath(); c.clip(); c.fillStyle = P.base; fore3(B, p.fn, 1); c.restore(); }
   else { c.fillStyle = P.base; fore3(B, p.fn, 1); }
   // near legs on their own layer
-  const g3 = CB3.getContext('2d'); g3.setTransform(1, 0, 0, 1, 0, 0); g3.globalCompositeOperation = 'source-over'; g3.clearRect(0, 0, CBW, CBH); g3.setTransform(k * fx, 0, 0, k, COX, COY);
+  const g3 = CB3.getContext('2d'); g3.setTransform(1, 0, 0, 1, 0, 0); g3.globalCompositeOperation = 'source-over'; g3.clearRect(0, 0, CBW, CBH); g3.setTransform(k * fx, 0, 0, ky, COX, COY);
   c = g3; c.fillStyle = P.base;
   const hl = hind3(B, p.hn, 2);
   const fl = p.tuck > 0.5 ? fore3(B, p.fn, 0) : fore3(B, p.fn, 2);
@@ -245,7 +257,7 @@ function drawRig(p, P, k, fx) {
   g4.globalCompositeOperation = 'source-in'; g4.fillStyle = P.inner; g4.fillRect(0, 0, CBW, CBH);
   g4.globalCompositeOperation = 'destination-out'; g4.drawImage(CB3, 0, 0);
   g4.globalCompositeOperation = 'destination-in'; g4.drawImage(CB5, 0, 0);
-  g4.globalCompositeOperation = 'destination-out'; g4.setTransform(k * fx, 0, 0, k, COX, COY); [[fl.el, 11], [hl.kn, 12]].forEach(([q, r]) => { g4.beginPath(); g4.arc(q[0], q[1], r, 0, TAU); g4.fill(); }); g4.setTransform(1, 0, 0, 1, 0, 0);
+  g4.globalCompositeOperation = 'destination-out'; g4.setTransform(k * fx, 0, 0, ky, COX, COY); [[fl.el, 11], [hl.kn, 12]].forEach(([q, r]) => { g4.beginPath(); g4.arc(q[0], q[1], r, 0, TAU); g4.fill(); }); g4.setTransform(1, 0, 0, 1, 0, 0);
   g4.globalCompositeOperation = 'source-over';
   c = main; c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(CB4, 0, 0); c.drawImage(CB3, 0, 0); c.restore();
   // neck + head
@@ -434,11 +446,12 @@ function emote3(kind, x, y, s, u, a = 1) {
   c.restore();
 }
 function drawCat3(o) {
-  cbufs(); const P = o.sil ? S3 : (o.coat ? COATS[o.coat] : C3), p = squashX(o.pose), k = S * o.s, fx = o.face || 1;
+  cbufs(); const P = o.sil ? S3 : (o.coat ? COATS[o.coat] : C3), bd = BUILDS[o.build] || null, p = squashX(bd && !o.pose.sit ? { ...o.pose, g: (o.pose.g || 1) * bd.g } : o.pose), k = S * o.s, fx = o.face || 1;
+  const bx = bd ? bd.bx : 1, by = bd ? bd.by : 1, H0 = [HSR, HSS, EYE3]; if (bd) { HSR *= bd.hs; HSS *= bd.hs; EYE3 *= bd.eyes; }
   const g = CB.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, CBW, CBH);
-  g.setTransform(k * fx, 0, 0, k, COX, COY);
+  g.setTransform(k * fx * bx, 0, 0, k * by, COX, COY);
   const prev = c; c = g;
-  if (p.sit) { const info = silSit(p, P); shadeSit(info, p, P); } else drawRig(p, P, k, fx);
+  if (p.sit) { const info = silSit(p, P); shadeSit(info, p, P); } else drawRig(p, P, k * bx, fx, k * by);
   c = prev;
   // outline: dilate silhouette into CB2, tint, then lay the cat on top
   const g2 = CB2.getContext('2d'); g2.setTransform(1, 0, 0, 1, 0, 0); g2.globalCompositeOperation = 'source-over'; g2.clearRect(0, 0, CBW, CBH);
@@ -451,14 +464,16 @@ function drawCat3(o) {
     g.globalCompositeOperation = 'destination-out'; g.drawImage(CB2, 1.6 * S * (o.rimX ?? 0.6) * (o.face || 1), 2.0 * S); g.globalCompositeOperation = 'source-over';
     g2.globalCompositeOperation = 'lighter'; g2.globalAlpha = 0.85; g2.drawImage(CB, 0, 0); g2.globalAlpha = 1; g2.globalCompositeOperation = 'source-over'; }
   // face on top
-  g2.setTransform(k * (o.face || 1), 0, 0, k, COX, COY); c = g2;
+  g2.setTransform(k * (o.face || 1) * bx, 0, 0, k * by, COX, COY); c = g2;
   const hp = p.sit ? [8 + (p.hdx || 0), -82 - Math.sin(T * 1.7) * 0.6 + (p.hdy || 0)] : p.head, fp = (p.eye ?? 1) > 0.3 && !p.happy && !o.noBlink && blinkAt(T, (o.bseed || 0) + 0.37) ? { ...p, eye: 0 } : p;
   c.save(); c.translate(hp[0], hp[1]); c.rotate(p.hr || 0); c.scale(p.sit ? HSS : HSR, p.sit ? HSS : HSR); face3(P, fp, o.sil); c.restore();
-  c = prev; g2.setTransform(1, 0, 0, 1, 0, 0);
+  c = prev; g2.setTransform(1, 0, 0, 1, 0, 0); if (bd) [HSR, HSS, EYE3] = H0;
+  // aerial perspective for cats far in the background: tint toward the haze colour
+  if (o.haze) { g2.globalCompositeOperation = 'source-atop'; g2.fillStyle = `rgba(${o.haze})`; g2.fillRect(0, 0, CBW, CBH); g2.globalCompositeOperation = 'source-over'; }
   // composite into scene
   c.save(); c.translate(o.x, o.y);
-  if (o.shadow !== false) { c.save(); c.scale(o.s, o.s); c.translate(p.hip ? (p.hip[0] + p.sh[0]) / 2 * (o.face || 1) : -8 * (o.face || 1), 0); catShadow(p.hip ? Math.max(30, Math.abs(p.sh[0] - p.hip[0]) * 0.8 + 18) : 44, o.shadowA ?? 0.32); c.restore(); }
-  c.drawImage(CB2, -COX / S, -COY / S, CBW / S, CBH / S);
+  if (o.shadow !== false) { c.save(); c.scale(o.s, o.s); c.translate(p.hip ? (p.hip[0] + p.sh[0]) / 2 * (o.face || 1) : -8 * (o.face || 1), 0); catShadow((p.hip ? Math.max(30, Math.abs(p.sh[0] - p.hip[0]) * 0.8 + 18) : 44) * bx, o.shadowA ?? 0.32); c.restore(); }
+  if (o.blur) c.filter = `blur(${o.blur * S}px)`; c.drawImage(CB2, -COX / S, -COY / S, CBW / S, CBH / S); if (o.blur) c.filter = 'none';
   if (o.emote && c.getTransform().d > 0) { const e = o.emote; emote3(e.k, (hp[0] - 2) * o.s * fx, (hp[1] - 16) * o.s, o.s * (e.s || 1), e.u ?? 1, e.a ?? 1); }
   c.restore();
 }
