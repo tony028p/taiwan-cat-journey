@@ -466,7 +466,8 @@ function bgCat(o) {
     case 'bike': { const v = o.v ?? 60; q.x = o.x + f * v * t; const bx0 = q.x; q.x -= f * 8 * s; q.y = o.y - 30 * s; q.s = s * 0.8; q.shadow = false; q.pose = sit3(0, { ...ex('happy'), ts: 2 });
       c.save(); c.translate(bx0, o.y); c.scale(f, 1); bicycle(0, 0, s, o.col); c.restore(); break; }
     case 'kayak': { const bob = Math.sin(ph * 1.8) * 1.5, v = o.v ?? 10; q.x = o.x + f * v * t; q.y = o.y + bob + 4 * s; q.shadow = false; q.pose = sit3(0, { ...ex('happy') });
-      after = () => { c.save(); c.translate(q.x + f * 4 * s, q.y - 4 * s); c.scale(f, 1); c.fillStyle = o.col || '#e8b23a'; c.beginPath(); c.moveTo(-46 * s, -2 * s); c.quadraticCurveTo(0, 16 * s, 46 * s, -2 * s); c.quadraticCurveTo(0, 2 * s, -46 * s, -2 * s); c.fill(); c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(-4 * s, 0, 14 * s, 3 * s, 0, 0, Math.PI * 2); c.fill();
+      after = () => { for (let w = 1; w <= 4; w++) { const wx = q.x - f * (40 + w * 26) * s, a = 0.4 * (1 - w / 5); c.strokeStyle = `rgba(255,255,255,${a})`; c.lineWidth = 1.2; c.beginPath(); c.moveTo(wx - 12 * s * w * 0.4, q.y + 2 * s + w * 2 * s); c.lineTo(wx + 12 * s, q.y + s); c.lineTo(wx - 12 * s * w * 0.4, q.y - 0 * s - w * 0.5 * s); c.stroke(); }
+        c.save(); c.translate(q.x + f * 4 * s, q.y - 4 * s); c.scale(f, 1); c.fillStyle = o.col || '#e8b23a'; c.beginPath(); c.moveTo(-46 * s, -2 * s); c.quadraticCurveTo(0, 16 * s, 46 * s, -2 * s); c.quadraticCurveTo(0, 2 * s, -46 * s, -2 * s); c.fill(); c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(-4 * s, 0, 14 * s, 3 * s, 0, 0, Math.PI * 2); c.fill();
         const pa = Math.sin(ph * 3) * 0.7; c.rotate(pa); line(-30 * s, 10 * s, 30 * s, -16 * s, '#3a3a3a', 1.6 * s); c.restore(); }; break; }
     default: q.pose = sit3(0, { ...mood, ts: 0.9 + hash(sd + 1) * 0.8 });                 // 'sit'
   }
@@ -480,50 +481,27 @@ function bgCat(o) {
    cover it), otherwise after the scene; `d` is its parallax depth. Times come from the scene (lt). */
 const HZ = { day: '205,218,228,0.32', far: '200,214,226,0.55', warm: '255,200,160,0.3', dusk: '120,80,110,0.35', night: '30,40,80,0.4' };
 const CROWD = {
-  L0: [{ d: 0.92, x: 200, y: 494, s: 0.62, act: 'photo', sil: true, rim: '255,185,140', seed: 1 }],
-  // tea drinkers seen through the paper windows of the teahouse
-  L1: [{ after: 'tea', d: 0.75, x: 130, y: 412, s: 0.34, act: 'sit', sil: true, face: 1, seed: 70 }, { after: 'tea', d: 0.75, x: 166, y: 412, s: 0.34, act: 'sit', sil: true, face: -1, build: 'chonk', seed: 71 },
-    { after: 'tea', d: 0.75, x: 470, y: 272, s: 0.32, act: 'look', sil: true, build: 'aloof', seed: 72 }, { after: 'tea', d: 0.75, x: 300, y: 557, s: 0.36, act: 'eat', sil: true, seed: 73 }],
+  // Only far away, and only what people really do there. A cat on the hero's own ground plane must be drawn at the hero's
+  // scale; smaller means farther, so it has to sit higher on the ground and be hazed.
   L2: [{ after: 'houses', d: 0.3, x: 985, y: 443, s: 0.3, act: 'pose', coat: 'bicolor', build: 'kitten', haze: HZ.far, seed: 2 }, { after: 'houses', d: 0.3, x: 1060, y: 444, s: 0.3, act: 'photo', coat: 'grey', face: -1, haze: HZ.far, seed: 3 }],
-  L4: [{ d: 0.5, x: 640, y: 596, s: 0.36, act: 'kayak', coat: 'cream', v: 9, haze: HZ.day, seed: 4 }, { d: 0.5, x: 720, y: 604, s: 0.34, act: 'kayak', coat: 'black', v: 9, col: '#d9573a', haze: HZ.day, seed: 5 }],
-  L5: [{ d: 0.6, x: 975, y: 526, s: 0.36, act: 'pose', coat: 'siamese', build: 'aloof', haze: HZ.day, seed: 6 }, { d: 0.6, x: 880, y: 532, s: 0.38, act: 'photo', coat: 'brown', haze: HZ.day, seed: 7 }],
-  L6: [{ d: 0.8, x: 880, y: 350, s: 0.42, act: 'photo', sil: true, face: -1, seed: 8 }, { d: 0.8, x: 960, y: 346, s: 0.4, act: 'sit', sil: true, face: -1, build: 'chonk', seed: 9 }],
+  // Qingshui: sea kayaks from Chongde beach, far below the cliff
+  L4: [{ d: 0.5, x: 610, y: 596, s: 0.5, act: 'kayak', coat: 'cream', v: 9, haze: HZ.day, seed: 4 }, { d: 0.5, x: 720, y: 606, s: 0.48, act: 'kayak', coat: 'black', v: 9, col: '#d9573a', haze: HZ.day, seed: 5 }],
   L7: [{ d: 0.5, x: 520, y: 478, s: 0.34, act: 'walk', v: 14, coat: 'grey', haze: HZ.day, seed: 10 }, { d: 0.5, x: 470, y: 480, s: 0.28, act: 'walk', v: 14, coat: 'cream', build: 'kitten', haze: HZ.day, seed: 11 }],
-  L9: [{ d: 0.5, x: 720, y: 470, s: 0.42, act: 'rake', coat: 'brown', haze: HZ.warm, seed: 12 }, { d: 0.8, x: 1060, y: 520, s: 0.55, act: 'photo', coat: 'tortie', build: 'chonk', face: -1, haze: HZ.warm, seed: 13 }],
-  L10: [{ d: 0.95, x: 150, y: 584, s: 0.62, act: 'photo', sil: true, rim: '255,195,140', seed: 14 }, { d: 0.95, x: 270, y: 586, s: 0.45, act: 'sit', sil: true, build: 'kitten', rim: '255,195,140', seed: 15 }, { d: 0.95, x: 650, y: 588, s: 0.6, act: 'loaf', sil: true, build: 'chonk', rim: '255,195,140', seed: 16 }],
-  L11: [{ d: 0.95, x: 990, y: 516, s: 0.72, act: 'ice', coat: 'white', build: 'goofy', face: -1, seed: 17 }, { d: 0.95, x: 1120, y: 516, s: 0.75, act: 'sleep', coat: 'grey', build: 'chonk', seed: 18 }],
-  L12: [{ after: 'bridge', d: 0.4, x: 300, y: 392, s: 0.24, act: 'walk', v: 16, coat: 'black', haze: HZ.far, seed: 19 }, { after: 'bridge', d: 0.4, x: 420, y: 392, s: 0.24, act: 'bike', v: 40, coat: 'white', haze: HZ.far, seed: 20 }, { d: 0.95, x: 1080, y: 598, s: 0.6, act: 'fish', coat: 'brown', face: -1, tx: 960, ty: 572, seed: 21 }],
-  L13: [{ d: 0.95, x: 110, y: 612, s: 0.62, act: 'photo', coat: 'grey', seed: 74 }, { d: 0.95, x: 1170, y: 612, s: 0.64, act: 'photo', coat: 'brown', build: 'chonk', face: -1, seed: 75 },
-    { d: 0.75, x: 590, y: 465, s: 0.45, act: 'loaf', coat: 'black', build: 'aloof', seed: 76 }, { after: 'house', d: 0.35, x: 1010, y: 470, s: 0.3, act: 'walk', v: -10, face: -1, coat: 'cream', haze: HZ.day, seed: 77 }],
-  L14: [{ d: 0.95, x: 95, y: 598, s: 0.62, act: 'eat', coat: 'grey', build: 'chonk', col: '#c9a074', seed: 22 }],
-  L15: [{ d: 0.8, x: 990, y: 562, s: 0.52, act: 'photo', sil: true, face: -1, rim: '255,165,110', seed: 23 }, { d: 0.8, x: 1110, y: 560, s: 0.5, act: 'sit', sil: true, build: 'aloof', face: -1, rim: '255,165,110', seed: 24 }],
-  L16: [{ d: 0.5, x: 760, y: 556, s: 0.3, act: 'hike', v: 10, coat: 'grey', haze: HZ.day, seed: 78 }, { d: 0.5, x: 728, y: 558, s: 0.28, act: 'hike', v: 10, coat: 'bicolor', col: '#d9573a', haze: HZ.day, seed: 79 },
-    { d: 0.9, x: 1060, y: 598, s: 0.55, act: 'photo', coat: 'cream', face: -1, seed: 80 }],
-  L17: [{ d: 0.85, x: 880, y: 560, s: 0.6, act: 'pick', coat: 'calico', face: -1, seed: 25 }, { d: 0.95, x: 1130, y: 604, s: 0.66, act: 'eat', coat: 'cream', build: 'chonk', col: '#e8893a', face: -1, seed: 26 }],
-  L18: [{ d: 0.95, x: 300, y: 600, s: 0.62, act: 'eat', coat: 'tuxedo', build: 'goofy', seed: 27 }, { d: 0.6, x: 760, y: 470, s: 0.32, act: 'walk', v: 12, coat: 'cream', haze: HZ.night, seed: 28 }, { d: 0.6, x: 800, y: 470, s: 0.3, act: 'walk', v: 12, coat: 'siamese', haze: HZ.night, seed: 29 }],
-  L19: [{ d: 0.9, x: 820, y: 470, s: 0.55, act: 'photo', sil: true, rim: '255,175,120', seed: 30 }],
-  L20: [{ d: 0.95, x: 560, y: 600, s: 0.6, act: 'photo', coat: 'bicolor', face: -1, seed: 31 }, { d: 0.6, x: 870, y: 403, s: 0.4, act: 'loaf', coat: 'black', build: 'aloof', haze: HZ.day, seed: 32 }],
-  L21: [{ d: 0.95, x: 1060, y: 558, s: 0.58, act: 'photo', coat: 'grey', face: -1, haze: HZ.night, seed: 33 }],
-  T0: [{ d: 0.95, x: 1130, y: 588, s: 0.6, act: 'photo', coat: 'brown', face: -1, seed: 34 }],
-  T1: [{ d: 0.95, x: 1060, y: 600, s: 0.6, act: 'fish', coat: 'tortie', build: 'chonk', tx: 1180, ty: 566, seed: 35 }],
+  L9: [{ d: 0.5, x: 720, y: 470, s: 0.42, act: 'rake', coat: 'brown', haze: HZ.warm, seed: 12 }],
+  L12: [{ after: 'bridge', d: 0.4, x: 300, y: 392, s: 0.24, act: 'walk', v: 16, coat: 'black', haze: HZ.far, seed: 19 }, { after: 'bridge', d: 0.4, x: 420, y: 392, s: 0.24, act: 'bike', v: 40, coat: 'white', haze: HZ.far, seed: 20 }],
+  L13: [{ after: 'house', d: 0.35, x: 1010, y: 470, s: 0.3, act: 'walk', v: -10, face: -1, coat: 'cream', haze: HZ.day, seed: 77 }],
+  L16: [{ d: 0.5, x: 760, y: 556, s: 0.3, act: 'hike', v: 10, coat: 'grey', haze: HZ.day, seed: 78 }, { d: 0.5, x: 728, y: 558, s: 0.28, act: 'hike', v: 10, coat: 'bicolor', col: '#d9573a', haze: HZ.day, seed: 79 }],
+  L18: [{ d: 0.6, x: 760, y: 470, s: 0.32, act: 'walk', v: 12, coat: 'cream', haze: HZ.night, seed: 28 }, { d: 0.6, x: 800, y: 470, s: 0.3, act: 'walk', v: 12, coat: 'siamese', haze: HZ.night, seed: 29 }],
+  L20: [{ d: 0.6, x: 870, y: 403, s: 0.4, act: 'loaf', coat: 'black', build: 'aloof', haze: HZ.day, seed: 32 }],
   T2: [{ d: 0.3, x: 880, y: 330, s: 0.16, act: 'hike', v: 8, coat: 'grey', haze: HZ.far, seed: 36 }, { d: 0.3, x: 905, y: 326, s: 0.15, act: 'hike', v: 8, coat: 'cream', col: '#d9573a', haze: HZ.far, seed: 37 }],
-  T3: [{ d: 1, x: 890, y: 528, s: 0.72, act: 'sleep', coat: 'grey', build: 'chonk', seed: 38 }],
-  T4: [{ d: 0.5, x: 860, y: 470, s: 0.28, act: 'look', coat: 'black', haze: HZ.day, seed: 39 }, { d: 0.5, x: 900, y: 472, s: 0.22, act: 'look', coat: 'cream', build: 'kitten', haze: HZ.day, seed: 40 }],
-  T5: [{ d: 0.95, x: 150, y: 600, s: 0.66, act: 'photo', coat: 'grey', seed: 41 }, { d: 0.95, x: 1160, y: 600, s: 0.66, act: 'photo', coat: 'brown', build: 'chonk', face: -1, seed: 42 }],
-  T6: [{ d: 0.95, x: 1110, y: 602, s: 0.6, act: 'fish', coat: 'black', face: -1, tx: 990, ty: 566, seed: 43 }],
-  T7: [{ d: 0.95, x: 660, y: 598, s: 0.66, act: 'sit', coat: 'cream', build: 'goofy', emote: { k: 'drop', u: 1, a: 1 }, seed: 44 }, { d: 0.95, x: 1020, y: 598, s: 0.62, act: 'photo', coat: 'bicolor', build: 'kitten', seed: 45 }],
-  T8: [{ after: 'deck', d: 0.6, x: 120, y: 556, s: 0.55, act: 'fish', coat: 'brown', tx: 200, ty: 470, seed: 81 }, { after: 'deck', d: 0.6, x: 600, y: 556, s: 0.55, act: 'fish', coat: 'grey', build: 'chonk', tx: 690, ty: 476, seed: 82 },
-    { after: 'deck', d: 0.6, x: 1040, y: 562, s: 0.58, act: 'ice', coat: 'calico', build: 'goofy', col: '#c45aa8', face: -1, seed: 83 }, { after: 'far', d: 0.3, x: 900, y: 466, s: 0.16, act: 'bike', v: -30, face: -1, coat: 'black', haze: HZ.far, seed: 84 }],
-  T9: [{ d: 0.8, x: 640, y: 516, s: 0.45, act: 'pose', coat: 'calico', build: 'kitten', haze: HZ.day, seed: 46 }, { d: 0.85, x: 790, y: 540, s: 0.5, act: 'photo', coat: 'grey', face: -1, seed: 47 }],
-  T10: [{ d: 1, x: 820, y: 528, s: 0.72, act: 'look', coat: 'siamese', build: 'aloof', face: -1, seed: 48 }],
-  T11: [{ d: 0.95, x: 760, y: 598, s: 0.5, act: 'look', coat: 'brown', seed: 49 }, { d: 0.95, x: 830, y: 600, s: 0.42, act: 'look', coat: 'bicolor', build: 'kitten', seed: 50 }],
-  T12: [{ d: 0.9, x: 880, y: 568, s: 0.48, act: 'sit', sil: true, rim: '255,190,150', seed: 51 }, { d: 0.9, x: 990, y: 570, s: 0.5, act: 'sit', sil: true, build: 'chonk', rim: '255,190,150', seed: 52 }],
-  T13: [{ d: 0.9, x: 760, y: 588, s: 0.5, act: 'bike', v: -50, face: -1, coat: 'cream', col: '#d9573a', seed: 53 }, { d: 0.9, x: 980, y: 590, s: 0.48, act: 'bike', v: -50, face: -1, coat: 'black', seed: 54 }],
-  T14: [{ d: 0.95, x: 930, y: 600, s: 0.6, act: 'pose', coat: 'tortie', build: 'goofy', seed: 55 }, { d: 0.95, x: 1090, y: 600, s: 0.6, act: 'photo', coat: 'white', face: -1, seed: 56 }],
-  T15: [{ d: 0.95, x: 700, y: 600, s: 0.5, act: 'walk', v: 16, coat: 'grey', seed: 57 }, { d: 0.95, x: 650, y: 600, s: 0.42, act: 'walk', v: 16, coat: 'cream', build: 'kitten', seed: 58 }, { d: 0.9, x: 960, y: 574, s: 0.55, act: 'eat', coat: 'brown', build: 'chonk', col: '#9cb86a', seed: 59 }],
+  // Huadong valley: cyclists on the far bike path
+  T4: [{ d: 0.55, x: 760, y: 526, s: 0.36, act: 'bike', v: -26, face: -1, coat: 'black', haze: HZ.day, seed: 39 }, { d: 0.55, x: 840, y: 526, s: 0.36, act: 'bike', v: -26, face: -1, coat: 'cream', col: '#d9573a', haze: HZ.day, seed: 40 }],
+  T8: [{ after: 'far', d: 0.3, x: 900, y: 466, s: 0.16, act: 'bike', v: -30, face: -1, coat: 'black', haze: HZ.far, seed: 84 }],
+  // Jiji: cyclists on the same road as the hero, so at the hero's scale, riding away in the distance
+  T13: [{ d: 0.9, x: 860, y: 600, s: 1.0, act: 'bike', v: 60, coat: 'cream', col: '#d9573a', seed: 53 }],
   T16: [{ d: 0.7, x: 700, y: 540, s: 0.45, act: 'pick', coat: 'calico', haze: HZ.day, seed: 60 }, { d: 0.6, x: 880, y: 480, s: 0.36, act: 'pick', coat: 'grey', haze: HZ.day, seed: 61 }, { d: 0.5, x: 1040, y: 440, s: 0.3, act: 'pick', coat: 'cream', haze: HZ.far, seed: 62 }],
-  T17: [{ d: 0.95, x: 720, y: 560, s: 0.58, act: 'kite', coat: 'grey', ky: 280, kx: 820, col: '#3fa0d8', seed: 63 }, { d: 0.95, x: 1010, y: 566, s: 0.46, act: 'kite', coat: 'bicolor', build: 'kitten', kx: 1090, ky: 330, col: '#f2c14e', seed: 64 }],
-  T18: [{ d: 0.9, x: 1150, y: 512, s: 0.4, act: 'photo', sil: true, face: -1, rim: '200,120,255', seed: 65 }],
+  // Nanliao: kite fliers far down the beach
+  T17: [{ d: 0.6, x: 820, y: 462, s: 0.3, act: 'kite', coat: 'grey', ky: 250, kx: 900, col: '#3fa0d8', haze: HZ.day, seed: 63 }, { d: 0.6, x: 1010, y: 466, s: 0.26, act: 'kite', coat: 'bicolor', build: 'kitten', kx: 1080, ky: 300, col: '#f2c14e', haze: HZ.day, seed: 64 }],
 };
 function crowdHook(key) { const L2 = SC && SC.sc && CROWD[SC.sc.id]; if (!L2) return;
   for (const o of L2) if ((o.after || null) === key) D(o.d ?? 1, () => bgCat({ ...o, t: SC.lt })); }
