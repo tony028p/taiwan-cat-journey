@@ -243,22 +243,52 @@ V('T13', '南投縣 · 集集', '綠色隧道', 'Jiji Green Tunnel', '23.83°N 1
 /* T14 彩虹眷村 */
 V('T14', '臺中市 · 南屯', '彩虹眷村', 'Rainbow Village', '24.13°N 120.61°E', ['彩虹眷村，每一面牆都畫滿了顏色。', 'At Rainbow Village, every wall is painted in colour.'], [1.02, 1.06, 20, -20, 0, 0], function (lt) {
   L('sky', 0, () => { sky([[0, '#5b96d0'], [1, '#e6eef0']]); }, {});
-  L('wall', 0.45, () => { const cols = ['#f4d03f', '#e74c3c', '#3498db', '#2ecc71', '#ffffff', '#e67e22', '#9b59b6', '#1abc9c', '#f78fb3'];
-    c.fillStyle = '#f7f1e3'; c.fillRect(-M, 280, W + 2 * M, 320); poly([[-M, 290], [W + M, 290], [W + M, 260], [-M, 260]], '#8f5a3c');
-    const r = rng(441); for (let k = 0; k < 900; k++) { const x = r() * (W + 2 * M) - M, y = 300 + r() * 290, t = r(); c.fillStyle = cols[Math.floor(r() * cols.length)];
-      if (t < 0.4) { c.beginPath(); c.arc(x, y, 3 + r() * 8, 0, TAU); c.fill(); } else if (t < 0.7) { c.fillRect(x, y, 4 + r() * 16, 3 + r() * 5); } else { c.strokeStyle = c.fillStyle; c.lineWidth = 2 + r() * 3; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + 10, y - 10, x + 20 + r() * 20, y + r() * 10); c.stroke(); } }
-    for (let k = 0; k < 9; k++) { const x = 40 + k * 150, y = 420; c.fillStyle = '#ffffff'; c.beginPath(); c.arc(x, y, 34, 0, TAU); c.fill(); c.fillStyle = cols[k % cols.length]; c.beginPath(); c.arc(x, y, 26, 0, TAU); c.fill(); c.fillStyle = '#222'; disc(x - 9, y - 4, 4, '#222'); disc(x + 9, y - 4, 4, '#222'); c.strokeStyle = '#222'; c.lineWidth = 2; c.beginPath(); c.arc(x, y + 4, 10, 0.2, Math.PI - 0.2); c.stroke(); }
-    c.fillStyle = vg(590, H, [[0, '#c9c0ad'], [1, '#8a826f']]); c.fillRect(-M, 598, W + 2 * M, 200); });
+  L('wall', 0.45, () => { const cols = ['#f4d03f', '#e74c3c', '#3498db', '#2ecc71', '#ffffff', '#e67e22', '#9b59b6', '#1abc9c', '#f78fb3', '#d62828'];
+    const r = rng(441), house = (x0, w, yTop, yb) => {
+      // grey tiled roof with an overhang
+      c.fillStyle = '#6e6a66'; c.beginPath(); c.moveTo(x0 - 20, yTop); c.lineTo(x0 + w / 2, yTop - 60); c.lineTo(x0 + w + 20, yTop); c.closePath(); c.fill(); for (let k = 0; k < 18; k++) line(x0 - 14 + k * (w + 28) / 18, yTop - 2, x0 + w / 2, yTop - 58, 'rgba(40,38,36,0.35)', 1);
+      // wall: base colour then dense folk-art motifs
+      c.fillStyle = cols[Math.floor(r() * 4)]; c.fillRect(x0, yTop, w, yb - yTop); c.save(); c.beginPath(); c.rect(x0, yTop, w, yb - yTop); c.clip();
+      for (let k = 0; k < Math.floor(w * 0.75); k++) { const x = x0 + r() * w, y = yTop + r() * (yb - yTop), t = r(); c.fillStyle = cols[Math.floor(r() * cols.length)]; c.strokeStyle = cols[Math.floor(r() * cols.length)];
+        if (t < 0.18) { c.lineWidth = 3; c.beginPath(); c.arc(x, y, 6 + r() * 8, 0, TAU); c.stroke(); }
+        else if (t < 0.36) { c.fillRect(x, y, 10 + r() * 22, 4 + r() * 4); }
+        else if (t < 0.5) { c.lineWidth = 2.5; c.beginPath(); for (let z = 0; z < 6; z++) c.lineTo(x + z * 6, y + (z % 2 ? -6 : 0)); c.stroke(); }
+        else if (t < 0.62) { c.beginPath(); c.moveTo(x, y - 8); c.lineTo(x + 7, y + 6); c.lineTo(x - 7, y + 6); c.closePath(); c.fill(); }
+        else { c.lineWidth = 2; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + 10, y - 10, x + 20, y); c.stroke(); } }
+      // big painted characters: round faces with whiskers and cat ears, and red Chinese characters
+      for (let k = 0; k < Math.floor(w / 110); k++) { const fx = x0 + 50 + k * 110 + r() * 20, fy = yTop + 50 + r() * (yb - yTop - 100), fc = cols[Math.floor(r() * cols.length)];
+        c.fillStyle = '#ffffff'; c.beginPath(); c.arc(fx, fy, 30, 0, TAU); c.fill(); c.fillStyle = fc; c.beginPath(); c.arc(fx, fy, 25, 0, TAU); c.fill();
+        poly([[fx - 22, fy - 14], [fx - 16, fy - 34], [fx - 6, fy - 22]], fc); poly([[fx + 22, fy - 14], [fx + 16, fy - 34], [fx + 6, fy - 22]], fc);
+        disc(fx - 9, fy - 4, 5, '#ffffff'); disc(fx + 9, fy - 4, 5, '#ffffff'); disc(fx - 9, fy - 4, 2.5, '#111111'); disc(fx + 9, fy - 4, 2.5, '#111111');
+        c.strokeStyle = '#111111'; c.lineWidth = 2; c.beginPath(); c.arc(fx, fy + 6, 8, 0.2, Math.PI - 0.2); c.stroke(); for (let wk = -1; wk <= 1; wk += 2) for (let z = 0; z < 2; z++) line(fx + wk * 12, fy + 4 + z * 4, fx + wk * 30, fy + z * 6, '#111111', 1); }
+      c.font = `900 26px ${FONTS}`; c.fillStyle = '#d62828'; c.textAlign = 'center'; ['福', '樂', '愛', '平', '安'].forEach((ch, k) => { if (r() < 0.6) c.fillText(ch, x0 + 30 + r() * (w - 60), yTop + 30 + r() * (yb - yTop - 40)); });
+      c.restore();
+      // a door
+      c.fillStyle = '#3a6ea8'; c.fillRect(x0 + w * 0.42, yb - 110, 46, 110); c.strokeStyle = '#ffffff'; c.lineWidth = 2; c.strokeRect(x0 + w * 0.42 + 6, yb - 100, 34, 90); };
+    house(-M, 520, 300, 598); house(560, 380, 320, 598); house(990, 460, 300, 598);
+    // painted ground: concentric colour rings and stripes
+    c.fillStyle = '#c9c0ad'; c.fillRect(-M, 598, W + 2 * M, 200); for (let k = 0; k < 9; k++) { c.strokeStyle = cols[k]; c.lineWidth = 6; c.beginPath(); c.ellipse(640, 660, 520 - k * 40, 60 - k * 5, 0, 0, TAU); c.stroke(); } });
   D(0.45, () => { const q = { x: 300 + lt * 30, y: 604, s: 1.15 }; q.pose = { ...walkPose3(walkCyc3(lt * 30, 1.15), { hr: lt > 1.5 && lt < 2.6 ? -0.3 : 0 }), ...exSeq(lt, [[0, 'content'], [1.5, 'delighted']]) }; q.emote = emoAt(lt, [[1.6, 2.9, 'spark']]); drawCat3(q); });
 });
 /* T15 勝興車站 */
 V('T15', '苗栗縣 · 三義', '勝興車站', 'Shengxing Station', '24.39°N 120.78°E', ['勝興車站，舊山線海拔最高的車站。', 'Shengxing — the highest station on the old mountain line.'], [1.02, 1.07, 0, 0, 0, 0], function (lt) {
   L('sky', 0, () => { sky([[0, '#8fb3cf'], [1, '#e7ece4']]); stratus(600, 220, 1200, 70, 'rgba(255,255,255,0.6)'); });
   L('mtn', 0.1, () => mountain({ base: 360, amp: 100, f: 0.004, seed: 451, top: '#5f8463', bot: '#729673', tex: 'forest', dark: '#466a4a', mid: '#5f8463', light: '#9dbb8c', depth: 140, n: 1600, r: 3.5 }), { blur: 0.8 });
-  L('stn', 0.45, () => { const x = 430, y = 520; c.fillStyle = vg(y - 120, y, [[0, '#efe3c6'], [1, '#d9c9a4']]); c.fillRect(x, y - 120, 380, 120); for (let k = 0; k < 6; k++) { c.fillStyle = '#5a3d2a'; c.fillRect(x + 10 + k * 64, y - 120, 6, 120); } for (let k = 0; k < 5; k++) { c.fillStyle = '#c9dbe2'; c.fillRect(x + 26 + k * 64, y - 96, 36, 46); c.strokeStyle = '#5a3d2a'; c.lineWidth = 2; c.strokeRect(x + 26 + k * 64, y - 96, 36, 46); }
-    poly([[x - 30, y - 118], [x + 60, y - 190], [x + 320, y - 190], [x + 410, y - 118]], '#3d3f45'); for (let k = 0; k < 24; k++) line(x - 20 + k * 18, y - 120, x + 60 + k * 11, y - 188, 'rgba(20,20,25,0.45)', 1);
-    c.fillStyle = '#ffffff'; c.fillRect(x + 140, y - 160, 100, 26); c.fillStyle = '#222'; c.font = `700 18px ${FONTS}`; c.textAlign = 'center'; c.fillText('勝 興 驛', x + 190, y - 141);
-    c.fillStyle = vg(y, H, [[0, '#9b9488'], [1, '#6a645a']]); c.fillRect(-M, y, W + 2 * M, 200); c.fillStyle = '#4a443e'; c.fillRect(-M, 572, W + 2 * M, 6); c.fillRect(-M, 590, W + 2 * M, 6); for (let k = 0; k < 40; k++) c.fillRect(-M + k * 40, 570, 18, 28); c.fillStyle = '#cfc8b8'; c.fillRect(-M, 540, W + 2 * M, 22); });
+  L('stn', 0.45, () => { const x = 430, y = 520;
+    // old-street shops on the slope behind
+    for (let k = 0; k < 6; k++) { const sx = 40 + k * 90 + (k > 2 ? 520 : 0), sy = 430 - (k % 3) * 20; c.fillStyle = '#7a5a3e'; c.fillRect(sx, sy - 60, 80, 60); poly([[sx - 8, sy - 60], [sx + 40, sy - 84], [sx + 88, sy - 60]], '#4a4a50'); c.fillStyle = '#d24a3a'; c.fillRect(sx + 6, sy - 40, 68, 10); }
+    // station house: dark-stained wooden clapboard walls, white-framed lattice windows, deep gabled eaves
+    c.fillStyle = vg(y - 130, y, [[0, '#8a6a46'], [1, '#6a4e32']]); c.fillRect(x, y - 130, 380, 130); for (let yy = y - 128; yy < y; yy += 8) line(x, yy, x + 380, yy, 'rgba(40,26,14,0.45)', 1.2);
+    for (let k = 0; k < 5; k++) { const wx = x + 22 + k * 72; c.fillStyle = '#f2ead8'; c.fillRect(wx, y - 104, 48, 56); c.strokeStyle = '#3a2a1a'; c.lineWidth = 3; c.strokeRect(wx, y - 104, 48, 56); for (let g = 1; g < 3; g++) { line(wx + g * 16, y - 104, wx + g * 16, y - 48, '#3a2a1a', 1.5); line(wx, y - 104 + g * 18.6, wx + 48, y - 104 + g * 18.6, '#3a2a1a', 1.5); } }
+    c.fillStyle = '#5a3d2a'; for (let k = 0; k < 7; k++) c.fillRect(x - 4 + k * 64, y - 130, 8, 130);
+    poly([[x - 40, y - 126], [x + 80, y - 200], [x + 300, y - 200], [x + 420, y - 126], [x + 404, y - 118], [x - 24, y - 118]], '#3a3c44'); for (let k = 0; k < 30; k++) line(x - 30 + k * 15, y - 122, x + 80 + k * 7.4, y - 198, 'rgba(20,20,25,0.4)', 1);
+    // gable end board and the signboard 「勝興車站」
+    poly([[x + 150, y - 200], [x + 190, y - 230], [x + 230, y - 200]], '#3a3c44'); c.fillStyle = '#f7f2e4'; c.fillRect(x + 110, y - 170, 160, 30); c.strokeStyle = '#2a4a8a'; c.lineWidth = 3; c.strokeRect(x + 110, y - 170, 160, 30);
+    c.fillStyle = '#1e3a7a'; c.font = `900 20px ${FONTS}`; c.textAlign = 'center'; c.fillText('勝 興 車 站', x + 190, y - 148);
+    // platform, rails on sleepers, an old signal post
+    c.fillStyle = vg(y, H, [[0, '#a59c8c'], [1, '#6a645a']]); c.fillRect(-M, y, W + 2 * M, 200); c.fillStyle = '#c8bfa8'; c.fillRect(-M, y, W + 2 * M, 12);
+    c.fillStyle = '#5a5048'; for (let k = 0; k < 40; k++) c.fillRect(-M + k * 40, 570, 18, 28); c.fillStyle = '#8a8a8a'; c.fillRect(-M, 572, W + 2 * M, 5); c.fillRect(-M, 590, W + 2 * M, 5);
+    line(1000, y + 10, 1000, y - 150, '#3a3a3a', 5); c.fillStyle = '#c0392b'; c.fillRect(992, y - 150, 50, 14); c.fillStyle = '#f2f2f2'; c.fillRect(1018, y - 150, 6, 14); });
   D(0.45, () => drawCat3({ x: 320, y: 548, s: 1.0, pose: lt < 2.1 ? sit3(lt, groom3(lt, 0.1, 2.15)) : sit3(lt, { ...exSeq(lt, [[0, 'content'], [2, 'curious']]), hr: lt > 2 ? 0.25 : -0.1, ts: 1.4 }), emote: emoAt(lt, [[2.2, 3.4, 'note']]) }));
 });
 /* T16 客家茶園 */
