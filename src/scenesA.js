@@ -6,13 +6,31 @@ function tower101(x, y, h, o = {}) {
   seg(70 * u, 66 * u, y, y - 34 * u); seg(46 * u, 36 * u, y - 34 * u, y - 120 * u);
   for (let k = 0; k < 8; k++) {
     const yb = y - 120 * u - k * 30 * u; seg(30 * u, 44 * u, yb, yb - 30 * u);
-    if (o.night) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,${190 + k * 6},${120 + k * 10},0.5)`; c.fillRect(x - 15 * u, yb - 6 * u, 30 * u, 3 * u); c.fillStyle = 'rgba(255,220,170,0.25)'; c.fillRect(x - 20 * u, yb - 22 * u, 40 * u, 2 * u); c.restore(); }
+    if (o.night) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = 'rgba(120,200,255,0.42)'; c.fillRect(x - 21 * u, yb - 29 * u, 42 * u, 27 * u); c.fillStyle = 'rgba(210,245,255,0.7)'; c.fillRect(x - 22 * u, yb - 30 * u, 44 * u, 2.4 * u);
+      for (let w = 0; w < 6; w++) c.fillRect(x - 13 * u + w * 5.2 * u, yb - 24 * u, 1.2 * u, 18 * u); c.restore(); }
     else { c.fillStyle = 'rgba(255,255,255,0.12)'; c.fillRect(x - 18 * u, yb - 14 * u, 36 * u, 1.2 * u); }
   }
   const tp = y - 360 * u; seg(30 * u, 24 * u, tp, tp - 22 * u); seg(18 * u, 14 * u, tp - 22 * u, tp - 36 * u);
   line(x, tp - 36 * u, x, tp - 92 * u, Dc, 2.2 * u);
   return tp - 92 * u;
 }
+/* Xinyi district towers around 101 as seen from Xiangshan: Nanshan Plaza (dark slab, right), the Farglory/Cathay towers,
+   with lit crowns at night */
+function xinyiTowers(y, night, c1, c2) {
+  const T = [[742, 150, 26, 'cyan'], [776, 118, 22, 'white'], [906, 216, 40, 'nanshan'], [960, 128, 24, 'magenta'], [996, 168, 30, 'white'], [1046, 112, 22, 'gold'], [700, 96, 26, 'gold'], [1100, 140, 26, 'cyan'], [640, 84, 30, 'white'], [1150, 92, 30, 'gold']];
+  const crown = { cyan: '120,220,255', white: '240,245,255', magenta: '255,120,210', gold: '255,200,120', nanshan: '255,255,255' };
+  const r = rng(77);
+  T.forEach(([x, h, w, kind]) => { c.fillStyle = kind === 'nanshan' ? mix(c1, '#000000', 0.25) : mix(c1, c2, r()); c.fillRect(x - w / 2, y - h, w, h + 40);
+    if (kind === 'nanshan') { c.fillStyle = mix(c1, c2, 0.6); c.fillRect(x - w / 2, y - h - 10, w * 0.62, 12); }
+    if (night) { for (let yy = y - h + 8; yy < y; yy += 4) for (let xx = x - w / 2 + 2; xx < x + w / 2 - 2; xx += 3) if (r() < (kind === 'nanshan' ? 0.08 : 0.3)) { c.fillStyle = `rgba(255,${210 + r() * 40},${160 + r() * 80},${0.35 + r() * 0.5})`; c.fillRect(xx, yy, 1.4, 1.8); }
+      c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(${crown[kind]},0.75)`; c.fillRect(x - w / 2, y - h, w, kind === 'nanshan' ? 3 : 6); glow(x, y - h, w * 1.1, crown[kind], 0.25); c.restore(); }
+    else { c.fillStyle = 'rgba(255,230,210,0.18)'; c.fillRect(x - w / 2, y - h, w * 0.4, h); } });
+}
+/* dense city lights spread over the basin floor (night) */
+function cityLights(y0, y1, n, seed) { const r = rng(seed); c.save(); c.globalCompositeOperation = 'lighter';
+  for (let k = 0; k < n; k++) { const pr = Math.pow(r(), 0.7), y = y0 + pr * (y1 - y0), x = r() * (W + 2 * M) - M, cool = r() < 0.35, col = cool ? '200,230,255' : r() < 0.08 ? '255,90,90' : `255,${190 + r() * 50},${120 + r() * 60}`;
+    c.fillStyle = `rgba(${col},${0.35 + r() * 0.55})`; c.fillRect(x, y, 1 + pr * 1.4, 1 + pr * 1.2); }
+  c.restore(); }
 function skyline(y, seed, c1, c2, o = {}) {
   const r = rng(seed); let x = -M;
   while (x < W + M) {
@@ -22,6 +40,9 @@ function skyline(y, seed, c1, c2, o = {}) {
     x += w + r() * 2;
   }
 }
+/* overhanging tree branch silhouette in the top-right corner (clear of the location card) (Xiangshan viewpoint), leaves sway gently */
+function treeBranch(col, a0) { c.save(); c.translate(W, 0); c.scale(-1, 1); c.fillStyle = col; c.strokeStyle = col; c.lineCap = 'round'; c.lineWidth = 9; c.beginPath(); c.moveTo(-M, 60); c.quadraticCurveTo(80, 70, 190, 132); c.stroke(); c.lineWidth = 5; c.beginPath(); c.moveTo(70, 80); c.quadraticCurveTo(110, 120, 120, 170); c.stroke(); c.beginPath(); c.moveTo(150, 112); c.quadraticCurveTo(230, 120, 280, 150); c.stroke();
+  const r = rng(91); for (let k = 0; k < 90; k++) { const t = r(), bx = lerp(-M, 280, t), by = 60 + t * 90 + (r() - 0.5) * 70, sw = Math.sin(T * 1.2 + k) * 1.5; c.beginPath(); c.ellipse(bx + sw, by, 7 + r() * 9, 4 + r() * 5, r() * 3, 0, TAU); c.fill(); } c.restore(); }
 function rockFG(pts, top, bot, rim, seed) {
   poly(pts); c.fillStyle = vg(Math.min(...pts.map(p => p[1])), H, [[0, top], [1, bot]]); c.fill();
   c.save(); poly(pts); c.clip(); const r = rng(seed);
@@ -73,6 +94,40 @@ function palm(x, y, h, seed, col = '#1e1a1c') {
     for (let j = 1; j < 7; j++) { const u = j / 7, px = lerp(tx, ex, u), py = lerp(ty, ey, u) - Math.sin(u * Math.PI) * h * 0.05; c.lineWidth = h * 0.008; c.beginPath(); c.moveTo(px, py); c.lineTo(px + Math.cos(a + 1.3) * h * 0.06 * (1 - u * 0.5), py + h * 0.07); c.moveTo(px, py); c.lineTo(px + Math.cos(a - 1.3) * h * 0.05, py + h * 0.07); c.stroke(); }
   }
 }
+/* Lotus Pond's dragon: green scaled body coiled in front of its pagoda, head raised with a red open mouth, gold horns,
+   whiskers and a white beard; the tiger: orange with black stripes, white muzzle and chest, mouth wide open */
+function lpDragon(x, y, s) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  const body = [[-120, -6], [-90, -30], [-50, -14], [-14, -40], [20, -24], [40, -50]];
+  c.strokeStyle = '#2e8a5a'; c.lineCap = 'round'; c.lineWidth = 30; c.beginPath(); body.forEach(([px, py], k) => k ? c.lineTo(px, py) : c.moveTo(px, py)); c.stroke();
+  c.strokeStyle = '#4fb07a'; c.lineWidth = 18; c.stroke(); c.strokeStyle = '#f2c84a'; c.lineWidth = 6; c.beginPath(); body.forEach(([px, py], k) => k ? c.lineTo(px, py - 10) : c.moveTo(px, py - 10)); c.stroke();
+  for (let k = 0; k < 14; k++) { const t = k / 13, px = lerp(-120, 40, t), py = -18 - Math.sin(t * 9) * 12; disc(px, py, 3, 'rgba(255,240,180,0.5)'); }
+  // head
+  c.fillStyle = '#3a9a66'; c.beginPath(); c.ellipse(64, -74, 44, 30, -0.3, 0, TAU); c.fill();
+  c.fillStyle = '#b8261e'; c.beginPath(); c.moveTo(66, -64); c.quadraticCurveTo(108, -60, 116, -40); c.quadraticCurveTo(96, -26, 70, -40); c.closePath(); c.fill();                 // open mouth
+  c.fillStyle = '#5a0e0a'; c.beginPath(); c.ellipse(90, -48, 16, 9, 0.2, 0, TAU); c.fill(); for (let k = 0; k < 5; k++) poly([[76 + k * 8, -60], [79 + k * 8, -52], [82 + k * 8, -60]], '#ffffff');
+  c.fillStyle = '#f4f0e6'; c.beginPath(); c.moveTo(60, -40); c.quadraticCurveTo(70, -10, 90, -14); c.quadraticCurveTo(80, -30, 74, -40); c.closePath(); c.fill();              // beard
+  disc(70, -86, 8, '#ffffff'); disc(72, -86, 4.5, '#1a1a1a'); disc(73, -87, 1.5, '#ffffff');
+  c.strokeStyle = '#f2c84a'; c.lineWidth = 5; c.beginPath(); c.moveTo(48, -98); c.quadraticCurveTo(36, -126, 18, -134); c.moveTo(60, -100); c.quadraticCurveTo(56, -130, 44, -142); c.stroke();
+  c.strokeStyle = '#e8a83a'; c.lineWidth = 2; c.beginPath(); c.moveTo(100, -66); c.quadraticCurveTo(130, -90, 150, -80); c.moveTo(104, -58); c.quadraticCurveTo(136, -60, 150, -44); c.stroke();
+  c.fillStyle = '#d24a2a'; for (let k = 0; k < 6; k++) poly([[30 - k * 8, -96 + k * 6], [24 - k * 8, -116 + k * 6], [20 - k * 8, -94 + k * 6]], '#d24a2a');                      // mane
+  c.restore();
+}
+function lpTiger(x, y, s) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  c.fillStyle = '#e4902e'; c.beginPath(); c.ellipse(40, -34, 80, 34, 0, 0, TAU); c.fill();                                                                  // crouched body
+  c.strokeStyle = '#2a1a10'; c.lineWidth = 5; c.lineCap = 'round'; for (let k = 0; k < 7; k++) { c.beginPath(); c.moveTo(-10 + k * 18, -66); c.quadraticCurveTo(-4 + k * 18, -44, -12 + k * 18, -24); c.stroke(); }
+  c.fillStyle = '#f2ece0'; c.beginPath(); c.ellipse(20, -12, 50, 12, 0, 0, TAU); c.fill();
+  // head, facing left toward the visitors
+  c.fillStyle = '#ea9a34'; c.beginPath(); c.ellipse(-30, -66, 44, 40, 0, 0, TAU); c.fill(); [-1, 1].forEach(sd => { c.beginPath(); c.ellipse(-30 + sd * 30, -100, 12, 12, 0, 0, TAU); c.fill(); disc(-30 + sd * 30, -100, 6, '#f2c0a0'); });
+  c.fillStyle = '#f4efe4'; c.beginPath(); c.ellipse(-46, -48, 30, 22, 0, 0, TAU); c.fill();
+  c.fillStyle = '#b8261e'; c.beginPath(); c.ellipse(-56, -40, 22, 16, 0, 0, TAU); c.fill(); c.fillStyle = '#5a0e0a'; c.beginPath(); c.ellipse(-56, -38, 14, 10, 0, 0, TAU); c.fill();      // open mouth
+  for (let k = 0; k < 4; k++) { poly([[-70 + k * 9, -54], [-67 + k * 9, -46], [-64 + k * 9, -54]], '#ffffff'); poly([[-70 + k * 9, -26], [-67 + k * 9, -32], [-64 + k * 9, -26]], '#ffffff'); }
+  c.strokeStyle = '#2a1a10'; c.lineWidth = 4; for (let k = 0; k < 3; k++) { c.beginPath(); c.moveTo(-50 + k * 14, -104); c.lineTo(-46 + k * 12, -88); c.stroke(); }
+  [-1, 1].forEach(sd => { disc(-30 + sd * 16, -76, 7, '#fff4c0'); disc(-30 + sd * 16, -76, 3.5, '#1a1a1a'); });
+  disc(-48, -62, 5, '#3a2014');
+  c.restore();
+}
 function pagoda(x, y, h, wall, roof, n = 7) {
   const sh = h / (n + 1.2);
   for (let k = 0; k < n; k++) {
@@ -99,7 +154,7 @@ SCENES.push({ county: '臺北市', place: '象山', sun: () => [880, 470, 0.45],
     L('sky', 0, () => { sky([[0, '#17223d'], [0.3, '#3b4872'], [0.52, '#a27c88'], [0.64, '#eba985'], [0.74, '#f6cd9c'], [1, '#f3dcb8']]); glow(880, 470, 520, '255,185,140', 0.35); stars(80, 1, 220, 0.6);
       stratus(420, 260, 900, 50, 'rgba(235,160,160,0.35)'); stratus(980, 310, 700, 36, 'rgba(255,195,160,0.45)'); stratus(700, 360, 1100, 30, 'rgba(255,210,170,0.35)'); });
     L('far', 0.08, () => mountain({ base: 470, amp: 120, f: 0.0032, seed: 1, oct: 5, top: '#6c6e92', bot: '#b9949b', haze: 'rgba(240,180,160,0.45)', rim: 'rgba(255,200,170,0.5)' }), { blur: 1.2 });
-    L('city', 0.3, () => { skyline(540, 7, '#575a7a', '#857b96', { hmin: 14, hvar: 70, win: 0.05 }); tower101(860, 540, 360, { light: '#8d8fae', dark: '#4d5170' });
+    L('city', 0.3, () => { skyline(540, 7, '#575a7a', '#857b96', { hmin: 14, hvar: 70, win: 0.05 }); xinyiTowers(540, false, '#5d5f80', '#7f7896'); tower101(860, 540, 360, { light: '#8d8fae', dark: '#4d5170' });
       c.fillStyle = vg(440, 560, [[0, 'rgba(236,170,160,0)'], [1, 'rgba(236,180,165,0.6)']]); c.fillRect(-M, 440, W + 2 * M, 140); }, { blur: 0.6 });
     D(0.3, () => { const blink = Math.sin(T * 3) > 0.3; if (blink) glow(860, 540 - 360 * 1.0, 10, '255,60,50', 0.9); });
     L('mist', 0.36, () => { for (let k = 0; k < 7; k++) stratus(k * 230 - 40, 520 + (k % 3) * 14, 520, 26, 'rgba(255,225,215,0.55)'); }, { blur: 5, dx: lt * 7 });
@@ -108,7 +163,8 @@ SCENES.push({ county: '臺北市', place: '象山', sun: () => [880, 470, 0.45],
       rockFG(pts, '#3a3140', '#120f16', 'rgba(255,175,135,0.65)', 3);
       bushes(40, -M, 250, x => 470 + Math.abs(x - 140) * 0.18, 4, '#1a1820', '#2b2632', 16);
     });
-    D(0.92, () => { grassTufts(505, 530, 60, ['#3a3040', '#4a3c48', '#5b4650'], 5, 1, 12); actCat({ x: 410, y: 524, s: 1.05, pose: 'sit', sil: true, rim: '255,185,140', look: -0.06, blink: blinkAt(lt) }); });
+    D(0.92, () => { grassTufts(505, 530, 50, ['#3a3040', '#4a3c48', '#5b4650'], 5, 1, 12, [-M, 455]); actCat({ x: 410, y: 524, s: 1.05, pose: 'sit', sil: true, rim: '255,185,140', look: -0.06, blink: blinkAt(lt) }); });
+    D(1, () => treeBranch('#141018', 0));
   } });
 
 /* 1 — 新北市 九份 rain at dusk */
@@ -239,20 +295,55 @@ SCENES.push({ county: '宜蘭縣', place: '外澳海灘 · 龜山島', sun: lt =
   } });
 
 /* 4 — 花蓮縣 清水斷崖 */
-SCENES.push({ county: '花蓮縣', place: '清水斷崖', en: 'Qingshui Cliffs', ll: '24.21°N 121.66°E', cam: [1.03, 1.1, 30, -20, 0, 0],
+/* Qingshui cliffs from the Huide viewpoint: sheer green-capped cliffs falling straight into the Pacific, ridge after
+   ridge receding into the haze, turquoise water and a white surf line along the narrow gravel beach at their foot,
+   the Suhua highway slipping into a tunnel portal, and the wooden viewing deck in front. */
+function qsCliff(x0, ySea, yTop, seed, haze, o = {}) {
+  // profile: sheer face rising from the sea at x0, rounded shoulder, ridge running off to the right
+  const ridge = x => yTop + (x - x0 - 60) * 0.12 + (fbm1(x * 0.008 + seed) - 0.5) * 60;
+  const face = y => x0 + (ySea - y) * (o.lean ?? 0.18) + (fbm1(y * 0.02 + seed * 2) - 0.5) * 22;
+  const pts = []; for (let y = ySea; y >= yTop + 30; y -= 6) pts.push([face(y), y]);
+  for (let x = face(yTop + 30) + 10; x <= W + M + 20; x += 10) pts.push([x, Math.min(ridge(x), ySea)]);
+  pts.push([W + M + 20, ySea + 2], [x0 - 20, ySea + 2]);
+  const rock = hexMix2(o.rock || '#8c8a80', '#c4d2d8', haze), green = hexMix2('#3f6b3a', '#a8bcc0', haze), green2 = hexMix2('#7aa25c', '#c0d0d0', haze);
+  c.save(); poly(pts); c.fillStyle = vg(yTop, ySea, [[0, green], [0.45, hexMix2('#4c7442', '#b0c2c4', haze)], [1, rock]]); c.fill(); c.clip();
+  const r = rng(seed);
+  // vertical rock striations on the lower face
+  for (let k = 0; k < 160; k++) { const y = yTop + 60 + r() * (ySea - yTop - 60), x = face(y) + r() * 160; c.strokeStyle = `rgba(${r() < 0.5 ? '40,38,34' : '230,228,220'},${(0.12 + r() * 0.12) * (1 - haze)})`; c.lineWidth = 1 + r() * 2; c.beginPath(); c.moveTo(x, y); c.lineTo(x + (r() - 0.5) * 6, y + 14 + r() * 40); c.stroke(); }
+  // shadow on the side facing away from the light
+  c.fillStyle = `rgba(20,30,40,${0.22 * (1 - haze)})`; c.beginPath(); c.moveTo(face(ySea) - 30, ySea); for (let y = ySea; y >= yTop + 30; y -= 6) c.lineTo(face(y) + 26, y); c.lineTo(face(yTop + 30) - 30, yTop + 30); c.closePath(); c.fill();
+  // forest canopy clinging to the upper slopes
+  for (let k = 0; k < (o.n || 900); k++) { const x = x0 + r() * (W + M - x0), yr = Math.min(ridge(x), ySea), y = yr + Math.pow(r(), 1.6) * (ySea - yr) * 0.75; if (x < face(y) + 4) continue; oval(x, y, (3 + r() * 6) * (o.sc || 1), (2 + r() * 4) * (o.sc || 1), 0, mix(green, green2, r(), 0.9)); }
+  c.restore();
+  // gravel beach and surf at the foot
+  c.fillStyle = hexMix2('#b8b2a4', '#d8e0e2', haze); c.beginPath(); c.moveTo(face(ySea) - 30, ySea + 1); c.lineTo(W + M, ySea + 1); c.lineTo(W + M, ySea + 4 * (o.sc || 1)); c.lineTo(face(ySea) - 30, ySea + 4 * (o.sc || 1)); c.closePath(); c.fill();
+  return { face, ridge };
+}
+function hexMix2(a, b, t) { const A = hx(a), B = hx(b); return '#' + [0, 1, 2].map(i => Math.round(lerp(A[i], B[i], clamp(t))).toString(16).padStart(2, '0')).join(''); }
+SCENES.push({ county: '花蓮縣', place: '清水斷崖', sun: () => [260, 120, 0.45], en: 'Qingshui Cliffs', ll: '24.21°N 121.66°E', cam: [1.03, 1.1, 30, -20, 0, 0],
   sub: ['花蓮的斷崖，一路從山落進海裡。', 'In Hualien, the cliffs fall straight from the mountains into the sea.'],
   draw(lt) {
     const sea = 470;
-    L('sky', 0, () => { sky([[0, '#5d93c4'], [0.6, '#b9d4e3'], [1, '#e3ebe8']]); cumulus(320, 230, 280, 70, 51, '#ffffff', '#cdd7e2', -0.2); stratus(800, 300, 900, 40, 'rgba(255,255,255,0.4)'); }, { blur: 2 });
-    L('ocean', 0.1, () => { c.fillStyle = vg(sea - 160, H, [[0, '#8fb8cc'], [0.25, '#3f8fb0'], [1, '#1f6f8c']]); c.fillRect(-M, 310, W + 2 * M, H); });
-    D(0.1, () => shimmer(320, H, 200, '255,255,255', 52, { a: 0.35, len: 16 }));
-    L('h1', 0.12, () => headland(260, 330, 0.55, 53, '#7f9eac', '#93aeb7', { haze: 'rgba(170,200,210,0.6)' }), { blur: 1.2 });
-    L('h2', 0.22, () => headland(420, 380, 0.85, 54, '#6e8f84', '#7d9a92', { tex: 'mixed', dark: '#4d6e64', mid: '#6b8b7f', light: '#9fb7a6', haze: 'rgba(160,190,200,0.45)' }), { blur: 0.6 });
-    L('h3', 0.45, () => { headland(640, sea, 1.1, 55, '#5f7d55', '#8f8c80', { tex: 'mixed', dark: '#3c5a3a', mid: '#58784e', light: '#8eae7c', depth: 90, n: 2400, r: 3.5, rn: 1600 });
-      c.strokeStyle = 'rgba(240,240,235,0.7)'; c.lineWidth = 3; c.beginPath(); c.moveTo(700, 404); c.lineTo(1400, 300); c.stroke(); c.fillStyle = '#2c2c2c'; c.beginPath(); c.ellipse(760, 398, 8, 6, 0, Math.PI, 0); c.fill(); });
-    D(0.45, () => { [[420, 380], [640, sea]].forEach(([x, y], i) => { for (let k = 0; k < 4; k++) { const u = mod(lt * 0.35 + k / 4 + i * 0.3, 1); c.strokeStyle = `rgba(255,255,255,${(1 - u) * 0.7})`; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 30 - u * 60, y + 2 + u * 10); c.quadraticCurveTo(x + 60, y + 4 + u * 12, x + 200, y - 20 + u * 6); c.stroke(); } }); });
+    L('sky', 0, () => { sky([[0, '#4f8fcb'], [0.55, '#a9cde4'], [1, '#e2eef0']]); cumulus(300, 220, 300, 64, 51, '#ffffff', '#cdd7e2', -0.2); stratus(900, 250, 900, 50, 'rgba(255,255,255,0.5)'); }, { blur: 2 });
+    L('ocean', 0.1, () => { c.fillStyle = vg(300, H, [[0, '#8fc0d6'], [0.12, '#2f86bf'], [0.6, '#1f6aa8'], [1, '#16558c']]); c.fillRect(-M, 300, W + 2 * M, H); }, { blur: 0.5 });
+    D(0.1, () => shimmer(320, H, 220, '255,255,255', 52, { a: 0.35, len: 16 }));
+    // ridges receding into the haze
+    L('c1', 0.1, () => qsCliff(470, 318, 200, 53, 0.78, { n: 300, sc: 0.5, lean: 0.1 }), { blur: 1.4 });
+    L('c2', 0.18, () => qsCliff(560, 352, 150, 54, 0.55, { n: 500, sc: 0.65, lean: 0.12 }), { blur: 0.9 });
+    L('c3', 0.3, () => qsCliff(680, 404, 90, 57, 0.3, { n: 900, sc: 0.85, lean: 0.14 }), { blur: 0.4 });
+    // turquoise shallows along each foot of the cliffs, under the near cliff
+    L('shallow', 0.3, () => { [[470, 320, 380], [560, 355, 520], [680, 408, 680]].forEach(([x, y, w]) => { c.fillStyle = 'rgba(90,200,205,0.5)'; c.beginPath(); c.moveTo(x - 40, y + 2); c.lineTo(W + M, y + 2); c.lineTo(W + M, y + 10 + w * 0.02); c.lineTo(x - 20, y + 10); c.closePath(); c.fill(); }); }, { blur: 6 });
+    L('near', 0.45, () => { const C = qsCliff(800, sea, 20, 55, 0.0, { n: 2200, sc: 1.1, lean: 0.2 });
+      // Suhua highway: a ledge cut into the face, disappearing into an arched tunnel portal
+      const ty = 380, tx = C.face(ty) + 10; c.fillStyle = '#b8b4aa'; c.beginPath(); c.moveTo(tx - 4, ty + 10); c.lineTo(W + M, ty - 40); c.lineTo(W + M, ty - 28); c.lineTo(tx - 4, ty + 22); c.closePath(); c.fill(); line(tx, ty + 10, W + M, ty - 40, '#e8e6e0', 1.5);
+      c.fillStyle = '#d6d2c8'; c.beginPath(); c.moveTo(tx + 60, ty + 4); c.lineTo(tx + 60, ty - 22); c.arc(tx + 80, ty - 22, 20, Math.PI, 0); c.lineTo(tx + 100, ty - 2); c.closePath(); c.fill();
+      c.fillStyle = '#1e1c1a'; c.beginPath(); c.moveTo(tx + 66, ty + 2); c.lineTo(tx + 66, ty - 22); c.arc(tx + 80, ty - 22, 14, Math.PI, 0); c.lineTo(tx + 94, ty); c.closePath(); c.fill(); });
+    D(0.45, () => { const u = mod(lt * 0.18, 1), x = lerp(1330, 880, u), y = lerp(338, 390, u); if (u < 0.92) { c.fillStyle = '#d23a2e'; c.fillRect(x - 7, y - 6, 14, 6); c.fillStyle = 'rgba(30,40,60,0.7)'; c.fillRect(x - 4, y - 9, 8, 3); } });
+    // surf breaking along the foot of each cliff
+    D(0.45, () => { [[470, 318, 0.4], [560, 352, 0.6], [680, 404, 0.8], [800, sea, 1]].forEach(([x, y, k], i) => { for (let w = 0; w < 4; w++) { const u = mod(lt * 0.3 + w / 4 + i * 0.2, 1); c.strokeStyle = `rgba(255,255,255,${(1 - u) * 0.75 * k})`; c.lineWidth = 2 * k; c.beginPath(); c.moveTo(x - 10 - u * 40 * k, y + 2 + u * 6 * k); c.quadraticCurveTo(x + 200 * k, y + 4 + u * 4 * k, W + M, y + 6 * k); c.stroke(); } }); });
+    // wooden viewing deck in the foreground
     L('fg', 0.95, () => { const pts = [[-M, H], [-M, 520], [80, 512], [210, 530], [330, 560], [420, 610], [470, H]]; rockFG(pts, '#5a5650', '#2c2a28', 'rgba(255,250,235,0.4)', 56); bushes(40, -M, 300, x => 515 + Math.max(0, x - 80) * 0.2, 57, '#3d5a35', '#6d8f58', 12);
-      c.strokeStyle = '#d8d4cc'; c.lineWidth = 3; line(-M, 498, 300, 520, '#cfcac0', 3); for (let k = 0; k < 6; k++) line(-60 + k * 64, 500 + k * 3.6, -60 + k * 64, 528 + k * 3.6, '#bdb8ae', 3); });
+      c.fillStyle = '#7a5434'; c.fillRect(-M, 494, 360, 7); c.fillStyle = '#5e3f26'; c.fillRect(-M, 500, 360, 2); for (let k = 0; k < 7; k++) { c.fillStyle = '#6a4a2e'; c.fillRect(-60 + k * 60, 494, 7, 36); } c.fillStyle = '#7a5434'; c.fillRect(-M, 512, 360, 5); });
     D(0.95, () => actCat({ x: 180, y: 524, s: 1.05, pose: 'sit', rim: '255,255,240', look: -0.12, blink: blinkAt(lt, 5) }));
     D(0.4, () => flock(3, 700, 230, -14, 0.7, 'rgba(40,50,60,0.8)', 58, lt));
   } });
@@ -301,10 +392,11 @@ SCENES.push({ county: '高雄市', place: '蓮池潭龍虎塔', en: 'Dragon & Ti
       mountain({ base: 400, amp: 50, f: 0.004, seed: 83, top: '#8fa3a8', bot: '#a7b4b2', haze: 'rgba(220,220,215,0.5)' });
       skyline(hz, 84, '#9ea6a6', '#c2c2b8', { hmin: 8, hvar: 34 });
       bushes(120, -M, W + M, () => hz - 6, 85, '#3f5a3a', '#6f8c56', 10);
-      pagoda(560, hz, 260, '#e7c35a', '#c75b2c'); pagoda(740, hz, 260, '#e7c35a', '#c75b2c');
-      // dragon (left) & tiger (right) gates
-      c.save(); c.translate(500, hz); poly([[-60, 0], [-50, -40], [-20, -70], [10, -64], [20, -40], [40, -20], [30, 0]], '#3f8d6a'); poly([[10, -64], [34, -76], [44, -60], [24, -44]], '#4fa37b'); oval(-5, -18, 16, 18, 0, '#2a2a2a'); disc(28, -66, 3, '#f2d24a'); poly([[-20, -70], [-26, -88], [-12, -74]], '#d94c3a'); c.restore();
-      c.save(); c.translate(800, hz); poly([[-30, 0], [-36, -36], [-14, -62], [16, -66], [40, -46], [60, 0]], '#e39b3a'); for (let k = 0; k < 5; k++) line(-26 + k * 16, -54 + k * 4, -18 + k * 16, -20, '#3a2414', 3); oval(10, -18, 16, 18, 0, '#2a2a2a'); disc(-4, -52, 3, '#2a2a2a'); disc(14, -54, 3, '#2a2a2a'); c.restore();
+      pagoda(590, hz, 290, '#e7c35a', '#c75b2c'); pagoda(710, hz, 290, '#e7c35a', '#c75b2c');
+      // the giant dragon (left) and tiger (right) whose open mouths are the pagoda entrances
+      lpDragon(520, hz + 4, 1); lpTiger(780, hz + 4, 1);
+      // zig-zag bridges out to the mouths
+      c.fillStyle = '#d8cdb8'; c.fillRect(380, hz - 4, 150, 8); c.fillRect(770, hz - 4, 160, 8); for (let k = 0; k < 14; k++) { c.fillStyle = '#c4402f'; c.fillRect(384 + k * 11, hz - 14, 2, 10); c.fillRect(774 + k * 11, hz - 14, 2, 10); } line(380, hz - 14, 530, hz - 14, '#c4402f', 2); line(770, hz - 14, 930, hz - 14, '#c4402f', 2);
     };
     L('scene', 0.3, scene);
     L('water', 0.3, () => { c.fillStyle = vg(hz, H, [[0, '#7c9c8a'], [1, '#3d5a50']]); c.fillRect(-M, hz, W + 2 * M, H); });
