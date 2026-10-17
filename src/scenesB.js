@@ -25,16 +25,23 @@ function persimmonRack(x, y, w, rows, cols, s) {
 }
 function windLion(x, y, s) {
   c.save(); c.translate(x, y); c.scale(s, s);
-  c.fillStyle = hg(-40, 40, [[0, '#b7ab98'], [1, '#6f6656']]); c.fillRect(-36, -30, 72, 30); c.fillRect(-42, -36, 84, 8);
-  const st = hg(-30, 30, [[0, '#cfc2a9'], [0.6, '#a4977f'], [1, '#6e6352']]);
-  c.fillStyle = st; c.beginPath(); c.moveTo(-18, -36); c.lineTo(-22, -110); c.quadraticCurveTo(-26, -150, 0, -158); c.quadraticCurveTo(28, -150, 22, -110); c.lineTo(18, -36); c.closePath(); c.fill();
-  poly([[-22, -126], [22, -126], [30, -60], [-30, -60]], '#c8302a'); poly([[-22, -126], [22, -126], [16, -110], [-16, -110]], '#e04a3a');
-  for (let k = 0; k < 16; k++) { const a = k / 16 * TAU; const g = c.createRadialGradient(Math.cos(a) * 25 - 2, -150 + Math.sin(a) * 23 - 2, 1, Math.cos(a) * 25, -150 + Math.sin(a) * 23, 9); g.addColorStop(0, '#bdb09a'); g.addColorStop(1, '#6e6352'); c.fillStyle = g; c.beginPath(); c.arc(Math.cos(a) * 25, -150 + Math.sin(a) * 23, 9, 0, TAU); c.fill(); }
-  const fg = c.createRadialGradient(-6, -156, 2, 0, -148, 24); fg.addColorStop(0, '#d8ccb4'); fg.addColorStop(1, '#8e8370'); c.fillStyle = fg; c.beginPath(); c.ellipse(0, -149, 21, 20, 0, 0, TAU); c.fill();
-  [-8, 8].forEach(ex => { oval(ex, -156, 6, 5, 0, '#efe9dc'); disc(ex + 1, -155.5, 2.8, '#1e1a16'); oval(ex, -161, 7, 2, 0, 'rgba(90,80,65,0.7)'); });
-  oval(0, -147, 6, 4, 0, '#7d7262'); disc(-3, -146, 1.4, '#2b2620'); disc(3, -146, 1.4, '#2b2620');
-  c.fillStyle = '#7b2420'; c.beginPath(); c.ellipse(0, -136, 12, 6, 0, 0, Math.PI); c.fill(); c.fillStyle = '#efe9dc'; for (let k = -2; k <= 2; k++) c.fillRect(k * 4 - 1, -136, 2.4, 3);
-  line(-18, -96, -26, -70, '#a4977f', 9); line(18, -96, 26, -70, '#a4977f', 9);
+  // carved granite plinth
+  c.fillStyle = hg(-46, 46, [[0, '#cfc6b4'], [1, '#8a8270']]); c.fillRect(-44, -34, 88, 34); c.fillStyle = '#b8ae9a'; c.fillRect(-50, -40, 100, 8); c.fillStyle = 'rgba(60,54,44,0.35)'; c.fillRect(-30, -26, 60, 16);
+  // standing body: weathered granite, slightly tapering, legs and front paws carved in relief
+  const st = hg(-34, 34, [[0, '#d6ccb6'], [0.55, '#ada28c'], [1, '#746a58']]);
+  c.fillStyle = st; c.beginPath(); c.moveTo(-26, -40); c.lineTo(-30, -150); c.quadraticCurveTo(-34, -186, 0, -192); c.quadraticCurveTo(34, -186, 30, -150); c.lineTo(26, -40); c.closePath(); c.fill();
+  c.strokeStyle = 'rgba(70,62,50,0.45)'; c.lineWidth = 2; line(0, -110, 0, -42, c.strokeStyle, 2); line(-12, -62, -12, -42, c.strokeStyle, 2); line(12, -62, 12, -42, c.strokeStyle, 2);
+  [-1, 1].forEach(sd => { c.fillStyle = st; c.beginPath(); c.ellipse(sd * 14, -104, 9, 22, sd * 0.2, 0, TAU); c.fill(); for (let k = 0; k < 3; k++) disc(sd * 14 + (k - 1) * 4, -84, 2.6, '#8a806c'); });
+  const r = rng(77); for (let k = 0; k < 60; k++) disc((r() - 0.5) * 56, -50 - r() * 130, 1 + r() * 2, `rgba(${r() < 0.5 ? '60,54,44' : '240,236,226'},0.3)`);
+  // red cape tied at the neck
+  c.fillStyle = '#c8302a'; c.beginPath(); c.moveTo(-26, -148); c.quadraticCurveTo(0, -140, 26, -148); c.lineTo(36, -70); c.quadraticCurveTo(0, -60, -36, -70); c.closePath(); c.fill(); c.fillStyle = '#e24a3a'; c.beginPath(); c.moveTo(-26, -148); c.quadraticCurveTo(0, -140, 26, -148); c.lineTo(20, -134); c.quadraticCurveTo(0, -128, -20, -134); c.closePath(); c.fill();
+  c.fillStyle = '#e24a3a'; c.beginPath(); c.ellipse(0, -138, 8, 5, 0, 0, TAU); c.fill(); poly([[-4, -136], [-12, -114], [-2, -118]], '#c8302a'); poly([[4, -136], [12, -114], [2, -118]], '#c8302a');
+  // head: big round face ringed by carved mane curls
+  for (let k = 0; k < 18; k++) { const a = k / 18 * TAU; const g = c.createRadialGradient(Math.cos(a) * 30 - 2, -178 + Math.sin(a) * 27 - 2, 1, Math.cos(a) * 30, -178 + Math.sin(a) * 27, 10); g.addColorStop(0, '#cbbfa6'); g.addColorStop(1, '#746a58'); c.fillStyle = g; c.beginPath(); c.arc(Math.cos(a) * 30, -178 + Math.sin(a) * 27, 10, 0, TAU); c.fill(); }
+  const fg = c.createRadialGradient(-6, -186, 2, 0, -176, 28); fg.addColorStop(0, '#e0d6c0'); fg.addColorStop(1, '#948a76'); c.fillStyle = fg; c.beginPath(); c.ellipse(0, -177, 25, 24, 0, 0, TAU); c.fill();
+  [-9, 9].forEach(ex => { oval(ex, -186, 7, 6, 0, '#f2ece0'); disc(ex + 1, -185.5, 3.2, '#1e1a16'); oval(ex, -193, 8, 2.4, 0, 'rgba(90,80,65,0.75)'); });
+  oval(0, -175, 8, 5, 0, '#8a7f6c'); disc(-3.5, -174, 1.6, '#2b2620'); disc(3.5, -174, 1.6, '#2b2620');
+  c.fillStyle = '#7b2420'; c.beginPath(); c.ellipse(0, -162, 14, 7, 0, 0, Math.PI); c.fill(); c.fillStyle = '#f2ece0'; for (let k = -2; k <= 2; k++) c.fillRect(k * 4.6 - 1.2, -162, 2.6, 3.4);
   c.restore();
 }
 function minnanHouse(x, y, w, h, s = 1) {
@@ -304,7 +311,14 @@ SCENES.push({ county: '連江縣', place: '馬祖藍眼淚', en: 'Blue Tears of 
         c.strokeStyle = `rgba(60,170,255,${0.55 * a})`; c.lineWidth = 3; c.beginPath(); for (let x = -M; x <= W + M; x += 10) { const yy = y + Math.sin(x * 0.012 + w * 2 + lt) * 6; x === -M ? c.moveTo(x, yy) : c.lineTo(x, yy); } c.stroke();
         c.strokeStyle = `rgba(120,220,255,${0.4 * a})`; c.lineWidth = 1; c.stroke(); }
       const r = rng(245); for (let k = 0; k < 220; k++) { const x = r() * (W + 2 * M) - M, y = 450 + r() * 170, a = Math.max(0, Math.sin(T * 3 * (0.5 + r()) + k)); disc(x, y, 1 + r() * 1.5, `rgba(90,200,255,${a * 0.85})`); }
+      // blue surf breaking around the reef rocks
+      const r2 = rng(247); for (let k = 0; k < 26; k++) { const x = 420 + r2() * 860, y = 470 + r2() * 120, w = 40 + r2() * 90; r2(); const ph = mod(lt * 0.5 + k * 0.37, 1), a2 = Math.sin(ph * Math.PI);
+        c.strokeStyle = `rgba(70,190,255,${0.8 * a2})`; c.lineWidth = 3; c.beginPath(); c.ellipse(x, y + 2, w * (0.55 + ph * 0.3), 6 + ph * 6, 0, 0, Math.PI); c.stroke(); glow(x, y, w * 0.9, '40,160,255', 0.35 * a2); }
       glow(640, 560, 500, '40,140,255', 0.18); c.restore(); });
+    // reef rocks stretching out into the bay (dark granite, catching the blue glow on their edges)
+    L('reef', 0.35, () => { const r = rng(247); for (let k = 0; k < 26; k++) { const x = 420 + r() * 860, y = 470 + r() * 120, w = 40 + r() * 90, h = 20 + r() * 50 * ((y - 440) / 180);
+        c.fillStyle = vg(y - h, y, [[0, '#2a3650'], [1, '#0a0e18']]); c.beginPath(); c.moveTo(x - w / 2, y); c.quadraticCurveTo(x - w * 0.4, y - h, x - w * 0.1, y - h * 1.1); c.quadraticCurveTo(x + w * 0.3, y - h * 0.9, x + w / 2, y); c.closePath(); c.fill();
+        c.strokeStyle = 'rgba(110,200,255,0.7)'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(x - w / 2, y); c.quadraticCurveTo(x - w * 0.4, y - h, x - w * 0.1, y - h * 1.1); c.quadraticCurveTo(x + w * 0.3, y - h * 0.9, x + w / 2, y); c.stroke(); } });
     L('rock', 0.95, () => { const pts = [[-M, H], [-M, 560], [90, 548], [220, 560], [330, 590], [400, 640], [430, H]]; rockFG(pts, '#141b2a', '#06080e', 'rgba(90,190,255,0.55)', 246); });
     D(0.95, () => actCat({ x: 200, y: 556, s: 1.05, pose: 'sit', sil: true, rim: '90,190,255', look: 0.12, blink: blinkAt(lt, 19), shadow: false }));
   } });
