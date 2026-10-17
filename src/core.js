@@ -44,6 +44,7 @@ function L(key, d, painter, o = {}) {
   if (o.alpha != null) c.globalAlpha *= o.alpha;
   if (o.op) c.globalCompositeOperation = o.op;
   c.drawImage(lay, -M, 0, W + 2 * M, H); c.restore();
+  if (typeof crowdHook === 'function') crowdHook(key);   // background cats placed behind nearer layers
 }
 /* mirrored reflection of a cached layer about horizon y */
 function R(key, d, axis, alpha, painter, blur = 2, o = {}) {
