@@ -143,7 +143,7 @@ function jfAlley(z) { const { vp, l0, r0, yb } = JF; return { l: lerp(l0, vp[0] 
 SCENES.push({ county: '新北市', place: '九份老街', sun: () => [905, 300, 0.25], en: 'Jiufen Old Street', ll: '25.11°N 121.84°E', cam: [1.04, 1.1, -20, 20, 0, 0],
   sub: ['九份的雨，把燈籠洗得更紅了。', 'In Jiufen, the rain makes the lanterns glow redder.'],
   draw(lt) {
-    L('sky', 0, () => { sky([[0, '#121a2c'], [0.4, '#2c3550'], [0.62, '#5d5a70'], [0.78, '#8a7378'], [1, '#6a5a62']]); stratus(880, 260, 1000, 90, 'rgba(170,160,180,0.35)'); });
+    L('sky', 0, () => { sky([[0, '#0f2550'], [0.35, '#1d3f7a'], [0.6, '#3d5a92'], [0.78, '#6a6a98'], [1, '#5a5070']]); stratus(880, 260, 1000, 90, 'rgba(150,160,200,0.3)'); stars(30, 43, 200, 0.4); });
     L('far', 0.05, () => { c.fillStyle = vg(330, 420, [[0, '#4a5068'], [1, '#2f3448']]); c.fillRect(-M, 330, W + 2 * M, 120);
       mountain({ base: 360, amp: 110, f: 0.0042, seed: 41, oct: 4, top: '#2a3044', bot: '#3c4258', shape: (x, n) => n * Math.exp(-Math.pow((x - 980) / 220, 2)) * 1.4, haze: 'rgba(120,120,145,0.55)' });
       for (let k = 0; k < 40; k++) line(-M, 340 + k * 2.2, W + M, 340 + k * 2.2, `rgba(255,190,140,${0.03 * Math.sin(k * 0.7) ** 2})`, 1); }, { blur: 2.2 });
@@ -176,7 +176,7 @@ SCENES.push({ county: '新北市', place: '九份老街', sun: () => [905, 300, 
       c.strokeStyle = `rgba(30,18,14,${0.8 - z * 0.5})`; c.lineWidth = 1.2 * A.s + 0.3; c.beginPath(); c.moveTo(A.l, yA); c.quadraticCurveTo((A.l + A.r) / 2, yA + 40 * A.s, A.r, yA); c.stroke();
       for (let t = 1; t < n; t++) { const u = t / n, x = lerp(A.l, A.r, u), y = yA + 4 * 40 * A.s * u * (1 - u) * 0.5 + 10 * A.s; c.save(); c.globalAlpha = 1 - z * 0.45; lantern(x, y, 11 * A.s + 1.5, Math.sin(T * 1.4 + k + t) * 0.08, 1 - z * 0.4); c.restore(); } }); });
     L('tea', 0.75, () => { jfTeahouse(-70, 690, 598); });
-    D(0.75, () => { [[598 - 150, 690], [598 - 290, 680], [598 - 410, 670]].forEach(([y, x1], row) => { for (let k = 0; k * 66 < x1 + 60; k++) lantern(-40 + k * 66, y + 26, 11.5, Math.sin(T * 1.6 + k + row) * 0.07); }); });
+    D(0.75, () => { [[598 - 150, 690], [598 - 290, 680], [598 - 410, 670]].forEach(([y, x1], row) => { for (let k = 0; k * 42 < x1 + 90; k++) lantern(-60 + k * 42, y + 22 + (k % 2) * 4, 10, Math.sin(T * 1.6 + k + row) * 0.07); }); });
     // near wall on the right of the alley mouth (where the black cat shelters)
     L('right', 0.8, () => { c.fillStyle = vg(240, 600, [[0, '#2b2026'], [1, '#17121a']]); c.fillRect(1080, 250, 360, 350); for (let k = 0; k < 4; k++) { c.fillStyle = 'rgba(255,190,110,0.72)'; c.fillRect(1110 + k * 70, 300 + (k % 2) * 70, 34, 46); }
       c.fillStyle = '#120c0e'; c.beginPath(); c.moveTo(1040, 262); c.quadraticCurveTo(1060, 248, 1090, 244); c.lineTo(1400, 244); c.lineTo(1400, 262); c.closePath(); c.fill(); });

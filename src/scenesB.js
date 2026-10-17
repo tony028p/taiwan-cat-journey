@@ -102,35 +102,35 @@ SCENES.push({ county: '彰化縣', place: '彰化扇形車庫', sun: () => [1100
     L('sky', 0, () => { sky([[0, '#5f93c8'], [0.6, '#a9c6de'], [1, '#e6e2d4']]); cumulus(380, 150, 520, 70, 161, '#ffffff', '#c8d0da', 0.4); cumulus(1000, 190, 420, 54, 162, '#ffffff', '#cdd4dc', 0.4); }, { blur: 1.5 });
     L('town', 0.08, () => { const r = rng(166); for (let k = 0; k < 60; k++) { const x = r() * (W + 2 * M) - M, h = 20 + r() * 50; c.fillStyle = mix('#b8bfc6', '#d6d8d4', r()); c.fillRect(x, 340 - h, 24 + r() * 30, h); } c.fillStyle = 'rgba(225,228,226,0.55)'; c.fillRect(-M, 250, W + 2 * M, 100); }, { blur: 1.8 });
     // the fan of bays, painted from the middle (far) outwards (near) so near bays overlap far ones
-    L('house', 0.35, () => { const n = 12, ths = []; for (let k = 0; k < n; k++) ths.push(lerp(-RH.th, RH.th, (k + 0.5) / n));
+    L('house', 0.35, () => { const n = 13, ths = []; for (let k = 0; k < n; k++) ths.push(lerp(-RH.th, RH.th, (k + 0.5) / n));
       c.fillStyle = vg(330, H, [[0, '#8f897e'], [1, '#5c564c']]); c.fillRect(-M, 330, W + 2 * M, H);
-      ths.slice().sort((a, b) => Math.abs(a) - Math.abs(b)).forEach(th => { const A = rhBay(th - 0.11), B = rhBay(th + 0.11), m = rhBay(th), hA = 150 * A.sc, hB = 150 * B.sc, haze = clamp(1 - (m.sc - 0.6) / 1.4) * 0.45;
-        const wall = mix('#f0dfa4', '#c9d2d8', haze), wallS = mix('#cfb878', '#b7c0c8', haze), dark = mix('#141010', '#7c8690', haze * 0.9);
-        poly([[A.x, A.yg], [B.x, B.yg], [B.x, B.yg - hB], [A.x, A.yg - hA]], wall);
-        // pillars
-        poly([[A.x, A.yg], [lerp(A.x, B.x, 0.09), lerp(A.yg, B.yg, 0.09)], [lerp(A.x, B.x, 0.09), lerp(A.yg - hA, B.yg - hB, 0.09)], [A.x, A.yg - hA]], wallS);
-        // opening
-        const o0 = 0.16, o1 = 0.84, top = 0.78; const P = (u, v) => [lerp(A.x, B.x, u), lerp(lerp(A.yg, B.yg, u), lerp(A.yg - hA, B.yg - hB, u), v)];
-        poly([P(o0, 0), P(o1, 0), P(o1, top), P(o0, top)], dark);
-        // clerestory windows
-        for (let w = 0; w < 4; w++) { const u = 0.18 + w * 0.17; poly([P(u, 0.84), P(u + 0.11, 0.84), P(u + 0.11, 0.95), P(u, 0.95)], mix('rgba(255,255,255,0.35)', 'rgba(255,255,255,0.15)', haze)); }
-        // gable roof + vent chimney
-        const rA = P(0, 1), rB = P(1, 1), rm = P(0.5, 1); poly([[rA[0] - 4 * m.sc, rA[1]], [rm[0], rm[1] - 28 * m.sc], [rB[0] + 4 * m.sc, rB[1]]], mix('#5d5953', '#9aa2aa', haze)); line(rA[0], rA[1], rB[0], rB[1], mix('#4a4640', '#8c949c', haze), 3 * m.sc);
-        c.fillStyle = mix('#3a3634', '#8c949c', haze); c.fillRect(rm[0] - 4 * m.sc, rm[1] - 64 * m.sc, 8 * m.sc, 40 * m.sc); c.fillRect(rm[0] - 6.5 * m.sc, rm[1] - 68 * m.sc, 13 * m.sc, 6 * m.sc);
-        // engines peeking out of some bays (round smokebox fronts with a red buffer beam)
-        if (Math.abs(th) > 0.2 && hash(th * 9) < 0.6) { const f = P(0.5, 0.32), r = 30 * m.sc, steam = hash(th * 13) < 0.6;
-          if (steam) { c.fillStyle = mix('#121010', '#6c7680', haze); c.fillRect(f[0] - r * 1.2, f[1] - r * 0.4, r * 2.4, r * 1.9); const g = c.createRadialGradient(f[0] - r * 0.3, f[1] - r * 0.3, 2, f[0], f[1], r); g.addColorStop(0, mix('#4a4545', '#9aa2aa', haze)); g.addColorStop(1, mix('#141212', '#6c7680', haze)); c.fillStyle = g; c.beginPath(); c.arc(f[0], f[1], r, 0, TAU); c.fill();
-            disc(f[0], f[1], 3 * m.sc, '#8a8484'); c.fillStyle = mix('#b8352a', '#a8a0a0', haze); c.fillRect(f[0] - r * 1.25, f[1] + r * 1.15, r * 2.5, r * 0.32); }
-          else { c.fillStyle = mix('#e07a2e', '#b8b0a8', haze); c.fillRect(f[0] - r * 1.1, f[1] - r * 0.7, r * 2.2, r * 2.3); c.fillStyle = mix('#28508a', '#8c949c', haze); c.fillRect(f[0] - r * 1.1, f[1] + r * 0.6, r * 2.2, r * 0.5); c.fillStyle = 'rgba(30,40,50,0.8)'; c.fillRect(f[0] - r * 0.85, f[1] - r * 0.5, r * 0.75, r * 0.5); c.fillRect(f[0] + r * 0.1, f[1] - r * 0.5, r * 0.75, r * 0.5); }
-          glow(f[0], f[1] - r * 0.6, 10 * m.sc, '255,240,190', 0.7 * (1 - haze)); } });
-      // radiating tracks to the turntable pit
+      const locoCols = [['#e0772e', '#2c4f86'], ['#c8342a', '#e8d9a8'], ['#e0772e', '#2c4f86'], ['#1a1a1c', '#b8352a'], ['#d8402e', '#f0e6c8'], ['#2f5f9a', '#e8c04a']];
+      ths.slice().sort((a, b) => Math.abs(a) - Math.abs(b)).forEach((th, idx) => { const A = rhBay(th - 0.121), B = rhBay(th + 0.121), m = rhBay(th), hA = 120 * A.sc, hB = 120 * B.sc, haze = clamp(1 - (m.sc - 0.5) / 1.6) * 0.42;
+        const P = (u, v) => [lerp(A.x, B.x, u), lerp(lerp(A.yg, B.yg, u), lerp(A.yg - hA, B.yg - hB, u), v)], Q = (pts, col) => poly(pts.map(([u, v]) => P(u, v)), col);
+        const wall = mix('#e8c878', '#c8d0d6', haze), wallS = mix('#c4a458', '#b4bcc4', haze), band = mix('#d8b868', '#bcc4cc', haze), dark = mix('#16110e', '#7a848e', haze * 0.9), win = mix('rgba(60,70,80,0.75)', 'rgba(150,160,170,0.5)', haze);
+        Q([[0, 0], [1, 0], [1, 1], [0, 1]], wall);
+        Q([[0.17, 0], [0.83, 0], [0.83, 0.62], [0.17, 0.62]], dark);                         // tall bay opening
+        Q([[0, 0.62], [1, 0.62], [1, 0.68], [0, 0.68]], wallS);                              // lintel
+        for (let w = 0; w < 4; w++) { const u = 0.2 + w * 0.155; Q([[u, 0.73], [u + 0.11, 0.73], [u + 0.11, 0.88], [u, 0.88]], win); }   // upper-floor windows
+        Q([[0, 0.93], [1, 0.93], [1, 1.0], [0, 1.0]], band); Q([[-0.02, 1.0], [1.02, 1.0], [1.02, 1.03], [-0.02, 1.03]], mix('#9a8450', '#a8b0b8', haze));   // cornice
+        Q([[0, 0], [0.1, 0], [0.1, 1], [0, 1]], wallS);                                      // pillar
+        // cylindrical vent on top of each pillar (and the last one)
+        [0.05, ...(th === ths[n - 1] ? [0.95] : [])].forEach(u => { const b = P(u, 1.03), r = 7 * m.sc, h = 26 * m.sc; c.fillStyle = hg(b[0] - r, b[0] + r, [[0, mix('#d8b870', '#c0c8ce', haze)], [0.6, mix('#b89850', '#aab2ba', haze)], [1, mix('#8a7038', '#9aa2aa', haze)]]); c.fillRect(b[0] - r, b[1] - h, 2 * r, h); c.fillStyle = mix('#7a6434', '#9aa2aa', haze); c.fillRect(b[0] - r * 1.2, b[1] - h - 3 * m.sc, r * 2.4, 3.5 * m.sc); });
+        // locomotives standing in most bays: diesel cabs (orange / red / blue) and the odd steam engine
+        if (hash(th * 9 + 2) < 0.8 && Math.abs(th) > 0.12) { const [c1, c2] = locoCols[Math.floor(hash(th * 17) * locoCols.length)], f = P(0.5, 0.0), wv = (B.x - A.x) * 0.5, hv = hA * 0.5;
+          if (c1 === '#1a1a1c') { c.fillStyle = mix('#121010', '#6c7680', haze); c.fillRect(f[0] - wv * 0.55, f[1] - hv, wv * 1.1, hv); const g = c.createRadialGradient(f[0] - wv * 0.1, f[1] - hv * 0.7, 2, f[0], f[1] - hv * 0.6, wv * 0.36); g.addColorStop(0, mix('#4a4545', '#9aa2aa', haze)); g.addColorStop(1, mix('#141212', '#6c7680', haze)); c.fillStyle = g; c.beginPath(); c.arc(f[0], f[1] - hv * 0.6, wv * 0.36, 0, TAU); c.fill(); c.fillStyle = mix('#b8352a', '#a8a0a0', haze); c.fillRect(f[0] - wv * 0.6, f[1] - hv * 0.22, wv * 1.2, hv * 0.1); }
+          else { c.fillStyle = mix(c1, '#b8b0a8', haze); c.fillRect(f[0] - wv * 0.55, f[1] - hv, wv * 1.1, hv); c.fillStyle = mix(c2, '#a8b0b8', haze); c.fillRect(f[0] - wv * 0.55, f[1] - hv * 0.38, wv * 1.1, hv * 0.16);
+            c.fillStyle = mix('rgba(30,40,50,0.85)', 'rgba(120,130,140,0.6)', haze); c.fillRect(f[0] - wv * 0.42, f[1] - hv * 0.86, wv * 0.36, hv * 0.24); c.fillRect(f[0] + wv * 0.06, f[1] - hv * 0.86, wv * 0.36, hv * 0.24);
+            for (let st = 0; st < 5; st++) poly([[f[0] - wv * 0.55 + st * wv * 0.22, f[1] - hv * 0.12], [f[0] - wv * 0.44 + st * wv * 0.22, f[1] - hv * 0.12], [f[0] - wv * 0.5 + st * wv * 0.22, f[1]], [f[0] - wv * 0.61 + st * wv * 0.22, f[1]]], mix('#e8c04a', '#b8b8b0', haze)); }
+          glow(f[0], f[1] - hv * 0.95, 9 * m.sc, '255,240,190', 0.6 * (1 - haze)); } });
+      // radiating tracks to the turntable pit, sleepers on gravel
       ths.forEach(th => { const m = rhBay(th); for (const sd of [-1, 1]) { const off = sd * 9 * m.sc, ex = RH.cx + Math.sin(th) * 300 + sd * 6, ey = 640 - Math.cos(th) * 40;
-        line(m.x + off, m.yg, ex, ey, '#3b3632', 3 * m.sc * 0.6 + 1); line(m.x + off, m.yg, ex, ey, 'rgba(235,225,205,0.55)', 1); } });
-      // apron texture (gravel, oil stains)
-      const r = rng(167); for (let k = 0; k < 500; k++) disc(r() * (W + 2 * M) - M, 420 + r() * 300, 0.6 + r() * 1.4, `rgba(${r() < 0.5 ? '40,36,32' : '200,190,170'},${0.25 + r() * 0.2})`);
+        line(m.x + off, m.yg, ex, ey, '#3b3632', 3 * m.sc * 0.6 + 1); line(m.x + off, m.yg, ex, ey, 'rgba(235,225,205,0.6)', 1); }
+        for (let k = 1; k < 9; k++) { const u = k / 9, x = lerp(m.x, RH.cx + Math.sin(th) * 300, u), y = lerp(m.yg, 640 - Math.cos(th) * 40, u), w = 14 * lerp(m.sc, 1.6, u); line(x - w * Math.cos(th), y - w * 0.15 * Math.sin(th), x + w * Math.cos(th), y + w * 0.15 * Math.sin(th), 'rgba(70,55,40,0.55)', 2); } });
+      const r = rng(167); for (let k = 0; k < 600; k++) disc(r() * (W + 2 * M) - M, 420 + r() * 300, 0.6 + r() * 1.4, `rgba(${r() < 0.5 ? '40,36,32' : '200,190,170'},${0.25 + r() * 0.2})`);
     });
     // turntable pit and bridge with the engine
-    L('pit', 0.75, () => { c.fillStyle = vg(560, H, [[0, '#4a443c'], [1, '#2a2620']]); c.beginPath(); c.ellipse(RH.cx, 640, 380, 76, 0, 0, TAU); c.fill();
+    L('pit', 0.75, () => { c.fillStyle = vg(560, H, [[0, '#9a5a32'], [1, '#5a3420']]); c.beginPath(); c.ellipse(RH.cx, 640, 380, 76, 0, 0, TAU); c.fill();
       c.strokeStyle = '#8a8070'; c.lineWidth = 6; c.beginPath(); c.ellipse(RH.cx, 640, 380, 76, 0, Math.PI, TAU); c.stroke(); c.strokeStyle = 'rgba(30,26,22,0.7)'; c.lineWidth = 2; c.beginPath(); c.ellipse(RH.cx, 646, 360, 66, 0, 0, TAU); c.stroke();
       c.fillStyle = '#3c5548'; c.fillRect(RH.cx - 360, 596, 720, 14); c.fillStyle = '#2c4036'; c.fillRect(RH.cx - 360, 610, 720, 8); for (let k = 0; k < 36; k++) c.fillRect(RH.cx - 352 + k * 20, 590, 4, 8);
       line(RH.cx - 360, 590, RH.cx + 360, 590, '#b8b0a0', 2); line(RH.cx - 360, 584, RH.cx + 360, 584, '#b8b0a0', 2); });
@@ -184,23 +184,26 @@ SCENES.push({ county: '臺中市', place: '高美濕地', sun: lt => [560, 365 +
 /* Longteng bridge ruins in tung-blossom season: brick piers on granite footings receding across the valley, arch
    remnants hanging off them, misty ridges behind, white blossom on the hillsides, morning light through the mist. */
 function hexMix(a, b, t) { const A = hx(a), B = hx(b); return '#' + [0, 1, 2].map(i => Math.round(lerp(A[i], B[i], clamp(t))).toString(16).padStart(2, '0')).join(''); }
-function ltPier(x, yb, s, k, haze) {
-  const w = 74 * s, h = 250 * s, sb = 46 * s;
-  // granite footing
-  c.fillStyle = mix('#8d8a82', '#c8ccc8', haze); c.fillRect(x - 6 * s, yb - sb, w + 12 * s, sb); const r = rng(k * 7 + 3);
-  for (let yy = yb - sb; yy < yb; yy += 11 * s) for (let xx = x - 6 * s + ((yy / (11 * s)) % 2) * 12 * s; xx < x + w + 6 * s; xx += 24 * s) { c.strokeStyle = `rgba(60,58,54,${0.4 * (1 - haze)})`; c.lineWidth = 0.8; c.strokeRect(xx, yy, 24 * s, 11 * s); }
-  // brick shaft with weathering
-  c.fillStyle = hg(x, x + w, [[0, mix('#c47052', '#d8b8aa', haze)], [0.55, mix('#9e4c36', '#c8a49a', haze)], [1, mix('#6a2f22', '#b8968c', haze)]]); c.fillRect(x, yb - sb - h, w, h);
-  for (let yy = yb - sb - h; yy < yb - sb; yy += 4.5 * s) { line(x, yy, x + w, yy, `rgba(70,30,20,${0.35 * (1 - haze)})`, 0.7); for (let xx = x + ((yy / (4.5 * s)) % 2) * 5 * s; xx < x + w; xx += 10 * s) line(xx, yy, xx, yy + 4.5 * s, `rgba(70,30,20,${0.22 * (1 - haze)})`, 0.5); }
-  for (let t = 0; t < 6; t++) { const sx = x + r() * w; c.fillStyle = `rgba(40,30,25,${0.18 * (1 - haze)})`; c.fillRect(sx, yb - sb - h + r() * h * 0.3, 2 + r() * 4 * s, h * (0.3 + r() * 0.5)); }
-  // vegetation spilling over the top
+function ltPier(x, yb, s, k, haze, brk = 0) {
+  // pier: a tapering brick shaft on a stone band, flaring at the top into the stubs of the two broken arches
+  const w = 70 * s, h = 250 * s, fl = 60 * s, top = yb - h, stoneY = yb - h * 0.36, r = rng(k * 7 + 3);
+  const brick0 = hexMix('#d08442', '#dcc0a8', haze), brick1 = hexMix('#a85a2c', '#cca896', haze), brick2 = hexMix('#6a3218', '#b89a8a', haze);
+  const outline = (inset = 0) => { c.beginPath(); c.moveTo(x - inset, yb); c.lineTo(x - inset, top + 150 * s); c.bezierCurveTo(x - inset, top + 56 * s, x - fl * 0.35 + inset, top + 12 * s, x - fl + inset, top + (brk ? 16 : 4) * s); c.lineTo(x - fl + inset, top);
+    c.lineTo(x + w + fl - inset, top); c.lineTo(x + w + fl - inset, top + 4 * s); c.bezierCurveTo(x + w + fl * 0.35 - inset, top + 12 * s, x + w + inset, top + 56 * s, x + w + inset, top + 150 * s); c.lineTo(x + w + inset, yb); c.closePath(); };
+  c.save(); outline(); c.fillStyle = hg(x - fl, x + w + fl, [[0, brick0], [0.5, brick1], [1, brick2]]); c.fill(); c.clip();
+  for (let yy = top; yy < yb; yy += 4.5 * s) { line(x - fl, yy, x + w + fl, yy, `rgba(70,30,20,${0.32 * (1 - haze)})`, 0.7); for (let xx = x - fl + ((yy / (4.5 * s)) % 2) * 5 * s; xx < x + w + fl; xx += 10 * s) line(xx, yy, xx, yy + 4.5 * s, `rgba(70,30,20,${0.2 * (1 - haze)})`, 0.5); }
+  c.fillStyle = hexMix('#4f4a42', '#b8bcb8', haze); c.fillRect(x - fl, stoneY, w + 2 * fl, 30 * s); c.fillStyle = `rgba(30,24,20,${0.35 * (1 - haze)})`; c.fillRect(x - fl, stoneY + 30 * s, w + 2 * fl, yb - stoneY); for (let xx = x; xx < x + w; xx += 16 * s) line(xx, stoneY, xx, stoneY + 26 * s, `rgba(60,58,54,${0.4 * (1 - haze)})`, 0.8);   // granite band
+  for (let t = 0; t < 14; t++) { c.fillStyle = `rgba(40,26,18,${(0.12 + r() * 0.2) * (1 - haze)})`; c.fillRect(x - fl * 0.6 + r() * (w + fl * 1.2), top + r() * h * 0.3, 2 + r() * 5 * s, h * (0.2 + r() * 0.5)); }   // rain streaks
+  // the underside of each broken arch springer, in shadow
+  [-1, 1].forEach(sd => { c.fillStyle = `rgba(40,20,12,${0.35 * (1 - haze)})`; c.beginPath(); const ex = sd < 0 ? x : x + w; c.moveTo(ex, top + 150 * s); c.bezierCurveTo(ex, top + 56 * s, ex + sd * fl * 0.65, top + 12 * s, ex + sd * fl, top + 6 * s); c.lineTo(ex + sd * fl, top + 30 * s); c.bezierCurveTo(ex + sd * fl * 0.5, top + 40 * s, ex + sd * 6 * s, top + 80 * s, ex + sd * 2 * s, top + 150 * s); c.closePath(); c.fill(); });
+  c.fillStyle = `rgba(0,0,0,${0.18 * (1 - haze)})`; c.fillRect(x + w * 0.62, top, w * 0.6 + fl, h);   // shaded side
+  c.restore();
+  // ragged broken top with plants
   const vd = hexMix('#3f6a2e', '#c8d4c8', haze), vl = hexMix('#7aa24a', '#d4ddd4', haze);
-  for (let t = 0; t < 26; t++) oval(x + r() * w, yb - sb - h + r() * 14 * s - 4 * s, (3 + r() * 7) * s, (2 + r() * 4) * s, 0, mix(vd, vl, r(), 0.95));
-  for (let t = 0; t < 4; t++) { const vx = x + r() * w; c.strokeStyle = mix('#3f6a2e', '#c8d4c8', haze, 0.8); c.lineWidth = 1.6 * s; c.beginPath(); c.moveTo(vx, yb - sb - h); c.quadraticCurveTo(vx + (r() - 0.5) * 20 * s, yb - sb - h + 40 * s, vx + (r() - 0.5) * 10, yb - sb - h + (60 + r() * 60) * s); c.stroke(); }
-  return { top: yb - sb - h, w };
+  for (let t = 0; t < 34; t++) oval(x - fl + r() * (w + 2 * fl), top + r() * 10 * s - 3 * s, (3 + r() * 8) * s, (2 + r() * 4) * s, 0, mix(vd, vl, r(), 0.95));
+  for (let t = 0; t < 5; t++) { const vx = x - fl + r() * (w + 2 * fl); c.strokeStyle = mix(vd, vl, 0.3, 0.8); c.lineWidth = 1.6 * s; c.beginPath(); c.moveTo(vx, top); c.quadraticCurveTo(vx + (r() - 0.5) * 20 * s, top + 40 * s, vx + (r() - 0.5) * 10, top + (60 + r() * 70) * s); c.stroke(); }
+  return { top, w };
 }
-function ltArch(x0, x1, yTop, s, a0, a1, haze) { const cx = (x0 + x1) / 2, R = (x1 - x0) / 2; c.strokeStyle = mix('#9a4632', '#cfaea4', haze); c.lineWidth = 24 * s; c.beginPath(); c.arc(cx, yTop + R * 0.9, R, a0, a1); c.stroke();
-  c.strokeStyle = `rgba(60,25,18,${0.5 * (1 - haze)})`; c.lineWidth = 1; for (let a = a0; a < a1; a += 0.09) { const p0 = [cx + Math.cos(a) * (R - 12 * s), yTop + R * 0.9 + Math.sin(a) * (R - 12 * s)], p1 = [cx + Math.cos(a) * (R + 12 * s), yTop + R * 0.9 + Math.sin(a) * (R + 12 * s)]; line(p0[0], p0[1], p1[0], p1[1], c.strokeStyle, 0.8); } }
 function tungDots(x0, x1, y0, y1, n, seed, a, sz = 1) { const r = rng(seed); for (let k = 0; k < n; k++) { const x = x0 + r() * (x1 - x0), y = y0 + Math.pow(r(), 0.8) * (y1 - y0); disc(x, y, (0.8 + r() * 1.6) * sz, `rgba(255,253,246,${a * (0.5 + r() * 0.5)})`); } }
 SCENES.push({ county: '苗栗縣', place: '龍騰斷橋', sun: () => [180, 120, 0.6], en: 'Longteng Bridge Ruins', ll: '24.37°N 120.78°E', cam: [1.03, 1.09, -30, 10, 0, 0],
   sub: ['苗栗的龍騰斷橋，桐花像雪一樣落下。', 'At Miaoli’s Longteng Bridge, tung blossoms fall like snow.'],
@@ -212,12 +215,8 @@ SCENES.push({ county: '苗栗縣', place: '龍騰斷橋', sun: () => [180, 120, 
     L('m2', 0.2, () => { mountain({ base: 410, amp: 120, f: 0.004, seed: 192, top: '#58785a', bot: '#6f8c66', tex: 'forest', dark: '#3d5c40', mid: '#56784f', light: '#9bb882', depth: 240, n: 3000, r: 4, haze: 'rgba(210,225,215,0.35)' }); tungDots(-M, W + M, 330, 520, 900, 198, 0.85, 1.1); }, { blur: 0.5 });
     D(0.2, () => godrays(160, 60, 820, 11, '255,250,232', 0.075, 199, 0.55, Math.PI * 0.3));
     // the ruins: nearest pier on the left, receding to the right into the haze
-    L('bridge', 0.45, () => { const P = [[150, 560, 1.18, 0.0], [470, 520, 0.92, 0.15], [740, 492, 0.72, 0.3], [960, 474, 0.58, 0.42], [1120, 462, 0.48, 0.52]];
-      const tops = P.map(([x, yb, sc, hz], k) => ltPier(x, yb, sc, k, hz));
-      ltArch(150 + 74 * 1.18, 470, tops[0].top + 18, 1.05, Math.PI * 1.02, Math.PI * 1.52, 0.08);
-      ltArch(470 + 74 * 0.92, 740, tops[1].top + 12, 0.82, Math.PI * 1.0, Math.PI * 1.95, 0.22);
-      ltArch(740 + 74 * 0.72, 960, tops[2].top + 10, 0.65, Math.PI * 1.45, Math.PI * 1.98, 0.36);
-      ltArch(960 + 74 * 0.58, 1120, tops[3].top + 8, 0.52, Math.PI * 1.0, Math.PI * 1.5, 0.47);
+    L('bridge', 0.45, () => { const P = [[1120, 462, 0.48, 0.52], [960, 474, 0.58, 0.42], [740, 492, 0.72, 0.3], [470, 520, 0.92, 0.15], [150, 560, 1.18, 0.0]];
+      P.forEach(([x, yb, sc, hz], k) => ltPier(x, yb, sc, k, hz, k % 2));
       // valley floor & near forest in front of the footings
       mountain({ base: 560, amp: 34, f: 0.006, seed: 193, top: '#4d6e3e', bot: '#3c5a32', tex: 'forest', dark: '#33502b', mid: '#4f7040', light: '#89aa62', depth: 160, n: 2200, r: 5 }); tungDots(-M, W + M, 530, 600, 500, 200, 0.95, 1.6); });
     L('fg', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#6b8c44'], [1, '#3b5226']]); c.beginPath(); c.moveTo(-M, H); c.lineTo(-M, 590); c.quadraticCurveTo(640, 570, W + M, 596); c.lineTo(W + M, H); c.fill(); const r = rng(194); for (let k = 0; k < 320; k++) disc(r() * (W + 2 * M) - M, 592 + r() * 40, 1.5 + r() * 2.2, 'rgba(250,248,240,0.9)'); });

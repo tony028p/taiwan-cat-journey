@@ -122,8 +122,9 @@ V('T8', '澎湖縣 · 白沙', '澎湖跨海大橋', 'Penghu Great Bridge', '23.
     c.fillStyle = vg(410, 490, [[0, '#dfe9ec'], [1, '#e9e6de']]); c.beginPath(); c.moveTo(A[0], A[1] - 14); c.lineTo(B[0], B[1] - 3); c.lineTo(B[0], B[1]); c.lineTo(A[0], A[1]); c.closePath(); c.fill();
     c.strokeStyle = 'rgba(120,130,140,0.6)'; c.lineWidth = 1; c.beginPath(); c.moveTo(A[0], A[1] - 18); c.lineTo(B[0], B[1] - 4); c.stroke(); });
   // white arch at this end of the bridge
-  L('arch', 0.55, () => { c.strokeStyle = '#f7f6f2'; c.lineWidth = 30; c.beginPath(); c.moveTo(760, 562); c.bezierCurveTo(800, 170, 1250, 170, 1290, 562); c.stroke(); c.strokeStyle = 'rgba(150,150,145,0.45)'; c.lineWidth = 6; c.beginPath(); c.moveTo(776, 562); c.bezierCurveTo(816, 190, 1234, 190, 1274, 562); c.stroke();
-    c.fillStyle = '#4a4a4a'; c.font = `700 22px ${FONTS}`; c.textAlign = 'center'; c.fillText('澎 湖 跨 海 大 橋', 1025, 278); });
+  L('arch', 0.55, () => { const ped = (x) => { c.fillStyle = vg(500, 560, [[0, '#b8b0a0'], [1, '#8a8274']]); c.fillRect(x - 46, 506, 92, 52); c.fillStyle = '#6a3a2c'; c.fillRect(x - 46, 506, 92, 8); const r = rng(x); for (let k = 0; k < 14; k++) { c.strokeStyle = 'rgba(80,74,64,0.5)'; c.lineWidth = 0.8; c.strokeRect(x - 46 + (k % 7) * 13, 516 + Math.floor(k / 7) * 20, 13, 20); } };
+    c.strokeStyle = '#f7f6f2'; c.lineWidth = 28; c.beginPath(); c.moveTo(720, 512); c.bezierCurveTo(760, 160, 1160, 160, 1200, 512); c.stroke(); c.strokeStyle = 'rgba(150,150,145,0.4)'; c.lineWidth = 5; c.beginPath(); c.moveTo(734, 512); c.bezierCurveTo(774, 176, 1146, 176, 1186, 512); c.stroke(); ped(720); ped(1200);
+    c.fillStyle = '#4a4a4a'; c.font = `700 22px ${FONTS}`; c.textAlign = 'center'; c.save(); c.translate(1080, 262); c.rotate(0.38); c.fillText('澎 湖 跨 海 大 橋', 0, 0); c.restore(); });
   // our deck: railing in front of the sea, road surface
   L('deck', 0.6, () => { c.fillStyle = vg(556, H, [[0, '#a6a49e'], [1, '#5c5a55']]); c.fillRect(-M, 556, W + 2 * M, 200); c.fillStyle = '#f2f0ea'; c.fillRect(-M, 552, W + 2 * M, 8);
     for (let x = -M; x < W + M; x += 36) { c.fillStyle = '#e9e7e0'; c.fillRect(x, 512, 6, 44); c.fillStyle = 'rgba(0,0,0,0.12)'; c.fillRect(x + 5, 514, 2, 42); }
