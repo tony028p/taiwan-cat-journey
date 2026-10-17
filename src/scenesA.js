@@ -94,6 +94,40 @@ function palm(x, y, h, seed, col = '#1e1a1c') {
     for (let j = 1; j < 7; j++) { const u = j / 7, px = lerp(tx, ex, u), py = lerp(ty, ey, u) - Math.sin(u * Math.PI) * h * 0.05; c.lineWidth = h * 0.008; c.beginPath(); c.moveTo(px, py); c.lineTo(px + Math.cos(a + 1.3) * h * 0.06 * (1 - u * 0.5), py + h * 0.07); c.moveTo(px, py); c.lineTo(px + Math.cos(a - 1.3) * h * 0.05, py + h * 0.07); c.stroke(); }
   }
 }
+/* Lotus Pond's dragon: green scaled body coiled in front of its pagoda, head raised with a red open mouth, gold horns,
+   whiskers and a white beard; the tiger: orange with black stripes, white muzzle and chest, mouth wide open */
+function lpDragon(x, y, s) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  const body = [[-120, -6], [-90, -30], [-50, -14], [-14, -40], [20, -24], [40, -50]];
+  c.strokeStyle = '#2e8a5a'; c.lineCap = 'round'; c.lineWidth = 30; c.beginPath(); body.forEach(([px, py], k) => k ? c.lineTo(px, py) : c.moveTo(px, py)); c.stroke();
+  c.strokeStyle = '#4fb07a'; c.lineWidth = 18; c.stroke(); c.strokeStyle = '#f2c84a'; c.lineWidth = 6; c.beginPath(); body.forEach(([px, py], k) => k ? c.lineTo(px, py - 10) : c.moveTo(px, py - 10)); c.stroke();
+  for (let k = 0; k < 14; k++) { const t = k / 13, px = lerp(-120, 40, t), py = -18 - Math.sin(t * 9) * 12; disc(px, py, 3, 'rgba(255,240,180,0.5)'); }
+  // head
+  c.fillStyle = '#3a9a66'; c.beginPath(); c.ellipse(64, -74, 44, 30, -0.3, 0, TAU); c.fill();
+  c.fillStyle = '#b8261e'; c.beginPath(); c.moveTo(66, -64); c.quadraticCurveTo(108, -60, 116, -40); c.quadraticCurveTo(96, -26, 70, -40); c.closePath(); c.fill();                 // open mouth
+  c.fillStyle = '#5a0e0a'; c.beginPath(); c.ellipse(90, -48, 16, 9, 0.2, 0, TAU); c.fill(); for (let k = 0; k < 5; k++) poly([[76 + k * 8, -60], [79 + k * 8, -52], [82 + k * 8, -60]], '#ffffff');
+  c.fillStyle = '#f4f0e6'; c.beginPath(); c.moveTo(60, -40); c.quadraticCurveTo(70, -10, 90, -14); c.quadraticCurveTo(80, -30, 74, -40); c.closePath(); c.fill();              // beard
+  disc(70, -86, 8, '#ffffff'); disc(72, -86, 4.5, '#1a1a1a'); disc(73, -87, 1.5, '#ffffff');
+  c.strokeStyle = '#f2c84a'; c.lineWidth = 5; c.beginPath(); c.moveTo(48, -98); c.quadraticCurveTo(36, -126, 18, -134); c.moveTo(60, -100); c.quadraticCurveTo(56, -130, 44, -142); c.stroke();
+  c.strokeStyle = '#e8a83a'; c.lineWidth = 2; c.beginPath(); c.moveTo(100, -66); c.quadraticCurveTo(130, -90, 150, -80); c.moveTo(104, -58); c.quadraticCurveTo(136, -60, 150, -44); c.stroke();
+  c.fillStyle = '#d24a2a'; for (let k = 0; k < 6; k++) poly([[30 - k * 8, -96 + k * 6], [24 - k * 8, -116 + k * 6], [20 - k * 8, -94 + k * 6]], '#d24a2a');                      // mane
+  c.restore();
+}
+function lpTiger(x, y, s) {
+  c.save(); c.translate(x, y); c.scale(s, s);
+  c.fillStyle = '#e4902e'; c.beginPath(); c.ellipse(40, -34, 80, 34, 0, 0, TAU); c.fill();                                                                  // crouched body
+  c.strokeStyle = '#2a1a10'; c.lineWidth = 5; c.lineCap = 'round'; for (let k = 0; k < 7; k++) { c.beginPath(); c.moveTo(-10 + k * 18, -66); c.quadraticCurveTo(-4 + k * 18, -44, -12 + k * 18, -24); c.stroke(); }
+  c.fillStyle = '#f2ece0'; c.beginPath(); c.ellipse(20, -12, 50, 12, 0, 0, TAU); c.fill();
+  // head, facing left toward the visitors
+  c.fillStyle = '#ea9a34'; c.beginPath(); c.ellipse(-30, -66, 44, 40, 0, 0, TAU); c.fill(); [-1, 1].forEach(sd => { c.beginPath(); c.ellipse(-30 + sd * 30, -100, 12, 12, 0, 0, TAU); c.fill(); disc(-30 + sd * 30, -100, 6, '#f2c0a0'); });
+  c.fillStyle = '#f4efe4'; c.beginPath(); c.ellipse(-46, -48, 30, 22, 0, 0, TAU); c.fill();
+  c.fillStyle = '#b8261e'; c.beginPath(); c.ellipse(-56, -40, 22, 16, 0, 0, TAU); c.fill(); c.fillStyle = '#5a0e0a'; c.beginPath(); c.ellipse(-56, -38, 14, 10, 0, 0, TAU); c.fill();      // open mouth
+  for (let k = 0; k < 4; k++) { poly([[-70 + k * 9, -54], [-67 + k * 9, -46], [-64 + k * 9, -54]], '#ffffff'); poly([[-70 + k * 9, -26], [-67 + k * 9, -32], [-64 + k * 9, -26]], '#ffffff'); }
+  c.strokeStyle = '#2a1a10'; c.lineWidth = 4; for (let k = 0; k < 3; k++) { c.beginPath(); c.moveTo(-50 + k * 14, -104); c.lineTo(-46 + k * 12, -88); c.stroke(); }
+  [-1, 1].forEach(sd => { disc(-30 + sd * 16, -76, 7, '#fff4c0'); disc(-30 + sd * 16, -76, 3.5, '#1a1a1a'); });
+  disc(-48, -62, 5, '#3a2014');
+  c.restore();
+}
 function pagoda(x, y, h, wall, roof, n = 7) {
   const sh = h / (n + 1.2);
   for (let k = 0; k < n; k++) {
@@ -358,10 +392,11 @@ SCENES.push({ county: '高雄市', place: '蓮池潭龍虎塔', en: 'Dragon & Ti
       mountain({ base: 400, amp: 50, f: 0.004, seed: 83, top: '#8fa3a8', bot: '#a7b4b2', haze: 'rgba(220,220,215,0.5)' });
       skyline(hz, 84, '#9ea6a6', '#c2c2b8', { hmin: 8, hvar: 34 });
       bushes(120, -M, W + M, () => hz - 6, 85, '#3f5a3a', '#6f8c56', 10);
-      pagoda(560, hz, 260, '#e7c35a', '#c75b2c'); pagoda(740, hz, 260, '#e7c35a', '#c75b2c');
-      // dragon (left) & tiger (right) gates
-      c.save(); c.translate(500, hz); poly([[-60, 0], [-50, -40], [-20, -70], [10, -64], [20, -40], [40, -20], [30, 0]], '#3f8d6a'); poly([[10, -64], [34, -76], [44, -60], [24, -44]], '#4fa37b'); oval(-5, -18, 16, 18, 0, '#2a2a2a'); disc(28, -66, 3, '#f2d24a'); poly([[-20, -70], [-26, -88], [-12, -74]], '#d94c3a'); c.restore();
-      c.save(); c.translate(800, hz); poly([[-30, 0], [-36, -36], [-14, -62], [16, -66], [40, -46], [60, 0]], '#e39b3a'); for (let k = 0; k < 5; k++) line(-26 + k * 16, -54 + k * 4, -18 + k * 16, -20, '#3a2414', 3); oval(10, -18, 16, 18, 0, '#2a2a2a'); disc(-4, -52, 3, '#2a2a2a'); disc(14, -54, 3, '#2a2a2a'); c.restore();
+      pagoda(590, hz, 290, '#e7c35a', '#c75b2c'); pagoda(710, hz, 290, '#e7c35a', '#c75b2c');
+      // the giant dragon (left) and tiger (right) whose open mouths are the pagoda entrances
+      lpDragon(520, hz + 4, 1); lpTiger(780, hz + 4, 1);
+      // zig-zag bridges out to the mouths
+      c.fillStyle = '#d8cdb8'; c.fillRect(380, hz - 4, 150, 8); c.fillRect(770, hz - 4, 160, 8); for (let k = 0; k < 14; k++) { c.fillStyle = '#c4402f'; c.fillRect(384 + k * 11, hz - 14, 2, 10); c.fillRect(774 + k * 11, hz - 14, 2, 10); } line(380, hz - 14, 530, hz - 14, '#c4402f', 2); line(770, hz - 14, 930, hz - 14, '#c4402f', 2);
     };
     L('scene', 0.3, scene);
     L('water', 0.3, () => { c.fillStyle = vg(hz, H, [[0, '#7c9c8a'], [1, '#3d5a50']]); c.fillRect(-M, hz, W + 2 * M, H); });
