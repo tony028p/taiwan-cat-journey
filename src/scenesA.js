@@ -345,11 +345,18 @@ SCENES.push({ county: '宜蘭縣', place: '外澳海灘 · 龜山島', sun: lt =
       c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(820, sy, 26, '#fff1c8'); glow(820, sy, 60, '255,240,200', 0.8); c.restore(); });
     // the horizon cloud bank, dark blue below, rims lit gold
     L('bank', 0.05, () => { c.fillStyle = vg(392, hz, [[0, 'rgba(58,68,104,0)'], [0.35, '#3e4870'], [1, '#353f62']]); c.fillRect(-M, 392, W + 2 * M, hz - 392);
-      // a low stratocumulus bank: long flat cloud rolls, dark undersides, tops rimmed gold by the sun below the horizon
-      const rb = rng(37); for (let k = 0; k < 90; k++) { const x = rb() * (W + 2 * M + 200) - M - 100, y = 384 + rb() * 20, w = 50 + rb() * 120, h = 5 + rb() * 8;
-        c.fillStyle = 'rgba(255,196,128,0.4)'; c.beginPath(); c.ellipse(x, y - 1.6, w * 0.5, h, 0, Math.PI, TAU); c.fill();
-        c.fillStyle = mix('#3a4470', '#2e3758', rb()); c.beginPath(); c.ellipse(x, y + 0.6, w * 0.49, h * 0.92, 0, 0, TAU); c.fill(); }
-      c.fillStyle = vg(380, hz, [[0, 'rgba(70,80,120,0)'], [1, 'rgba(70,80,120,0.6)']]); c.fillRect(-M, 380, W + 2 * M, hz - 380); }, { blur: 1.8 });
+      // the cumulus bank sitting on the horizon (as in the photos): heaped mounds of varied height, dark blue undersides,
+      // tops rimmed gold where the sun below the horizon catches them, brightest near the sun
+      const rb = rng(37), SX = 820; [[-20, 150, 34], [140, 190, 52], [330, 170, 40], [480, 210, 58], [640, 160, 36], [930, 200, 62], [1090, 170, 44], [1240, 220, 56], [1380, 160, 38]].forEach(([x0, w, h]) => {
+        const P = []; for (let k = 0; k < 26; k++) { const u = rb(), px = x0 + (u - 0.5) * w, edge = 1 - Math.pow(Math.abs(u - 0.5) * 2, 2), r0 = (8 + rb() * 14) * (0.5 + 0.5 * edge) * h / 50; P.push([px, hz - 4 - rb() * h * edge * 0.8 - r0 * 0.3, r0]); }
+        const near = clamp(1 - Math.abs(x0 - SX) / 650), ytop = Math.min(...P.map(q => q[1] - q[2]));
+        // one mass: lit from above (gold near the sun, lilac-grey away from it), deep blue underneath
+        c.save(); c.beginPath(); P.forEach(([px, py, r0]) => { c.moveTo(px + r0, py); c.arc(px, py, r0, 0, TAU); }); c.clip();
+        c.fillStyle = vg(ytop, hz, [[0, mix('#f6cf9a', '#a3a6c6', 1 - near * 0.9)], [0.35, mix('#b98f90', '#6a7098', 1 - near * 0.7)], [1, '#363f69']]); c.fillRect(x0 - w, ytop - 2, w * 2, hz - ytop + 4);
+        // soft lobes: each puff only brightens a little on its upper side
+        P.forEach(([px, py, r0]) => { const g = c.createRadialGradient(px, py - r0 * 0.55, 0, px, py - r0 * 0.4, r0); g.addColorStop(0, `rgba(255,${210 + near * 20 | 0},170,${0.16 + near * 0.18})`); g.addColorStop(1, 'rgba(255,220,180,0)'); c.fillStyle = g; c.fillRect(px - r0, py - r0, r0 * 2, r0 * 2); });
+        c.restore(); c.fillStyle = '#353e66'; c.beginPath(); c.ellipse(x0, hz - 2, w * 0.55, 8, 0, 0, TAU); c.fill(); });
+      c.fillStyle = vg(380, hz, [[0, 'rgba(70,80,120,0)'], [1, 'rgba(70,80,120,0.6)']]); c.fillRect(-M, 380, W + 2 * M, hz - 380); }, { blur: 2.2 });
     L('island', 0.12, () => { const pts = [[400, hz + 1], [418, 410], [446, 380], [480, 342], [506, 326], [524, 323], [546, 334], [596, 358], [656, 374], [706, 386], [730, 389], [746, 382], [760, 390], [780, hz + 1]]; smoothClosed(pts); c.fillStyle = vg(320, hz, [[0, '#3c4868'], [1, '#2c3552']]); c.fill();
       c.save(); smoothClosed(pts); c.clip(); c.fillStyle = hg(520, 790, [[0, 'rgba(255,200,140,0)'], [1, 'rgba(255,200,140,0.18)']]); c.fillRect(400, 300, 400, 130); const r = rng(37); for (let k = 0; k < 220; k++) disc(400 + r() * 380, 330 + r() * 90, 1 + r() * 1.5, 'rgba(20,30,50,0.08)'); c.restore(); }, { blur: 0.6 });
     L('sea', 0.2, () => { c.fillStyle = vg(hz, H, [[0, '#7c86a0'], [0.12, '#4d6890'], [0.5, '#2c4468'], [1, '#162238']]); c.fillRect(-M, hz, W + 2 * M, H);
