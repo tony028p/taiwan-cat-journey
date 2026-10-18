@@ -538,7 +538,6 @@ const CROWD = {
   L4: [{ d: 0.5, x: 610, y: 596, s: 0.5, act: 'kayak', coat: 'cream', v: 9, haze: HZ.day, seed: 4 }, { d: 0.5, x: 720, y: 606, s: 0.48, act: 'kayak', coat: 'black', v: 9, col: '#d9573a', haze: HZ.day, seed: 5 }],
   L7: [{ d: 0.5, x: 520, y: 478, s: 0.34, act: 'walk', v: 14, coat: 'grey', haze: HZ.day, seed: 10 }, { d: 0.5, x: 470, y: 480, s: 0.28, act: 'walk', v: 14, coat: 'cream', build: 'kitten', haze: HZ.day, seed: 11 }],
   L9: [{ d: 0.5, x: 720, y: 470, s: 0.42, act: 'rake', coat: 'brown', haze: HZ.warm, seed: 12 }],
-  L12: [{ after: 'bridge', d: 0.4, x: 300, y: 392, s: 0.24, act: 'walk', v: 16, coat: 'black', haze: HZ.far, seed: 19 }, { after: 'bridge', d: 0.4, x: 420, y: 392, s: 0.24, act: 'bike', v: 40, coat: 'white', haze: HZ.far, seed: 20 }],
   L13: [{ after: 'house', d: 0.35, x: 1010, y: 470, s: 0.3, act: 'walk', v: -10, face: -1, coat: 'cream', haze: HZ.day, seed: 77 }],
   L16: [{ d: 0.5, x: 760, y: 556, s: 0.3, act: 'hike', v: 10, coat: 'grey', haze: HZ.day, seed: 78 }, { d: 0.5, x: 728, y: 558, s: 0.28, act: 'hike', v: 10, coat: 'bicolor', col: '#d9573a', haze: HZ.day, seed: 79 }],
   L18: [{ d: 0.6, x: 760, y: 472, s: 0.26, act: 'walk', v: 12, coat: 'cream', haze: HZ.night, seed: 28 }, { d: 0.6, x: 794, y: 472, s: 0.25, act: 'walk', v: 12, coat: 'siamese', haze: HZ.night, seed: 29 }],

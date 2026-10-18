@@ -597,48 +597,138 @@ SCENES.push({ county: '臺南市', place: '井仔腳瓦盤鹽田', sun: lt => [6
     const skyP = () => { sky([[0, '#3d2f5c'], [0.3, '#a2506a'], [0.48, '#f07a4f'], [0.53, '#ffad5e'], [0.6, '#ffcf86'], [1, '#ffcf86']]); stratus(400, 250, 900, 40, 'rgba(255,120,110,0.5)'); stratus(1000, 300, 800, 30, 'rgba(255,160,120,0.5)'); cumulus(250, 300, 320, 40, 101, 'rgba(255,160,120,0.9)', 'rgba(120,60,90,0.9)', 0.4); };
     L('sky', 0, skyP, { blur: 2 });
     D(0, () => { glow(sx, sy, 440, '255,150,80', 0.55); c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(sx, sy, 28, '#ffe0a0'); glow(sx, sy, 70, '255,220,160', 0.7); c.restore(); });
-    L('land', 0.15, () => { skyline(hz, 102, '#3a2a35', '#4a3340', { hmin: 2, hvar: 14 }); c.fillStyle = '#3a2a35'; c.fillRect(-M, hz - 2, W + 2 * M, 4); });
+    // per photos: a wooden lookout tower and the salt-works sheds on the far bank; flat pans paved with broken pottery tiles,
+    // separated by narrow earth dikes running into the distance; white salt cones stand on the dikes and mirror in the water
+    L('land', 0.15, () => { skyline(hz, 102, '#3a2a35', '#4a3340', { hmin: 2, hvar: 10 }); c.fillStyle = '#3a2a35'; c.fillRect(-M, hz - 2, W + 2 * M, 4);
+      c.fillStyle = '#3d2b36'; c.fillRect(150, hz - 22, 70, 22); c.fillRect(170, hz - 30, 34, 8); c.fillRect(240, hz - 14, 40, 14);
+      const tx = 1090; c.strokeStyle = '#33232d'; c.lineWidth = 2.2; [[tx - 22, tx - 16], [tx + 22, tx + 16]].forEach(([a, b]) => line(a, hz, b, hz - 62, '#33232d', 2.4));
+      for (let k = 0; k < 4; k++) { const y = hz - 12 - k * 15; line(tx - 21 + k * 1.5, y, tx + 21 - k * 1.5, y, '#33232d', 1.6); line(tx - 21 + k * 1.5, y, tx + 20 - k * 1.5, y - 14, '#33232d', 1); }
+      c.fillStyle = '#33232d'; c.fillRect(tx - 26, hz - 66, 52, 5); line(tx - 24, hz - 66, tx - 24, hz - 80, '#33232d', 1.6); line(tx + 24, hz - 66, tx + 24, hz - 80, '#33232d', 1.6); line(tx - 25, hz - 80, tx + 25, hz - 80, '#33232d', 1.6);
+      line(tx + 10, hz - 66, tx + 10, hz - 92, '#33232d', 1.2); });
     L('pans', 0.4, () => { c.save(); c.beginPath(); c.rect(-M, hz, W + 2 * M, H); c.clip(); c.translate(0, 2 * hz); c.scale(1, -1); c.drawImage(getLayer('sky', skyP), -M, 0, W + 2 * M, H); c.restore();
-      c.fillStyle = 'rgba(80,40,60,0.18)'; c.fillRect(-M, hz, W + 2 * M, H);
-      for (let k = 1; k < 9; k++) { const y = hz + Math.pow(k / 9, 1.7) * (H - hz); line(-M, y, W + M, y, 'rgba(60,35,45,0.85)', 1 + k * 0.8); }
-      for (let k = -14; k <= 14; k++) { line(640 + k * 30, hz, 640 + k * 260, H, 'rgba(60,35,45,0.7)', 1.2); }
-      const r = rng(103); for (let k = 0; k < 18; k++) { const y = hz + 6 + Math.pow(r(), 1.6) * 80, x = r() * W, s = 4 + (y - hz) * 0.25; poly([[x - s, y], [x, y - s * 0.9], [x + s, y]], 'rgba(255,225,215,0.9)'); poly([[x, y - s * 0.9], [x + s, y], [x + s * 0.3, y]], 'rgba(160,110,120,0.6)'); } });
-    D(0.4, () => { shimmer(hz + 2, H, 120, '255,200,150', 104, { xc: sx, spread: 220, a: 0.5, op: 'lighter' }); const x = 300 + lt * 26, y = 500;
-      c.fillStyle = 'rgba(60,35,45,0.95)'; c.fillRect(-M, y, W + 2 * M, 5);
+      c.fillStyle = vg(hz, H, [[0, 'rgba(255,190,150,0.10)'], [1, 'rgba(70,35,60,0.28)']]); c.fillRect(-M, hz, W + 2 * M, H);
+      const dk = k => hz + Math.pow(k / 9, 1.7) * (H - hz), vx = 640, px = (k, y) => vx + k * (44 + (y - hz) * 1.15);
+      // the tile mosaic shows through the shallow brine, finer with distance
+      const r = rng(105); for (let y = hz + 30; y < H; ) { const sz = 3 + (y - hz) * 0.075, th = sz * (0.35 + (y - hz) / (H - hz) * 0.25);
+        for (let x = -M + r() * sz; x < W + M; x += sz * (0.8 + r() * 0.5)) { const w = sz * (0.6 + r() * 0.5); c.strokeStyle = `rgba(60,30,45,${(0.05 + (y - hz) / (H - hz) * 0.1) * (0.5 + r())})`; c.lineWidth = 0.6 + (y - hz) * 0.004;
+          c.beginPath(); c.moveTo(x, y + (r() - 0.5) * th * 0.4); c.lineTo(x + w, y + (r() - 0.5) * th * 0.4); c.lineTo(x + w + (r() - 0.5) * 2, y + th); c.lineTo(x + (r() - 0.5) * 2, y + th); c.closePath(); c.stroke(); }
+        y += th; }
+      // dikes: earth strips with a warm lit top edge
+      for (let k = -10; k <= 10; k++) { const x0 = px(k, hz), x1 = px(k, H + 40), w0 = 0.6, w1 = 7; poly([[x0 - w0, hz], [x0 + w0, hz], [x1 + w1, H + 40], [x1 - w1, H + 40]], 'rgba(62,34,46,0.85)'); line(x0, hz, x1 - w1 * 0.6, H + 40, 'rgba(255,190,150,0.22)', 1); }
+      for (let k = 1; k < 9; k++) { const y = dk(k), t = 1 + k * 1.1; c.fillStyle = 'rgba(66,36,48,0.92)'; c.fillRect(-M, y - t / 2, W + 2 * M, t); line(-M, y - t / 2, W + M, y - t / 2, 'rgba(255,195,150,0.45)', 0.6 + k * 0.12); }
+      // salt cones on the dikes, each mirrored in the pan
+      const cones = []; const r2 = rng(103); for (let k = 1; k < 9; k++) { const y = dk(k); for (let j = -10; j <= 10; j++) { if (r2() > (k <= 4 ? 0.62 : 0.2)) continue; const x = px(j, y) + (44 + (y - hz) * 1.15) * 0.5, sz = 4 + (y - hz) * 0.24;
+          if (y > 470 && y < 540 && x > 200 && x < 640) continue; if (x < -M || x > W + M) continue; cones.push([x, y, sz]); } }
+      cones.forEach(([x, y, sz]) => { c.globalAlpha = 0.45; poly([[x - sz, y], [x, y + sz * 0.95], [x + sz, y]], '#e8d6dc'); poly([[x, y + sz * 0.95], [x + sz, y], [x + sz * 0.25, y]], 'rgba(120,80,100,0.6)'); c.globalAlpha = 1; });
+      cones.forEach(([x, y, sz]) => { poly([[x - sz, y], [x - sz * 0.1, y - sz * 0.95], [x + sz * 0.1, y - sz * 0.95], [x + sz, y]], '#fff1ec'); poly([[x + sz * 0.1, y - sz * 0.95], [x + sz, y], [x + sz * 0.2, y]], 'rgba(150,95,120,0.55)');
+        poly([[x - sz * 0.1, y - sz * 0.95], [x - sz * 0.45, y - sz * 0.5], [x - sz * 0.2, y - sz * 0.5]], 'rgba(255,215,170,0.5)'); }); });
+    D(0.4, () => { shimmer(hz + 2, H, 160, '255,200,150', 104, { xc: sx, spread: 160, a: 0.6, op: 'lighter' }); glow(sx, hz + 30, 160, '255,170,100', 0.22); const x = 300 + lt * 26, y = 500;
+      c.fillStyle = 'rgba(64,36,48,0.97)'; c.fillRect(-M, y, W + 2 * M, 6); line(-M, y, W + M, y, 'rgba(255,195,150,0.5)', 1);
       actCat({ x, y, s: 0.85, pose: 'walk', ph: walkPh(lt * 26, 0.85), sil: true, rim: '255,170,110', shadow: false });
       c.save(); c.translate(0, 2 * y + 6); c.scale(1, -1); c.globalAlpha = 0.35; actCat({ x, y, s: 0.85, pose: 'walk', ph: walkPh(lt * 26, 0.85), sil: true, shadow: false }); c.restore(); });
   } });
 
 /* 10 — 嘉義縣 阿里山 */
-SCENES.push({ county: '嘉義縣', place: '阿里山 · 雲海日出', sun: lt => [360, 300 - lt * 6, 1], en: 'Alishan Sunrise & Sea of Clouds', ll: '23.51°N 120.80°E', cam: [1.02, 1.08, -20, 20, 0, 0],
+SCENES.push({ county: '嘉義縣', place: '阿里山 · 雲海日出', sun: lt => [760, 336 - lt * 6, 0.55], en: 'Alishan Sunrise & Sea of Clouds', ll: '23.51°N 120.80°E', cam: [1.02, 1.08, -20, 20, 0, 0],
   sub: ['嘉義的阿里山，雲海在腳下翻湧。', 'On Alishan, a sea of clouds rolls beneath its paws.'],
   draw(lt) {
-    const sx = 360, sy = 300 - lt * 6;
-    L('sky', 0, () => { sky([[0, '#4e6a9c'], [0.38, '#c79aa0'], [0.5, '#f5c18f'], [1, '#fff0cf']]); });
-    D(0, () => { glow(sx, sy, 460, '255,200,130', 0.6); disc(sx, sy, 24, '#fff4d2'); glow(sx, sy, 60, '255,240,200', 0.8); godrays(sx, sy, 700, 26, '255,220,170', 0.08, 111, 2.6, Math.PI * 0.55); });
-    L('peaks', 0.06, () => mountain({ base: 330, amp: 140, f: 0.0035, seed: 112, peak: 1.4, top: '#5f668d', bot: '#9a8fa6', haze: 'rgba(240,200,190,0.5)', rim: 'rgba(255,210,170,0.7)' }), { blur: 0.8 });
-    for (let b = 0; b < 4; b++) L('cl' + b, 0.15 + b * 0.08, () => { const r = rng(113 + b); for (let k = 0; k < 14; k++) cumulus(r() * (W + 2 * M) - M, 380 + b * 30 + r() * 20, 220 + r() * 160, 50, 120 + b * 20 + k, b < 2 ? '#fff6ea' : '#fff2e4', b < 2 ? '#d6c7cf' : '#c9b9c6', -0.3); c.fillStyle = b < 2 ? '#ddd0d6' : '#cdbdc9'; c.fillRect(-M, 384 + b * 30, W + 2 * M, H); }, { blur: 3.2 - b * 0.4, dx: lt * (3 + b * 3) - 30 });
-    L('ridge', 0.5, () => { const f = mountain({ base: 520, amp: 60, f: 0.004, seed: 130, top: '#2c3b37', bot: '#1d2826' }); const r = rng(131); for (let k = 0; k < 90; k++) { const x = r() * (W + 2 * M) - M, y = f(x) + 6, h = 20 + r() * 40; poly([[x - h * 0.22, y], [x, y - h], [x + h * 0.22, y]], '#1e2a27'); }
+    // per photos: the sun breaks over a golden sea of clouds; far ranges float on it in layers of blue; nearer dark peaks poke
+    // through; cypress silhouettes and the viewing deck in front
+    const sx = 760, sy = 336 - lt * 6, cs = 380;
+    L('sky', 0, () => { sky([[0, '#2c4f8c'], [0.22, '#5d79a8'], [0.36, '#d99a6c'], [0.44, '#ffb554'], [0.52, '#ffd98a'], [1, '#fff0c4']]);
+      stratus(300, 220, 900, 36, 'rgba(255,170,110,0.45)'); stratus(1000, 180, 700, 26, 'rgba(255,190,130,0.4)'); stratus(620, 130, 1100, 30, 'rgba(255,220,190,0.22)'); });
+    D(0, () => { glow(sx, sy, 480, '255,170,90', 0.32); glow(sx, sy, 90, '255,230,170', 0.55); disc(sx, sy, 17, '#fff6dc');
+      godrays(sx, sy, 420, 26, '255,225,160', 0.05, 111, TAU, 0); c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = 'rgba(255,245,215,0.5)'; c.lineWidth = 1.2;
+      for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + 0.2, l = k % 2 ? 46 : 80; c.beginPath(); c.moveTo(sx + Math.cos(a) * 24, sy + Math.sin(a) * 24); c.lineTo(sx + Math.cos(a) * l, sy + Math.sin(a) * l); c.stroke(); } c.restore(); });
+    // far ranges floating on the cloud sea, layered blue with a gold rim on the side facing the sun
+    L('peaks', 0.05, () => { mountain({ base: cs - 6, amp: 34, f: 0.004, seed: 112, top: '#6a7aa6', bot: '#9aa0bc', rim: 'rgba(255,215,160,0.8)', floor: cs + 4, shape: (x, n) => n * (0.3 + 0.7 * Math.abs(Math.sin(x * 0.003))) });
+      mountain({ base: cs + 2, amp: 46, f: 0.006, seed: 116, top: '#4d5b86', bot: '#7a7f9e', rim: 'rgba(255,200,140,0.7)', floor: cs + 10, shape: (x, n) => x < 520 ? n * (1 - x / 520) : (x > 940 ? n * sm((x - 940) / 200) : 0) }); }, { blur: 0.6 });
+    // the cloud sea: billows lit gold from the sun, shading violet; smaller and flatter with distance; a bright path under the sun
+    const band = (b, y0, y1, n, sz, lit, sh, sd) => L('cl' + b, 0.12 + b * 0.1, () => { const r = rng(sd), rows = n;
+      c.fillStyle = sh; c.fillRect(-M, y0 + 4, W + 2 * M, H);
+      for (let i = 0; i < rows; i++) { const u = i / (rows - 1), y = lerp(y0, y1, u), amp = sz * (0.1 + 0.14 * u), wl = sz * (0.35 + r() * 0.35), ph = r() * 9, ph2 = r() * 9;
+        const top = x => y - amp * (0.55 * Math.abs(Math.sin(x / wl + ph)) + 0.45 * Math.abs(Math.sin(x / (wl * 0.43) + ph2)));
+        c.beginPath(); c.moveTo(-M - 100, y + amp * 3); for (let x = -M - 100; x <= W + M + 100; x += 6) c.lineTo(x, top(x)); c.lineTo(W + M + 100, y + amp * 3); c.closePath();
+        const g = c.createLinearGradient(0, y - amp, 0, y + amp * 2.2); g.addColorStop(0, lit); g.addColorStop(0.3, mix(lit, sh, 0.5)); g.addColorStop(1, sh); c.fillStyle = g; c.fill();
+        c.save(); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = hg(sx - 500, sx + 500, [[0, 'rgba(255,170,90,0)'], [0.5, `rgba(255,170,90,${0.14 * (1 - u * 0.5)})`], [1, 'rgba(255,170,90,0)']]); c.fillRect(-M, y - amp, W + 2 * M, amp * 2); c.restore();
+        for (let k = 0; k < 2 + b; k++) { const x = r() * (W + 2 * M + 200) - M - 100, w = sz * (1 + r() * 1.2); cumulus(x, top(x) + amp * 0.8, w, w * 0.16, sd * 50 + i * 7 + k, lit, mix(lit, sh, 0.6), (x < sx ? 1 : -1) * 0.7); } } },
+      { blur: 1.3 - b * 0.3, dx: lt * (2 + b * 3) - 20 });
+    band(0, cs + 2, cs + 28, 11, 90, '#f8cf92', '#8a6a8c', 113);
+    band(1, cs + 30, cs + 66, 7, 150, '#f6cc94', '#7c5e82', 114);
+    D(0.2, () => { c.save(); c.globalCompositeOperation = 'lighter'; c.save(); c.translate(sx, cs + 30); c.scale(1, 0.25); glow(0, 0, 300, '255,200,120', 0.35); c.restore(); c.restore(); });
+    // a dark forested peak breaks through the clouds on the right
+    L('isle', 0.3, () => { mountain({ fn: x => 462 - Math.pow(Math.sin(clamp((x - 940) / 300) * Math.PI), 1.7) * 74 - Math.sin(x * 0.07) * 2 * sm((x - 940) / 60) * (1 - sm((x - 1180) / 60)), bottom: 470, top: '#2e2a3c', bot: '#4a3e54', rim: 'rgba(255,200,140,0.6)', floor: 470 });
+      });
+    band(2, cs + 74, cs + 122, 5, 230, '#f2c896', '#624c72', 115);
+    L('ridge', 0.5, () => { const f = mountain({ base: 520, amp: 50, f: 0.004, seed: 130, top: '#1f2a2a', bot: '#161e1f', rim: 'rgba(255,200,140,0.45)' }); const r = rng(131);
+      for (let k = 0; k < 110; k++) { const x = r() * (W + 2 * M) - M, y = f(x) + 8, h = 22 + r() * 46; c.fillStyle = '#18211f'; c.beginPath(); c.moveTo(x, y - h); for (let j = 0; j <= 5; j++) { const yy = y - h + h * j / 5, ww = h * 0.07 + h * 0.2 * j / 5; c.lineTo(x + ww, yy + h / 10); c.lineTo(x + ww * 0.4, yy + h / 10); } c.lineTo(x, y); for (let j = 5; j >= 0; j--) { const yy = y - h + h * j / 5, ww = h * 0.07 + h * 0.2 * j / 5; c.lineTo(x - ww * 0.4, yy + h / 10); c.lineTo(x - ww, yy + h / 10); } c.closePath(); c.fill();
+        line(x, y - h, x + h * 0.08, y - h * 0.6, 'rgba(255,190,130,0.35)', 1); }
       c.fillStyle = '#2a2226'; c.fillRect(-M, 556, W + 2 * M, 4); });
     D(0.5, () => { const tx = 1100 - lt * 40; for (let k = 0; k < 3; k++) { const x = tx + k * 70; c.fillStyle = '#b83a2e'; c.fillRect(x, 528, 64, 26); c.fillStyle = '#f0dcb4'; c.fillRect(x, 540, 64, 4); c.fillStyle = '#ffd890'; for (let w = 0; w < 4; w++) c.fillRect(x + 6 + w * 15, 532, 9, 6); c.fillStyle = '#3a2a24'; c.fillRect(x - 2, 524, 68, 5); } });
-    L('fg', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#3b2c24'], [1, '#1a130f']]); c.fillRect(-M, 590, W + 2 * M, 200); c.fillStyle = '#4a372b'; c.fillRect(-M, 578, W + 2 * M, 12); for (let k = 0; k < 12; k++) c.fillRect(-60 + k * 130, 578, 9, 60);
-      [[60, 70], [1180, 90]].forEach(([x, w]) => { c.fillStyle = hg(x - w / 2, x + w / 2, [[0, '#4a3324'], [0.4, '#6b4a33'], [1, '#24170f']]); c.fillRect(x - w / 2, 0, w, H); const r = rng(x); for (let k = 0; k < 40; k++) line(x - w / 2 + r() * w, r() * H, x - w / 2 + r() * w, r() * H + 60, 'rgba(20,10,5,0.35)', 2); }); });
+    L('fg', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#3b2c24'], [1, '#1a130f']]); c.fillRect(-M, 590, W + 2 * M, 200); c.fillStyle = '#4a372b'; c.fillRect(-M, 578, W + 2 * M, 12); line(-M, 578, W + M, 578, 'rgba(255,200,140,0.5)', 1.2); for (let k = 0; k < 12; k++) c.fillRect(-60 + k * 130, 578, 9, 60);
+      // old red cypresses framing the view, lit on the sun side
+      [[30, 80, 1], [1235, 110, -1]].forEach(([x, w, sd]) => { c.fillStyle = hg(x - w / 2, x + w / 2, sd > 0 ? [[0, '#24170f'], [0.6, '#4a3324'], [1, '#8a5a36']] : [[0, '#8a5a36'], [0.35, '#4a3324'], [1, '#24170f']]); c.beginPath(); c.moveTo(x - w * 0.42, -10); c.lineTo(x + w * 0.42, -10); c.lineTo(x + w * 0.55, H); c.lineTo(x - w * 0.55, H); c.fill();
+        const r = rng(x); for (let k = 0; k < 50; k++) { const xx = x - w / 2 + r() * w; line(xx, r() * H, xx + (r() - 0.5) * 6, r() * H + 80, 'rgba(20,10,5,0.35)', 1 + r() * 2); } });
+      const r = rng(133); for (let k = 0; k < 160; k++) { const x = r() < 0.5 ? r() * 200 - 40 : 1080 + r() * 240, y = 92 + r() * 120; oval(x, y, 16 + r() * 22, 7 + r() * 8, (r() - 0.5) * 0.6, mix('#16200f', '#2e3a1a', r(), 0.95)); } });
     D(0.95, () => actCat({ x: 520, y: 580, s: 1.05, pose: 'sit', sil: true, rim: '255,195,140', look: -0.1, blink: blinkAt(lt, 9), shadow: false }));
   } });
 
+/* Japanese-era forestry dormitory (Hinoki Village): dark-stained clapboard, glass windows in wooden grids, a black-tiled hipped
+   roof with deep eaves and a ridge cap, raised on a stone base. x0..x1 wall extent, ye eave line, yf floor line. o.haze fades it. */
+function hinokiHouse(x0, x1, ye, yf, o = {}) {
+  const w = x1 - x0, ov = o.ov ?? w * 0.055, rh = o.rh ?? (yf - ye) * 0.45, inset = o.inset ?? w * 0.18, nw = o.win ?? Math.max(2, Math.round(w / 128));
+  // wall
+  c.fillStyle = vg(ye, yf, [[0, '#2e2119'], [1, '#3e2c20']]); c.fillRect(x0, ye, w, yf - ye);
+  for (let y = ye + 4; y < yf; y += 6.5) { line(x0, y, x1, y, 'rgba(0,0,0,0.35)', 0.9); line(x0, y + 1, x1, y + 1, 'rgba(255,220,180,0.05)', 0.8); }
+  for (let k = 0; k <= nw; k++) { const x = x0 + k * w / nw; c.fillStyle = '#5a3f2b'; c.fillRect(x - 3, ye, 6, yf - ye); }
+  // windows: glass in a wooden grid, reflecting the sky
+  const ww = Math.min(86, w / nw * 0.62), wh = (yf - ye) * 0.47, wy = ye + (yf - ye) * 0.24;
+  for (let k = 0; k < nw; k++) { const x = x0 + (k + 0.5) * w / nw - ww / 2; c.fillStyle = '#6b4a30'; c.fillRect(x - 4, wy - 4, ww + 8, wh + 8);
+    c.fillStyle = vg(wy, wy + wh, [[0, '#9db6c4'], [0.5, '#5d707a'], [1, '#2c3438']]); c.fillRect(x, wy, ww, wh);
+    c.save(); c.beginPath(); c.rect(x, wy, ww, wh); c.clip(); c.fillStyle = 'rgba(255,255,255,0.16)'; poly([[x + ww * 0.1, wy + wh], [x + ww * 0.45, wy], [x + ww * 0.62, wy], [x + ww * 0.27, wy + wh]]); c.fill(); c.restore();
+    for (let q = 1; q < 4; q++) line(x + ww * q / 4, wy, x + ww * q / 4, wy + wh, '#4a3220', 1.6); for (let q = 1; q < 3; q++) line(x, wy + wh * q / 3, x + ww, wy + wh * q / 3, '#4a3220', 1.6);
+    c.fillStyle = '#7a5638'; c.fillRect(x - 6, wy + wh + 3, ww + 12, 4); }
+  // stone base
+  if (o.base !== 0) { c.fillStyle = '#6e6a62'; c.fillRect(x0 - 6, yf, w + 12, o.base ?? 10); }
+  // eave shadow on the wall
+  c.fillStyle = vg(ye, ye + 34, [[0, 'rgba(0,0,0,0.55)'], [1, 'rgba(0,0,0,0)']]); c.fillRect(x0, ye, w, 34);
+  // hipped roof with tile rows
+  const L0 = x0 - ov, R0 = x1 + ov, L1 = x0 + inset, R1 = x1 - inset, yr = ye - rh;
+  poly([[L0, ye], [L1, yr], [R1, yr], [R0, ye]]); c.fillStyle = vg(yr, ye, [[0, '#4a4c54'], [1, '#26272c']]); c.fill();
+  c.save(); poly([[L0, ye], [L1, yr], [R1, yr], [R0, ye]]); c.clip();
+  const nt = Math.round((R0 - L0) / 7); for (let k = 0; k <= nt; k++) { const u = k / nt; line(lerp(L0, R0, u), ye, lerp(L1, R1, u), yr, 'rgba(10,10,12,0.45)', 1.1); line(lerp(L0, R0, u) + 2, ye, lerp(L1, R1, u) + 1, yr, 'rgba(200,205,215,0.10)', 0.8); }
+  for (let y = yr + 7; y < ye; y += 7) line(L0, y, R0, y, 'rgba(0,0,0,0.18)', 0.7);
+  // hip faces: the side slopes catch less light
+  poly([[L0, ye], [L1, yr], [L1 + 6, yr], [L0 + rh * 0.9, ye]], 'rgba(255,255,255,0.05)'); poly([[R0, ye], [R1, yr], [R1 - 6, yr], [R0 - rh * 0.9, ye]], 'rgba(0,0,0,0.22)');
+  c.restore();
+  line(L0, ye, L1, yr, '#1e1f23', 3); line(R0, ye, R1, yr, '#1e1f23', 3);
+  c.fillStyle = '#1c1d21'; c.fillRect(L1 - 4, yr - 6, R1 - L1 + 8, 8); poly([[L1 - 8, yr + 2], [L1 - 10, yr - 12], [L1 + 6, yr - 6]], '#1c1d21'); poly([[R1 + 8, yr + 2], [R1 + 10, yr - 12], [R1 - 6, yr - 6]], '#1c1d21');
+  c.fillStyle = '#3a2a1e'; c.fillRect(L0, ye - 1, R0 - L0, 4); line(L0, ye + 3, R0, ye + 3, 'rgba(255,230,190,0.25)', 1);
+  if (o.haze) { c.fillStyle = o.haze; poly([[L0, ye], [L1, yr - 12], [R1, yr - 12], [R0, ye], [x1 + 6, ye], [x1 + 6, yf + 10], [x0 - 6, yf + 10], [x0 - 6, ye]]); c.fill(); }
+}
 /* 11 — 嘉義市 檜意森活村 */
 SCENES.push({ county: '嘉義市', place: '檜意森活村', sun: () => [1150, -40, 0.5], en: 'Hinoki Village', ll: '23.48°N 120.45°E', cam: [1.03, 1.09, 20, -20, 0, 0],
   sub: ['嘉義市的老木屋，還留著檜木的香氣。', 'Chiayi’s old wooden houses still smell of cypress.'],
   draw(lt) {
-    L('bg', 0, () => { sky([[0, '#9fbfcf'], [1, '#e8e2cf']]); const r = rng(141); for (let k = 0; k < 900; k++) { const x = r() * (W + 2 * M) - M, y = r() * 360, s = 6 + r() * 16; oval(x, y, s, s * 0.8, 0, mix('#3d5b35', '#9fbf6a', r() * (y < 200 ? 1 : 0.6), 0.85)); } }, { blur: 2.5 });
-    L('house', 0.4, () => {
-      c.fillStyle = vg(260, 530, [[0, '#5a3d2a'], [1, '#3a271b']]); c.fillRect(160, 270, 900, 260);
-      for (let k = 0; k < 60; k++) line(160, 280 + k * 4.2, 1060, 280 + k * 4.2, 'rgba(25,15,8,0.35)', 0.8);
-      for (let k = 0; k < 7; k++) { const x = 200 + k * 124; c.fillStyle = '#efe6d2'; c.fillRect(x, 330, 80, 110); c.strokeStyle = '#3a2618'; c.lineWidth = 3; c.strokeRect(x, 330, 80, 110); for (let q = 1; q < 4; q++) line(x, 330 + q * 27, x + 80, 330 + q * 27, '#3a2618', 1.2); line(x + 40, 330, x + 40, 440, '#3a2618', 1.5); }
-      poly([[110, 278], [300, 160], [920, 160], [1110, 278]]); c.fillStyle = vg(160, 280, [[0, '#4d4f55'], [1, '#2c2d32']]); c.fill(); for (let k = 0; k < 40; k++) line(130 + k * 25, 270, 310 + k * 15.5, 165, 'rgba(15,15,18,0.45)', 1.2);
-      c.fillStyle = '#6b4a33'; c.fillRect(140, 516, 940, 18); c.fillStyle = '#4a3222'; c.fillRect(140, 534, 940, 30); for (let k = 0; k < 10; k++) c.fillRect(150 + k * 100, 534, 8, 50); });
-    L('ground', 0.6, () => { c.fillStyle = vg(560, H, [[0, '#b5a58a'], [1, '#857559']]); c.fillRect(-M, 562, W + 2 * M, 200); const r = rng(142); for (let k = 0; k < 900; k++) disc(r() * (W + 2 * M) - M, 565 + r() * 150, 0.6 + r() * 1.4, `rgba(${r() < 0.5 ? '255,250,230' : '60,50,40'},0.3)`); });
-    D(0.6, () => { c.save(); c.globalCompositeOperation = 'multiply'; const r = rng(143); for (let k = 0; k < 30; k++) { const x = r() * W + Math.sin(T * 0.6 + k) * 6, y = 280 + r() * 330; oval(x, y, 20 + r() * 50, 8 + r() * 14, 0.3, 'rgba(90,80,110,0.35)'); } c.restore(); godrays(1150, -40, 900, 18, '255,235,190', 0.07, 144, 0.7, Math.PI * 0.68);
+    // per photos: a cluster of dark-stained Japanese-era dormitories with black tiled roofs under a clear sky, big shade trees,
+    // a lawn with a curving path and clipped shrubs; the cat's porch (engawa) runs along the front of the main house
+    L('bg', 0, () => { sky([[0, '#5f95c9'], [0.6, '#a9c9de'], [1, '#e6eadf']]); cumulus(980, 150, 380, 70, 146, '#ffffff', '#c9d6e2', -0.4); cumulus(520, 120, 260, 44, 147, '#ffffff', '#cdd9e4', -0.4);
+      const r = rng(141); for (let k = 0; k < 420; k++) { const x = r() * (W + 2 * M) - M, y = 150 + r() * 210 + Math.abs(x - 640) * 0.05, s = 10 + r() * 20; oval(x, y, s, s * 0.8, 0, mix('#3d5b35', '#8fb35e', r() * (y < 240 ? 1 : 0.6), 0.9)); } }, { blur: 2 });
+    L('far', 0.2, () => { hinokiHouse(-M - 40, 120, 330, 470, { haze: 'rgba(200,215,220,0.35)', win: 2 }); hinokiHouse(1120, W + M + 40, 340, 470, { haze: 'rgba(200,215,220,0.35)', win: 2 });
+      const r = rng(148); for (let k = 0; k < 80; k++) { const x = r() < 0.5 ? r() * 200 - M : 1100 + r() * 260, y = 470 + r() * 30, s = 8 + r() * 12; oval(x, y, s, s * 0.7, 0, mix('#3f6a33', '#7aa64a', r(), 0.95)); } }, { blur: 1 });
+    L('house', 0.4, () => { hinokiHouse(160, 1060, 278, 516, { ov: 60, rh: 108, inset: 190, win: 7, base: 0 });
+      c.fillStyle = '#6b4a33'; c.fillRect(140, 516, 940, 18); line(140, 516, 1080, 516, 'rgba(255,225,180,0.4)', 1.2); c.fillStyle = '#4a3222'; c.fillRect(140, 534, 940, 30); for (let k = 0; k < 10; k++) c.fillRect(150 + k * 100, 534, 8, 50);
+      c.fillStyle = '#7a756c'; c.fillRect(140, 556, 940, 10); for (let k = 0; k < 9; k++) { c.fillStyle = '#3a3630'; c.fillRect(200 + k * 100, 540, 22, 10); } });
+    L('ground', 0.6, () => { c.fillStyle = vg(560, H, [[0, '#7ea24e'], [1, '#4f7232']]); c.fillRect(-M, 562, W + 2 * M, 200);
+      const r = rng(142); for (let k = 0; k < 1400; k++) { const x = r() * (W + 2 * M) - M, y = 566 + r() * 150; line(x, y, x + (r() - 0.5) * 3, y - 3 - r() * 4, mix('#3f6228', '#a8c870', r(), 0.7), 1); }
+      // curving pale paved path toward the porch steps
+      c.beginPath(); c.moveTo(560, 566); c.bezierCurveTo(600, 610, 380, 640, 300, H + 10); c.lineTo(520, H + 10); c.bezierCurveTo(560, 650, 720, 610, 660, 566); c.closePath(); c.fillStyle = vg(566, H, [[0, '#cfc7b4'], [1, '#a9a08c']]); c.fill();
+      c.save(); c.clip(); for (let k = 0; k < 500; k++) disc(300 + r() * 400, 566 + r() * 160, 0.8 + r() * 1.6, `rgba(${r() < 0.5 ? '255,250,235' : '80,70,60'},0.3)`); c.restore();
+      c.fillStyle = '#8a8272'; c.fillRect(570, 560, 80, 8);
+      // clipped shrubs and garden rocks along the base of the house
+      for (let k = 0; k < 9; k++) { const x = 720 + k * 46 + r() * 10; oval(x, 572, 26, 16, 0, '#3e6a2c'); oval(x - 6, 566, 18, 10, 0, '#5f8f3c'); oval(x - 10, 562, 9, 5, 0, 'rgba(200,230,140,0.35)'); }
+      [[110, 600, 46, 22], [1180, 610, 60, 26], [760, 640, 38, 16]].forEach(([x, y, w, h]) => { oval(x, y, w, h, 0, '#8a8478'); oval(x - w * 0.2, y - h * 0.35, w * 0.6, h * 0.45, 0, 'rgba(255,250,235,0.25)'); oval(x, y + h * 0.7, w * 1.1, h * 0.3, 0, 'rgba(30,40,20,0.35)'); }); });
+    D(0.6, () => { c.save(); c.globalCompositeOperation = 'multiply'; const r = rng(143); for (let k = 0; k < 24; k++) { const x = r() * W + Math.sin(T * 0.6 + k) * 6, y = 300 + r() * 330; oval(x, y, 20 + r() * 50, 8 + r() * 14, 0.3, 'rgba(90,90,110,0.22)'); } c.restore(); godrays(1150, -40, 900, 18, '255,235,190', 0.07, 144, 0.7, Math.PI * 0.68);
       const x = 230 + lt * 30; actCat({ x, y: 516, s: 0.85, pose: 'walk', ph: walkPh(lt * 30, 0.85), rim: '255,230,180', look: 0.04, blink: blinkAt(lt, 10), shadowA: 0.3 });
       const r2 = rng(145); for (let k = 0; k < 14; k++) { const x2 = mod(r2() * W + T * 30, W + 100) - 50, y2 = mod(r2() * H + T * 40, H); c.save(); c.translate(x2, y2); c.rotate(T * 2 + k); oval(0, 0, 4, 2, 0, mix('#c58a2a', '#7aa23c', r2(), 0.85)); c.restore(); } });
   } });
