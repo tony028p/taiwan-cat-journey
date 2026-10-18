@@ -419,6 +419,24 @@ SCENES.push({ county: '臺東縣', place: '池上伯朗大道', en: 'Mr. Brown A
     D(1, () => { grassTufts(608, 640, 120, ['#7f8f2c', '#a8b045', '#5f7426'], 68, 1.4, 26); });
   } });
 
+/* Eluanbi lighthouse per photos: a thick, gently tapering white cylinder, gallery with railing, white lantern room and dome,
+   small gabled door porch; lit warm on the sunward (left) side, lavender in shade */
+function eluanbi(x, y, h) {
+  const w0 = h * 0.19, w1 = h * 0.145, top = y - h;
+  poly([[x - w0, y], [x - w1, top], [x + w1, top], [x + w0, y]]); c.fillStyle = hg(x - w0, x + w0, [[0, '#ffe2c4'], [0.3, '#fbeee0'], [0.62, '#d9cfd6'], [1, '#9f97ab']]); c.fill();
+  for (let k = 1; k < 6; k++) line(x - lerp(w0, w1, k / 6), y - h * k / 6, x + lerp(w0, w1, k / 6), y - h * k / 6, 'rgba(120,110,130,0.18)', 1);
+  [[0.35, 0], [0.62, 0.3]].forEach(([v, dx]) => { const wy = y - h * v; c.fillStyle = '#4a4656'; c.fillRect(x - 3 + dx * w0, wy - 8, 6, 12); });
+  // gallery + railing
+  c.fillStyle = '#e9e1df'; c.fillRect(x - w1 * 1.35, top - 4, w1 * 2.7, 6); c.fillStyle = 'rgba(120,110,130,0.5)'; c.fillRect(x - w1 * 1.35, top + 1, w1 * 2.7, 2);
+  for (let k = 0; k <= 10; k++) line(x - w1 * 1.3 + k * w1 * 0.26, top - 4, x - w1 * 1.3 + k * w1 * 0.26, top - 14, 'rgba(90,85,100,0.8)', 0.8); line(x - w1 * 1.32, top - 14, x + w1 * 1.32, top - 14, 'rgba(90,85,100,0.9)', 1.2);
+  // lantern room (white frame, glass) and dome
+  const lw = w1 * 0.8, ly = top - 4 - h * 0.13; c.fillStyle = hg(x - lw, x + lw, [[0, '#fff0de'], [1, '#aaa2b2']]); c.fillRect(x - lw, ly, lw * 2, h * 0.13);
+  c.fillStyle = 'rgba(70,80,100,0.85)'; c.fillRect(x - lw * 0.78, ly + 3, lw * 1.56, h * 0.13 - 7); for (let k = 1; k < 4; k++) line(x - lw * 0.78 + k * lw * 0.39, ly + 3, x - lw * 0.78 + k * lw * 0.39, ly + h * 0.13 - 4, '#e6dede', 1);
+  c.beginPath(); c.ellipse(x, ly, lw * 1.05, h * 0.07, 0, Math.PI, TAU); c.fillStyle = hg(x - lw, x + lw, [[0, '#fbe8d6'], [1, '#9890a4']]); c.fill(); disc(x, ly - h * 0.075, 2.5, '#d8d0d4'); line(x, ly - h * 0.08, x, ly - h * 0.13, '#555', 1);
+  // door porch
+  const px = x - w0 * 0.25, pw = w0 * 0.55; c.fillStyle = '#efe4dc'; c.fillRect(px - pw / 2, y - h * 0.13, pw, h * 0.13); poly([[px - pw * 0.62, y - h * 0.13], [px, y - h * 0.19], [px + pw * 0.62, y - h * 0.13]], '#e4d8d2'); c.fillStyle = '#5a5262'; c.fillRect(px - pw * 0.2, y - h * 0.1, pw * 0.4, h * 0.1);
+  return [x, ly + h * 0.06];
+}
 /* 6 — 屏東縣 鵝鑾鼻 sunset */
 SCENES.push({ county: '屏東縣', place: '鵝鑾鼻燈塔', sun: lt => [420, 372 + lt * 4, 1], en: 'Eluanbi Lighthouse', ll: '21.90°N 120.85°E', cam: [1.03, 1.09, 10, -20, 0, 0],
   sub: ['屏東的最南端，燈塔替夕陽守著海。', 'At Pingtung’s southern tip, the lighthouse keeps watch as the sun sets.'],
@@ -428,11 +446,27 @@ SCENES.push({ county: '屏東縣', place: '鵝鑾鼻燈塔', sun: lt => [420, 37
     D(0, () => { glow(sx, sy, 420, '255,170,100', 0.55); c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(sx, sy, 30, '#ffe6b0'); glow(sx, sy, 70, '255,230,180', 0.7); c.restore(); });
     L('sea', 0.12, () => { c.fillStyle = vg(hz, H, [[0, '#d48978'], [0.35, '#7a5a78'], [1, '#2c2a45']]); c.fillRect(-M, hz, W + 2 * M, H); });
     D(0.12, () => { shimmer(hz + 2, H, 260, '255,200,140', 72, { xc: sx, spread: 300, a: 0.85, len: 30, w: 1.5, op: 'lighter' }); });
-    L('cape', 0.6, () => { const f = x => 470 - 120 * sm((x - 520) / 500) - fbm1(x * 0.01 + 3) * 16; c.beginPath(); c.moveTo(380, H); for (let x = 380; x <= W + M; x += 4) c.lineTo(x, x < 420 ? 560 - (x - 380) * 2 : Math.min(f(x), 560)); c.lineTo(W + M, H); c.closePath(); c.fillStyle = vg(340, H, [[0, '#3b3a3d'], [1, '#1a1719']]); c.fill();
-      const lp = lighthouse(1010, 352, 150); c.fillStyle = 'rgba(30,25,30,0.55)'; c.fillRect(980, 300, 70, 60);
-      palm(860, 440, 150, 1, '#1d1a1e'); palm(1160, 380, 170, 2, '#1d1a1e'); palm(1220, 400, 130, 3, '#1d1a1e'); });
-    D(0.6, () => { const a = Math.max(0, Math.cos(T * 1.2)); glow(1010, 352 - 150 - 10, 50, '255,240,190', 0.6); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,240,200,${0.18 * a})`; c.beginPath(); c.moveTo(1010, 192); c.lineTo(1010 - 700 * Math.sin(T * 1.2 + 1.6), 150); c.lineTo(1010 - 700 * Math.sin(T * 1.2 + 1.6), 240); c.closePath(); c.fill(); c.restore();
-      const x = 500 + lt * 26, f = x2 => 470 - 120 * sm((x2 - 520) / 500) - fbm1(x2 * 0.01 + 3) * 16; actCat({ x, y: Math.min(f(x), 560) + 2, s: 0.85, pose: 'walk', ph: walkPh(lt * 26, 0.85), sil: true, rim: '255,170,110', look: -0.05, shadow: false }); });
+    const f = x => 470 - 120 * sm((x - 520) / 500) - fbm1(x * 0.01 + 3) * 16;
+    L('cape', 0.6, () => {
+      // white compound behind the ridge: arcaded building, the fort wall, flat-roofed annexes, then the tower
+      const base = (x0, x1) => { let m = 0; for (let x = x0; x <= x1; x += 6) m = Math.max(m, f(x)); return m + 6; };
+      const wallY = base(760, 1290) - 0;
+      [[1150, 1240, 26], [1210, 1300, 20]].forEach(([x0, x1, hh]) => { const b = base(x0, x1); c.fillStyle = hg(x0, x1, [[0, '#f7e2cf'], [1, '#c8bccb']]); c.fillRect(x0, b - hh - 30, x1 - x0, hh + 30); c.fillStyle = '#e8dcd6'; c.fillRect(x0 - 3, b - hh - 33, x1 - x0 + 6, 4); });
+      const bx0 = 790, bx1 = 960, bb = base(bx0, bx1), bt = Math.min(f(bx0), f(bx1)) - 40; c.fillStyle = hg(bx0, bx1, [[0, '#ffe4cc'], [1, '#d6c8cf']]); c.fillRect(bx0, bt, bx1 - bx0, bb - bt); c.fillStyle = '#f2e6de'; c.fillRect(bx0 - 4, bt - 4, bx1 - bx0 + 8, 6);
+      for (let k = 0; k < 6; k++) { const ax = bx0 + 14 + k * 26; c.fillStyle = 'rgba(80,70,95,0.75)'; c.beginPath(); c.moveTo(ax, bt + 34); c.lineTo(ax, bt + 16); c.arc(ax + 8, bt + 16, 8, Math.PI, TAU); c.lineTo(ax + 16, bt + 34); c.fill(); }
+      const lp = eluanbi(1012, base(990, 1034) - 10, 172);
+      palm(1150, base(1140, 1160) - 4, 120, 2, '#3a4a2c'); palm(1235, base(1225, 1245) - 6, 104, 3, '#34442a');
+      c.beginPath(); c.moveTo(380, H); for (let x = 380; x <= W + M; x += 4) c.lineTo(x, x < 420 ? 560 - (x - 380) * 2 : Math.min(f(x), 560)); c.lineTo(W + M, H); c.closePath();
+      c.fillStyle = vg(330, H, [[0, '#b59a5c'], [0.35, '#7a7a44'], [1, '#2a2e1f']]); c.fill();
+      c.save(); c.clip(); const r = rng(73); for (let k = 0; k < 2200; k++) { const x = 380 + r() * (W + M - 380), y = Math.min(f(x), 560) + Math.pow(r(), 1.6) * 260, l = 3 + r() * 6; c.strokeStyle = r() < 0.5 ? `rgba(255,196,120,${0.2 + r() * 0.22})` : `rgba(50,45,25,${0.15 + r() * 0.2})`; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y); c.lineTo(x + (r() - 0.5) * 3, y - l); c.stroke(); }
+        // the white fort wall running along the plateau in front of the compound
+        c.restore(); const wf = x => Math.min(f(x), 560) - 12 * sm((x - 770) / 40); c.beginPath(); for (let x = 770; x <= W + M; x += 6) c.lineTo(x, wf(x)); for (let x = W + M; x >= 770; x -= 6) c.lineTo(x, Math.min(f(x), 560) + 8); c.closePath(); c.fillStyle = hg(770, 1290, [[0, '#ffe6d0'], [1, '#d9cad0']]); c.fill();
+        c.strokeStyle = 'rgba(110,100,120,0.45)'; c.lineWidth = 1; c.beginPath(); for (let x = 760; x <= W + M; x += 6) c.lineTo(x, wf(x) + 3); c.stroke();
+      // cliff face at the left edge, warm sunlit rock
+      c.beginPath(); c.moveTo(380, H); c.lineTo(380, 560); c.lineTo(420, 480); c.lineTo(430, 520); c.lineTo(400, H); c.closePath(); c.fillStyle = vg(480, H, [[0, '#8a6448'], [1, '#2e2420']]); c.fill();
+      void lp; });
+    D(0.6, () => { const a = Math.max(0, Math.cos(T * 1.2)); const by = f(1012) - 172 - 26; glow(1012, by, 50, '255,240,190', 0.6); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = `rgba(255,240,200,${0.18 * a})`; c.beginPath(); c.moveTo(1012, by); c.lineTo(1012 - 700 * Math.sin(T * 1.2 + 1.6), by - 42); c.lineTo(1012 - 700 * Math.sin(T * 1.2 + 1.6), by + 48); c.closePath(); c.fill(); c.restore();
+      const x = 500 + lt * 26; actCat({ x, y: Math.min(f(x), 560) + 2, s: 0.85, pose: 'walk', ph: walkPh(lt * 26, 0.85), rim: '255,180,120', look: -0.05, shadow: false }); });
   } });
 
 /* 7 — 高雄市 蓮池潭 龍虎塔 */
