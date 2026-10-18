@@ -541,9 +541,9 @@ const CROWD = {
   L12: [{ after: 'bridge', d: 0.4, x: 300, y: 392, s: 0.24, act: 'walk', v: 16, coat: 'black', haze: HZ.far, seed: 19 }, { after: 'bridge', d: 0.4, x: 420, y: 392, s: 0.24, act: 'bike', v: 40, coat: 'white', haze: HZ.far, seed: 20 }],
   L13: [{ after: 'house', d: 0.35, x: 1010, y: 470, s: 0.3, act: 'walk', v: -10, face: -1, coat: 'cream', haze: HZ.day, seed: 77 }],
   L16: [{ d: 0.5, x: 760, y: 556, s: 0.3, act: 'hike', v: 10, coat: 'grey', haze: HZ.day, seed: 78 }, { d: 0.5, x: 728, y: 558, s: 0.28, act: 'hike', v: 10, coat: 'bicolor', col: '#d9573a', haze: HZ.day, seed: 79 }],
-  L18: [{ d: 0.6, x: 760, y: 470, s: 0.32, act: 'walk', v: 12, coat: 'cream', haze: HZ.night, seed: 28 }, { d: 0.6, x: 800, y: 470, s: 0.3, act: 'walk', v: 12, coat: 'siamese', haze: HZ.night, seed: 29 }],
+  L18: [{ d: 0.6, x: 760, y: 472, s: 0.26, act: 'walk', v: 12, coat: 'cream', haze: HZ.night, seed: 28 }, { d: 0.6, x: 794, y: 472, s: 0.25, act: 'walk', v: 12, coat: 'siamese', haze: HZ.night, seed: 29 }],
   L20: [{ d: 0.6, x: 870, y: 403, s: 0.4, act: 'loaf', coat: 'black', build: 'aloof', haze: HZ.day, seed: 32 }],
-  T2: [{ d: 0.3, x: 880, y: 330, s: 0.16, act: 'hike', v: 8, coat: 'grey', haze: HZ.far, seed: 36 }, { d: 0.3, x: 905, y: 326, s: 0.15, act: 'hike', v: 8, coat: 'cream', col: '#d9573a', haze: HZ.far, seed: 37 }],
+  T2: [{ d: 0.25, x: 812, y: 394, s: 0.12, act: 'hike', v: 5, coat: 'grey', haze: HZ.far, seed: 36 }, { d: 0.25, x: 830, y: 395, s: 0.115, act: 'hike', v: 5, coat: 'cream', col: '#d9573a', haze: HZ.far, seed: 37 }],
   // Huadong valley: cyclists on the far bike path
   T4: [{ d: 0.55, x: 760, y: 526, s: 0.36, act: 'bike', v: -26, face: -1, coat: 'black', haze: HZ.day, seed: 39 }, { d: 0.55, x: 840, y: 526, s: 0.36, act: 'bike', v: -26, face: -1, coat: 'cream', col: '#d9573a', haze: HZ.day, seed: 40 }],
   T8: [{ after: 'far', d: 0.3, x: 900, y: 466, s: 0.16, act: 'bike', v: -30, face: -1, coat: 'black', haze: HZ.far, seed: 84 }],

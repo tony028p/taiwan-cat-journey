@@ -170,19 +170,44 @@ SCENES.push({ county: '南投縣', place: '日月潭', en: 'Sun Moon Lake', ll: 
     D(0.95, () => actCat({ x: 230, y: 580, s: 1.1, pose: 'sit', rim: '255,225,190', look: -0.04, blink: blinkAt(lt, 13) }));
   } });
 
-/* 15 — 臺中市 高美濕地 */
-SCENES.push({ county: '臺中市', place: '高美濕地', sun: lt => [560, 365 + lt * 4, 0.9], en: 'Gaomei Wetlands', ll: '24.31°N 120.55°E', cam: [1.02, 1.07, 20, -20, 0, 0],
+/* Gaomei sunset clouds: long streaks, dark violet on top, lit orange-red underneath (brighter the nearer the sun) */
+function gmClouds(seed, n, y0, y1, sx) {
+  const r = rng(seed);
+  for (let k = 0; k < n; k++) { const x = -M + r() * (W + 2 * M), y = y0 + Math.pow(r(), 0.8) * (y1 - y0), w = 120 + r() * 320, h = 6 + r() * 14, near = clamp(1 - Math.abs(x - sx) / 700);
+    for (let j = 0; j < 5; j++) { const ox = (r() - 0.5) * w * 0.6, oy = (r() - 0.5) * h; oval(x + ox, y + oy, w * (0.3 + r() * 0.3), h * (0.6 + r() * 0.5), (r() - 0.5) * 0.06, `rgba(${70 + near * 40 | 0},${40 + near * 20 | 0},${80 - near * 20 | 0},${0.45 + r() * 0.3})`); }
+    oval(x + (sx - x) * 0.02, y + h * 0.5, w * 0.45, h * 0.22, 0, `rgba(255,${70 + near * 80 | 0},${50 + near * 30 | 0},${0.22 + near * 0.38})`); }
+}
+/* 15 — 臺中市 高美濕地 — per photos: a row of wind turbines on the far sea wall receding into the distance, the sun setting
+   among them under streaky fire-lit clouds, and the wet tidal flat mirroring it all between dark sand bars */
+SCENES.push({ county: '臺中市', place: '高美濕地', sun: lt => [560, 380 + lt * 3, 0.95], en: 'Gaomei Wetlands', ll: '24.31°N 120.55°E', cam: [1.02, 1.07, 20, -20, 0, 0],
   sub: ['臺中高美濕地，風車慢慢轉著黃昏。', 'At Gaomei Wetlands, the windmills slowly turn the dusk.'],
   draw(lt) {
-    const hz = 400, sx = 560, sy = 365 + lt * 4;
-    const skyP = () => { sky([[0, '#2f3361'], [0.35, '#8e5a85'], [0.5, '#ec8a6a'], [0.56, '#ffb27a'], [1, '#ffd29a']]); stratus(300, 260, 900, 40, 'rgba(255,140,140,0.45)'); stratus(1000, 300, 900, 30, 'rgba(255,170,140,0.5)'); };
+    const hz = 404, sx = 560, sy = 380 + lt * 3;
+    const TB = []; for (let k = 0; k < 15; k++) { const t = k / 14, x = lerp(250, 1290, 1 - Math.pow(1 - t, 1.35)); TB.push([x, hz - 2, lerp(215, 46, Math.pow(t, 0.75)), k]); }
+    const skyP = () => { sky([[0, '#1d2550'], [0.3, '#5a3a6e'], [0.55, '#d0604a'], [0.72, '#ff9a4a'], [0.84, '#ffc06a'], [1, '#ffd890']]); gmClouds(1501, 26, 130, 340, sx); stratus(sx, 380, 900, 60, 'rgba(255,190,110,0.35)'); };
     L('sky', 0, skyP);
-    D(0, () => { glow(sx, sy, 420, '255,160,100', 0.55); c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(sx, sy, 26, '#ffe2a8'); c.restore(); });
-    L('wet', 0.2, () => { c.save(); c.beginPath(); c.rect(-M, hz, W + 2 * M, H); c.clip(); c.translate(0, 2 * hz); c.scale(1, -1); c.drawImage(getLayer('sky', skyP), -M, 0, W + 2 * M, H); c.restore(); c.fillStyle = 'rgba(40,30,50,0.25)'; c.fillRect(-M, hz, W + 2 * M, H);
-      const r = rng(181); for (let k = 0; k < 40; k++) { const y = hz + 4 + Math.pow(r(), 1.5) * 220; oval(r() * W, y, 30 + r() * 140, 1 + (y - hz) * 0.03, 0, 'rgba(50,35,45,0.55)'); } });
-    D(0.2, () => { glow(sx, 2 * hz - sy, 200, '255,170,110', 0.35); shimmer(hz + 2, H, 100, '255,200,150', 182, { xc: sx, spread: 200, a: 0.5, op: 'lighter' });
-      for (let k = 0; k < 12; k++) { const x = 60 + k * 110, h = 150 - Math.abs(k - 5) * 4; turbine(x, hz, h, T * 0.9 + k * 0.7, 'rgba(40,30,45,0.9)'); c.save(); c.translate(0, 2 * hz); c.scale(1, -1); c.globalAlpha = 0.35; turbine(x, hz, h, T * 0.9 + k * 0.7, 'rgba(40,30,45,0.9)'); c.restore(); } });
-    L('walk', 0.8, () => { poly([[-M, 560], [W + M, 540], [W + M, 556], [-M, 578]], '#2b2129'); for (let k = 0; k < 30; k++) { const x = -M + k * 50; line(x, 578 - k * 0.6 + 0, x, 600, 'rgba(35,28,35,0.9)', 3); } });
+    D(0, () => { glow(sx, sy, 460, '255,150,80', 0.55); glow(sx, sy, 120, '255,220,150', 0.6); c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(sx, sy, 22, '#fff0c0'); c.restore(); });
+    // far sea wall with the turbines (cached; only the rotors move)
+    L('wall', 0.12, () => { c.fillStyle = '#2a1c26'; c.fillRect(-M, hz - 4, W + 2 * M, 6); for (let x = -M; x < W + M; x += 3) if (hash(x) < 0.3) c.fillRect(x, hz - 4 - hash(x + 1) * 3, 2, 3);
+      TB.forEach(([x, y, h]) => line(x, y, x, y - h, '#2a1c26', Math.max(1.2, h * 0.028))); });
+    D(0.12, () => TB.forEach(([x, y, h, k]) => { disc(x, y - h, h * 0.03, '#2a1c26'); const a = T * 0.9 + k * 0.7;
+      for (let j = 0; j < 3; j++) { c.save(); c.translate(x, y - h); c.rotate(a + j * TAU / 3); poly([[0, -h * 0.015], [h * 0.46, -h * 0.004], [h * 0.46, h * 0.006], [0, h * 0.02]], '#2a1c26'); c.restore(); } }));
+    // the tidal flat: the sky mirrored, darkened sand bars, then the turbines' reflections
+    L('wet', 0.2, () => { c.save(); c.beginPath(); c.rect(-M, hz, W + 2 * M, H); c.clip(); c.translate(0, 2 * hz); c.scale(1, -1); c.drawImage(getLayer('sky', skyP), -M, 0, W + 2 * M, H); c.restore();
+      c.fillStyle = vg(hz, H, [[0, 'rgba(60,30,40,0.05)'], [1, 'rgba(40,20,30,0.35)']]); c.fillRect(-M, hz, W + 2 * M, H);
+      TB.forEach(([x, y, h]) => { c.globalAlpha = 0.55; line(x, 2 * hz - y, x, 2 * hz - y + h, '#3a2228', Math.max(1.2, h * 0.028)); c.globalAlpha = 1; });
+      const r = rng(181); for (let k = 0; k < 46; k++) { const y = hz + 6 + Math.pow(r(), 1.4) * 230, d = (y - hz) / 230, x = -M + r() * (W + 2 * M), w = 40 + r() * 200 * (0.4 + d);
+        c.fillStyle = `rgba(${40 + r() * 20 | 0},${24 + r() * 10 | 0},${30 + r() * 10 | 0},${0.7 + d * 0.25})`; c.beginPath(); c.ellipse(x, y, w, 1.5 + d * 9, 0, 0, TAU); c.fill();
+        oval(x - w * 0.1, y - (1 + d * 6), w * 0.8, 0.8 + d * 1.2, 0, `rgba(255,170,100,${0.18 + 0.2 * clamp(1 - Math.abs(x - sx) / 500)})`); } });
+    D(0.2, () => { glow(sx, 2 * hz - sy, 220, '255,170,100', 0.4); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = hg(sx - 40, sx + 40, [[0, 'rgba(255,200,120,0)'], [0.5, 'rgba(255,210,140,0.5)'], [1, 'rgba(255,200,120,0)']]); c.fillRect(sx - 40, hz + 2, 80, 200); c.restore();
+      shimmer(hz + 2, H, 120, '255,200,150', 182, { xc: sx, spread: 260, a: 0.55, op: 'lighter' });
+      TB.forEach(([x, y, h, k]) => { const a = T * 0.9 + k * 0.7; c.save(); c.globalAlpha = 0.4; c.translate(x, 2 * hz - y + h); c.scale(1, -1);
+        for (let j = 0; j < 3; j++) { c.save(); c.rotate(a + j * TAU / 3); poly([[0, -h * 0.015], [h * 0.46, -h * 0.004], [h * 0.46, h * 0.006], [0, h * 0.02]], '#3a2228'); c.restore(); } c.restore(); }); });
+    // the boardwalk out over the flat
+    L('walk', 0.8, () => { poly([[-M, 560], [W + M, 540], [W + M, 556], [-M, 578]], '#2b1d24'); c.strokeStyle = 'rgba(255,170,110,0.55)'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(-M, 560); c.lineTo(W + M, 540); c.stroke();
+      for (let k = 0; k < 60; k++) { const x = -M + k * 25; line(x, 560 - (x + M) * 20 / (W + 2 * M), x + 1, 576 - (x + M) * 20 / (W + 2 * M), 'rgba(0,0,0,0.25)', 1); }
+      for (let k = 0; k < 30; k++) { const x = -M + k * 50; line(x, 578 - k * 0.6, x, 610, 'rgba(35,24,30,0.95)', 3); }
+      c.globalAlpha = 0.3; for (let k = 0; k < 30; k++) { const x = -M + k * 50; line(x, 612, x, 640, '#2b1d24', 3); } c.globalAlpha = 1; });
     D(0.8, () => { const x = 280 + lt * 28, y = 560 - (x + M) * 20 / (W + 2 * M); actCat({ x, y, s: 0.85, pose: 'walk', ph: walkPh(lt * 28, 0.85), sil: true, rim: '255,165,110', shadow: false });
       c.save(); c.translate(0, 2 * 600); c.scale(1, -1); c.globalAlpha = 0.3; actCat({ x, y, s: 0.85, pose: 'walk', ph: walkPh(lt * 28, 0.85), sil: true, shadow: false }); c.restore(); flock(6, 800, 230, -12, 0.6, 'rgba(30,20,35,0.85)', 183, lt); });
   } });
@@ -234,40 +259,133 @@ SCENES.push({ county: '苗栗縣', place: '龍騰斷橋', sun: () => [180, 120, 
       for (let k = 0; k < 26; k++) { const x = 1040 + r() * 260, y = 70 + r() * 70; oval(x, y, 14 + r() * 10, 10 + r() * 6, r() * 3, k % 3 ? 'rgba(255,253,246,0.95)' : 'rgba(70,110,50,0.85)'); } c.restore(); });
   } });
 
-/* 17 — 新竹縣 新埔柿餅 */
+/* Xinpu persimmon-farm helpers (per photos): round wire sieves on trestles packed with rings of bright orange persimmon cakes,
+   tall rack carts of stacked sieves, and an old red-brick Hakka farmhouse with a dark tile roof behind the drying yard */
+function xpSieve(x, y, s, seed) { // y = ground under the trestle
+  const rx = 50 * s, ry = 15 * s, ty = y - 30 * s, r = rng(seed);
+  oval(x, y + 2 * s, rx * 0.9, ry * 0.6, 0, 'rgba(70,50,30,0.22)');
+  c.strokeStyle = '#4a4440'; c.lineWidth = Math.max(1, 1.6 * s); [[-0.7, 1], [0.7, 1], [-0.5, 0.6], [0.5, 0.6]].forEach(([u, v]) => line(x + u * rx, ty + ry * 0.2, x + u * rx * 0.95, y - (1 - v) * 6 * s, '#4a4440', Math.max(1, 1.5 * s)));
+  oval(x, ty + 1.5 * s, rx, ry, 0, '#3a3430'); oval(x, ty, rx, ry, 0, '#8a7a66');
+  c.save(); c.beginPath(); c.ellipse(x, ty, rx * 0.97, ry * 0.94, 0, 0, TAU); c.clip();
+  c.strokeStyle = 'rgba(60,50,40,0.35)'; c.lineWidth = 0.6; for (let k = -rx; k < rx; k += 4 * s) line(x + k, ty - ry, x + k, ty + ry, c.strokeStyle, 0.6);
+  for (let ring = 0; ring < 4; ring++) { const rr = 0.86 - ring * 0.25, n = Math.max(1, Math.round(20 * rr + 1));
+    for (let k = 0; k < n; k++) { const a = k / n * TAU + ring * 0.4, px = x + Math.cos(a) * rx * rr, py = ty + Math.sin(a) * ry * rr, z = 4.6 * s * (0.9 + r() * 0.2);
+      oval(px, py + 0.8 * s, z, z * 0.42, 0, '#a8420e'); oval(px, py, z, z * 0.4, 0, mix('#f07a12', '#ff9e30', r())); oval(px - z * 0.3, py - z * 0.12, z * 0.42, z * 0.14, 0, 'rgba(255,225,160,0.75)'); } }
+  c.restore(); c.strokeStyle = '#2e2a28'; c.lineWidth = Math.max(1, 1.4 * s); c.beginPath(); c.ellipse(x, ty, rx, ry, 0, 0, TAU); c.stroke();
+}
+function xpCart(x, y, w, h, seed) { // a tall wheeled rack of stacked sieves, seen from the side
+  const r = rng(seed), n = Math.round(h / 13);
+  oval(x + w / 2, y + 2, w * 0.6, 4, 0, 'rgba(60,45,30,0.25)');
+  for (let k = 0; k < n; k++) { const yy = y - 8 - k * (h - 10) / n; oval(x + w / 2, yy + 1.5, w / 2, 3.2, 0, '#5a4a3a');
+    for (let j = 0; j < 12; j++) { const px = x + 4 + (j + 0.5) * (w - 8) / 12; oval(px, yy - 1, (w - 8) / 26, 2.4, 0, mix('#e86e10', '#ff9a2a', r())); } }
+  [x, x + w].forEach(px => line(px, y, px, y - h, '#3a4250', 2.2)); line(x, y - h, x + w, y - h, '#3a4250', 2);
+  [x + 3, x + w - 3].forEach(px => disc(px, y + 1, 3, '#1e1e22'));
+}
+function xpHouse(x, y, w, h) { // long red-brick Hakka house, dark tile roof
+  c.fillStyle = vg(y - h, y, [[0, '#b0503a'], [1, '#8a3a2a']]); c.fillRect(x, y - h, w, h);
+  for (let yy = y - h; yy < y; yy += 3) line(x, yy, x + w, yy, 'rgba(70,25,15,0.25)', 0.6);
+  c.fillStyle = '#c9c0b0'; c.fillRect(x, y - 8, w, 8);
+  for (let k = 0; k < Math.floor(w / 60); k++) { const wx = x + 22 + k * 60; c.fillStyle = '#2e2420'; c.fillRect(wx, y - h * 0.62, 18, h * 0.32); c.fillStyle = '#6a4a32'; for (let j = 0; j < 4; j++) c.fillRect(wx + 2 + j * 4.5, y - h * 0.62, 1.4, h * 0.32); }
+  c.fillStyle = '#3a2a22'; c.fillRect(x + w * 0.46, y - h * 0.7, w * 0.08, h * 0.7 - 8); c.fillStyle = '#c23a2a'; c.fillRect(x + w * 0.455, y - h * 0.76, w * 0.09, 6);
+  const rt = y - h - 20; c.fillStyle = vg(rt, y - h + 3, [[0, '#4a3a34'], [1, '#2e2420']]); c.beginPath(); c.moveTo(x - 8, y - h + 3); c.lineTo(x + 6, rt); c.lineTo(x + w - 6, rt); c.lineTo(x + w + 8, y - h + 3); c.closePath(); c.fill();
+  c.save(); c.clip(); for (let xx = x - 8; xx < x + w + 8; xx += 3) line(xx, rt, xx, y - h + 3, 'rgba(0,0,0,0.18)', 1); c.restore();
+  c.strokeStyle = '#2a1e1a'; c.lineWidth = 3; c.beginPath(); c.moveTo(x + 2, rt - 3); c.quadraticCurveTo(x + w / 2, rt + 2, x + w - 2, rt - 3); c.stroke();
+}
+/* 17 — 新竹縣 新埔柿餅 — per photos: a drying yard of sieves on trestles, rack carts, a red-brick farmhouse and green hills under a
+   blue autumn sky; the 九降風 blows leaves across */
 SCENES.push({ county: '新竹縣', place: '新埔柿餅園', en: 'Persimmon Farms of Xinpu', ll: '24.83°N 121.07°E', cam: [1.02, 1.08, 20, -20, 0, 0],
   sub: ['新竹的九降風，把柿子吹成了金黃色。', 'Hsinchu’s autumn wind dries the persimmons to gold.'],
+  sun: () => [980, 160, 0.5],
   draw(lt) {
-    L('sky', 0, () => { sky([[0, '#6f9dc8'], [1, '#f1dfb8']]); cumulus(900, 210, 360, 80, 201, '#fff7e8', '#d8c7b2', -0.3); }, { blur: 2 });
-    L('hill', 0.08, () => mountain({ base: 360, amp: 60, f: 0.004, seed: 202, top: '#6d8a6a', bot: '#8a9c7c', tex: 'forest', dark: '#4f6b4c', mid: '#6b8862', light: '#a7bd8a', depth: 60, n: 1200, r: 3 }), { blur: 0.8 });
-    L('farm', 0.25, () => { minnanHouse(160, 400, 320, 70, 1); minnanHouse(560, 396, 220, 60, 0.9); c.fillStyle = vg(400, H, [[0, '#b9a37a'], [1, '#8a7452']]); c.fillRect(-M, 400, W + 2 * M, H); });
-    L('racks', 0.6, () => { for (let row = 0; row < 4; row++) { const y = 430 + row * 40 + row * row * 6, s = 0.6 + row * 0.3, n = 12 - row * 2; for (let k = 0; k < n; k++) { const x = -60 + k * (W + 120) / n + (row % 2) * 40, rx = 52 * s, ry = 16 * s;
-        c.fillStyle = '#7a6040'; c.beginPath(); c.ellipse(x, y + 4 * s, rx * 1.02, ry * 1.1, 0, 0, TAU); c.fill(); c.fillStyle = '#c9a66a'; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, TAU); c.fill();
-        c.save(); c.beginPath(); c.ellipse(x, y, rx * 0.94, ry * 0.9, 0, 0, TAU); c.clip(); const r = rng(row * 50 + k); for (let a = 0; a < 26; a++) { const px = x + (r() - 0.5) * rx * 1.9, py = y + (r() - 0.5) * ry * 1.8; oval(px, py, 6 * s, 2.6 * s, 0, mix('#e0741c', '#f29a3a', r())); oval(px - 1.5 * s, py - 0.6 * s, 2.5 * s, 1 * s, 0, 'rgba(255,220,150,0.6)'); } c.restore(); } } });
+    L('sky', 0, () => { sky([[0, '#3f7cc0'], [0.6, '#8ab8e0'], [1, '#e8eef0']]); cumulus(900, 200, 380, 80, 201, '#ffffff', '#c8d2dc', -0.3); cumulus(300, 250, 260, 50, 204, '#ffffff', '#ccd6de', 0.3); }, { blur: 1.5 });
+    L('hill', 0.08, () => mountain({ base: 390, amp: 70, f: 0.004, seed: 202, top: '#4a7a46', bot: '#5e8a52', tex: 'forest', dark: '#2f5a32', mid: '#4f7c44', light: '#8cb46a', depth: 70, n: 1600, r: 3.4 }), { blur: 0.6 });
+    L('farm', 0.22, () => { xpHouse(140, 420, 470, 50); xpHouse(700, 416, 300, 44); c.fillStyle = vg(418, H, [[0, '#b8b0a2'], [1, '#9a9282']]); c.fillRect(-M, 418, W + 2 * M, H);
+      const r = rng(205); for (let k = 0; k < 300; k++) { c.fillStyle = r() < 0.5 ? 'rgba(255,255,255,0.06)' : 'rgba(60,50,40,0.06)'; c.fillRect(-M + r() * (W + 2 * M), 420 + r() * 300, 20 + r() * 40, 2 + r() * 3); }
+      xpCart(1030, 448, 70, 120, 206); xpCart(1110, 452, 74, 128, 207); xpCart(1196, 456, 78, 136, 208); xpCart(40, 452, 70, 120, 209); });
+    // rows of sieves on trestles receding across the yard
+    L('racks', 0.6, () => { const ROWS = [[442, 0.44, 20], [458, 0.52, 17], [480, 0.63, 14], [508, 0.77, 12], [546, 0.96, 10], [598, 1.18, 8]], jr = rng(210);
+      ROWS.forEach(([gy, s, n], row) => { for (let k = 0; k < n; k++) { const x = -50 + (k + (row % 2) * 0.5 + (jr() - 0.5) * 0.15) * (W + 100) / n; if (row < 3 && x > 1010) continue; if (row === 5 && x > 180 && x < 560) continue; xpSieve(x, gy + (jr() - 0.5) * 4 * s, s, row * 50 + k); } }); });
     D(0.6, () => { const r = rng(203); for (let k = 0; k < 40; k++) { const x2 = mod(r() * W * 1.3 + T * (160 + r() * 120), W + 200) - 100, y2 = 200 + r() * 400 + Math.sin(T * 3 + k) * 20; c.save(); c.translate(x2, y2); c.rotate(T * 4 + k); oval(0, 0, 5, 2.4, 0, mix('#c47a2a', '#9a6a2a', r(), 0.85)); c.restore(); }
-      for (let k = 0; k < 8; k++) { const u = mod(T * 0.4 + k / 8, 1); c.strokeStyle = `rgba(255,245,220,${0.18 * Math.sin(u * Math.PI)})`; c.lineWidth = 1; c.beginPath(); c.moveTo(-M + u * 1600 - 300, 300 + k * 40); c.quadraticCurveTo(u * 1600, 290 + k * 40, u * 1600 + 200, 300 + k * 40); c.stroke(); } });
-    L('fg', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#a68e66'], [1, '#6d5a3e']]); c.fillRect(-M, 600, W + 2 * M, 200); });
+      for (let k = 0; k < 8; k++) { const u = mod(T * 0.4 + k / 8, 1); c.strokeStyle = `rgba(255,255,255,${0.2 * Math.sin(u * Math.PI)})`; c.lineWidth = 1; c.beginPath(); c.moveTo(-M + u * 1600 - 300, 300 + k * 40); c.quadraticCurveTo(u * 1600, 290 + k * 40, u * 1600 + 200, 300 + k * 40); c.stroke(); } });
+    L('fg', 0.95, () => { c.fillStyle = vg(596, H, [[0, '#a8a090'], [1, '#868070']]); c.fillRect(-M, 604, W + 2 * M, 200); line(-M, 604, W + M, 604, 'rgba(255,255,255,0.25)', 1); });
     D(0.95, () => { const x = 300 + lt * 30; actCat({ x, y: 612, s: 1.0, pose: 'walk', ph: walkPh(lt * 30, 1.0), rim: '255,220,170', look: 0.05, blink: blinkAt(lt, 15), shadowA: 0.3 }); });
   } });
 
-/* 18 — 新竹市 東門城 */
+/* East Gate helpers (per photos): a warm-lit ashlar gate block with a round-arched passage, crowned by a two-storey
+   pavilion — red columns, glowing interior, two tiers of dark tiled roof with strongly upswept eaves and swallowtail ridge. */
+function egRoof(x, y, w, h, ov, col) {
+  const tip = h * 0.42, L0 = x - w / 2 - ov, R0 = x + w / 2 + ov;
+  c.fillStyle = 'rgba(255,170,90,0.85)'; c.beginPath(); c.moveTo(L0 + 6, y - tip + 4); c.quadraticCurveTo(x - w / 2 + ov * 0.2, y + 6, x, y + 7); c.quadraticCurveTo(x + w / 2 - ov * 0.2, y + 6, R0 - 6, y - tip + 4); c.lineTo(R0 - 6, y - tip + 8); c.quadraticCurveTo(x + w / 2, y + 12, x, y + 13); c.quadraticCurveTo(x - w / 2, y + 12, L0 + 6, y - tip + 8); c.fill(); // lit soffit
+  const body = () => { c.beginPath(); c.moveTo(L0, y - tip); c.quadraticCurveTo(x - w / 2 + ov * 0.2, y + 2, x, y + 2); c.quadraticCurveTo(x + w / 2 - ov * 0.2, y + 2, R0, y - tip);
+    c.quadraticCurveTo(x + w * 0.4, y - h * 0.55, x + w * 0.3, y - h); c.lineTo(x - w * 0.3, y - h); c.quadraticCurveTo(x - w * 0.4, y - h * 0.55, L0, y - tip); c.closePath(); };
+  body(); c.fillStyle = vg(y - h, y, [[0, col || '#3a2622'], [1, '#1e1414']]); c.fill();
+  c.save(); body(); c.clip(); for (let xx = L0; xx < R0; xx += 5) line(xx, y - h, x + (xx - x) * 1.12, y + 4, 'rgba(255,190,140,0.10)', 1.2);
+  c.fillStyle = 'rgba(255,170,100,0.14)'; c.fillRect(L0, y - h * 0.3, R0 - L0, h * 0.3); c.restore();
+  c.strokeStyle = '#e7a35a'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(L0, y - tip); c.quadraticCurveTo(x - w / 2 + ov * 0.2, y + 2, x, y + 2); c.quadraticCurveTo(x + w / 2 - ov * 0.2, y + 2, R0, y - tip); c.stroke();
+  // ridge with swallowtail ends
+  c.strokeStyle = col || '#3a2622'; c.lineCap = 'round'; c.lineWidth = 5; c.beginPath(); c.moveTo(x - w * 0.3, y - h); c.lineTo(x + w * 0.3, y - h); c.stroke();
+  c.lineWidth = 5; [-1, 1].forEach(k => { c.beginPath(); c.moveTo(x + k * w * 0.27, y - h); c.quadraticCurveTo(x + k * w * 0.34, y - h - 1, x + k * w * 0.37, y - h - Math.min(14, h * 0.28)); c.stroke(); });
+  line(x - w * 0.3, y - h - 2.5, x + w * 0.3, y - h - 2.5, 'rgba(255,190,120,0.5)', 1); c.lineCap = 'butt';
+}
+function egFloor(x, y, w, h, n) { // one pavilion storey: glowing interior, red columns, a railing
+  c.fillStyle = vg(y - h, y, [[0, '#ffcf86'], [1, '#e7883e']]); c.fillRect(x - w / 2, y - h, w, h);
+  c.fillStyle = 'rgba(120,40,20,0.35)'; for (let k = 0; k < n * 3; k++) c.fillRect(x - w / 2 + 4 + k * (w - 8) / (n * 3), y - h + 6, 1.4, h - 12);
+  for (let k = 0; k <= n; k++) { const cx = x - w / 2 + k * w / n; c.fillStyle = vg(y - h, y, [[0, '#9a2a1e'], [1, '#c2412a']]); c.fillRect(cx - 3.5, y - h, 7, h); }
+  c.fillStyle = '#7a2418'; c.fillRect(x - w / 2 - 6, y - 9, w + 12, 3); for (let xx = x - w / 2 - 4; xx < x + w / 2 + 6; xx += 7) c.fillRect(xx, y - 9, 1.6, 9); c.fillRect(x - w / 2 - 6, y - 1, w + 12, 3);
+}
+function eastGate(x, y) {
+  // ashlar gate block with a slight batter, lit gold from the floodlights at its foot
+  const bw = 300, bt = 276, bh = 124, top = y - bh;
+  c.beginPath(); c.moveTo(x - bw / 2, y); c.lineTo(x - bt / 2, top); c.lineTo(x + bt / 2, top); c.lineTo(x + bw / 2, y); c.closePath();
+  c.fillStyle = vg(top, y, [[0, '#a8804a'], [0.55, '#e0b46c'], [1, '#ffd892']]); c.fill();
+  c.save(); c.clip(); const r = rng(1881);
+  for (let yy = top + 2, k = 0; yy < y; yy += 11, k++) { line(x - bw / 2, yy, x + bw / 2, yy, 'rgba(90,55,25,0.35)', 1); for (let xx = x - bw / 2 + (k % 2) * 14 + r() * 4; xx < x + bw / 2; xx += 26 + r() * 6) line(xx, yy, xx, yy + 11, 'rgba(90,55,25,0.3)', 1); }
+  for (let k = 0; k < 160; k++) { c.fillStyle = r() < 0.5 ? 'rgba(255,240,200,0.08)' : 'rgba(80,50,20,0.1)'; c.fillRect(x - bw / 2 + r() * bw, top + r() * bh, 6 + r() * 14, 4 + r() * 6); }
+  c.fillStyle = hg(x - bw / 2, x + bw / 2, [[0, 'rgba(40,20,10,0.35)'], [0.25, 'rgba(0,0,0,0)'], [0.8, 'rgba(0,0,0,0)'], [1, 'rgba(40,20,10,0.4)']]); c.fillRect(x - bw / 2, top, bw, bh); c.restore();
+  // parapet band, stone plaque, the arched passage glowing inside
+  c.fillStyle = '#b48a52'; c.fillRect(x - bt / 2 - 4, top - 8, bt + 8, 9); line(x - bt / 2 - 4, top - 8, x + bt / 2 + 4, top - 8, 'rgba(255,220,160,0.6)', 1);
+  c.fillStyle = '#2a1a12'; c.beginPath(); c.moveTo(x - 38, y); c.lineTo(x - 38, y - 52); c.arc(x, y - 52, 38, Math.PI, 0); c.lineTo(x + 38, y); c.fill();
+  c.fillStyle = vg(y - 90, y, [[0, 'rgba(255,170,80,0.2)'], [1, 'rgba(255,200,120,0.7)']]); c.beginPath(); c.moveTo(x - 30, y); c.lineTo(x - 30, y - 52); c.arc(x, y - 52, 30, Math.PI, 0); c.lineTo(x + 30, y); c.fill();
+  c.strokeStyle = 'rgba(120,80,40,0.8)'; c.lineWidth = 3; c.beginPath(); c.arc(x, y - 52, 41, Math.PI, 0); c.stroke();
+  c.fillStyle = '#6e5232'; c.fillRect(x - 22, y - 108, 44, 14); c.fillStyle = '#f0d8a0'; c.font = `700 10px ${FONTS}`; c.textAlign = 'center'; c.fillText('迎曦門', x, y - 97.5);
+  // the pavilion: lower storey + roof, upper storey + roof
+  egFloor(x, top - 8, 214, 44, 5); egRoof(x, top - 52, 236, 34, 30);
+  egFloor(x, top - 64, 140, 30, 3); egRoof(x, top - 94, 168, 46, 26);
+}
+
+/* 18 — 新竹市 東門城 — per photos: the gate at night in its roundabout, floodlit gold, long-exposure traffic trails sweeping round it,
+   city buildings and neon behind, trees with uplights on the island */
 SCENES.push({ county: '新竹市', place: '迎曦東門城', en: 'East Gate of Hsinchu', ll: '24.80°N 120.97°E', cam: [1.03, 1.1, 0, 0, 0, 10],
   sub: ['新竹市的東門城，兩百年來守著每個夜晚。', 'Hsinchu’s East Gate has watched over the city’s nights for two centuries.'],
+  sun: () => [640, 330, 0.25],
   draw(lt) {
-    L('sky', 0, () => { sky([[0, '#16234a'], [0.5, '#3a4f86'], [0.72, '#8a7aa2'], [1, '#d59a8a']]); stars(30, 211, 200, 0.5); });
-    L('city', 0.1, () => skyline(430, 212, '#2a3054', '#3c4268', { hmin: 30, hvar: 120, win: 0.08 }), { blur: 0.8 });
-    L('gate', 0.4, () => { const x = 640, y = 470;
-      c.fillStyle = hg(x - 170, x + 170, [[0, '#8f8a82'], [0.6, '#6d6862'], [1, '#4c4844']]); c.fillRect(x - 170, y - 110, 340, 110); for (let yy = y - 110; yy < y; yy += 14) line(x - 170, yy, x + 170, yy, 'rgba(30,30,30,0.4)', 1); for (let yy = y - 110, k = 0; yy < y; yy += 14, k++) for (let xx = x - 170 + (k % 2) * 20; xx < x + 170; xx += 40) line(xx, yy, xx, yy + 14, 'rgba(30,30,30,0.35)', 1);
-      c.fillStyle = '#1a1612'; c.beginPath(); c.moveTo(x - 36, y); c.lineTo(x - 36, y - 60); c.arc(x, y - 60, 36, Math.PI, 0); c.lineTo(x + 36, y); c.fill(); glow(x, y - 30, 60, '255,190,110', 0.35);
-      c.fillStyle = '#8c2c22'; for (let k = -3; k <= 3; k++) c.fillRect(x + k * 34 - 4, y - 190, 8, 80); c.fillStyle = '#f0d7a8'; c.fillRect(x - 110, y - 190, 220, 80); c.fillStyle = 'rgba(255,190,110,0.6)'; c.fillRect(x - 100, y - 180, 200, 60); for (let k = -3; k <= 3; k++) { c.fillStyle = '#8c2c22'; c.fillRect(x + k * 34 - 4, y - 190, 8, 80); }
-      c.fillStyle = '#2a2224'; c.beginPath(); c.moveTo(x - 160, y - 186); c.quadraticCurveTo(x - 120, y - 194, x - 100, y - 240); c.lineTo(x + 100, y - 240); c.quadraticCurveTo(x + 120, y - 194, x + 160, y - 186); c.lineTo(x + 150, y - 196); c.lineTo(x - 150, y - 196); c.closePath(); c.fill();
-      c.strokeStyle = '#2a2224'; c.lineWidth = 5; c.beginPath(); c.moveTo(x - 120, y - 252); c.quadraticCurveTo(x - 100, y - 238, x, y - 240); c.quadraticCurveTo(x + 100, y - 238, x + 120, y - 252); c.stroke();
-      c.fillStyle = '#e8d7b0'; c.font = `700 16px ${FONTS}`; c.textAlign = 'center'; c.fillText('迎曦', x, y - 82); });
-    D(0.4, () => { glow(640, 330, 260, '255,180,100', 0.18); for (let k = -1; k <= 1; k += 2) glow(640 + k * 150, 470, 60, '255,200,130', 0.35); });
-    L('plaza', 0.6, () => { c.fillStyle = vg(470, H, [[0, '#2b2a36'], [1, '#141420']]); c.fillRect(-M, 470, W + 2 * M, H); c.fillStyle = vg(500, 560, [[0, '#2a3a52'], [1, '#1a2438']]); c.fillRect(-M, 508, W + 2 * M, 50); });
-    D(0.6, () => { shimmer(510, 556, 80, '255,190,120', 213, { xc: 640, spread: 400, a: 0.6, op: 'lighter' });
-      for (let k = 0; k < 10; k++) { const u = mod(lt * 0.5 + k / 10, 1), y = 486 + (k % 2) * 8; const x = k % 2 ? lerp(-100, W + 100, u) : lerp(W + 100, -100, u); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = vg(0, 1, [[0, '#fff'], [1, '#fff']]); c.fillStyle = k % 2 ? 'rgba(255,80,70,0.6)' : 'rgba(255,240,210,0.6)'; c.fillRect(x - 60, y, 120, 2); c.restore(); }
-      [[180, 470], [1100, 470]].forEach(([x, y]) => { line(x, y, x, y - 90, '#1b1b22', 3); glow(x, y - 92, 40, '255,210,150', 0.6); }); });
+    const RX = [600, 660, 720, 780], RY = [44, 52, 60, 68], CY = 496;
+    L('sky', 0, () => { sky([[0, '#05070f'], [0.55, '#111a33'], [0.85, '#2a2a44'], [1, '#4a3a40']]); glow(640, 470, 700, '255,160,90', 0.12); stars(24, 211, 200, 0.35); });
+    L('city', 0.1, () => { skyline(470, 212, '#141a2c', '#20263c', { hmin: 50, hvar: 170, win: 0.12 });
+      c.fillStyle = '#1a2034'; c.fillRect(905, 150, 70, 330); c.fillStyle = '#222a40'; c.fillRect(975, 170, 26, 310); const r = rng(1882);
+      for (let yy = 160; yy < 470; yy += 7) for (let xx = 910; xx < 970; xx += 6) if (r() < 0.3) { c.fillStyle = `rgba(255,${210 + r() * 30 | 0},150,${0.35 + r() * 0.4})`; c.fillRect(xx, yy, 3, 3); } }, { blur: 0.8 });
+    L('near', 0.22, () => { const r = rng(1883); [[-M, 150, 300], [150, 120, 250], [890, 170, 270], [1060, 240, 230], [1200, 160, 300]].forEach(([x, w, h], i) => {
+        c.fillStyle = mix('#2a2a38', '#3a3446', r()); c.fillRect(x, 470 - h, w, h + 30);
+        for (let yy = 470 - h + 10; yy < 462; yy += 14) for (let xx = x + 6; xx < x + w - 10; xx += 16) if (r() < 0.55) { c.fillStyle = `rgba(255,${200 + r() * 40 | 0},${120 + r() * 60 | 0},${0.45 + r() * 0.45})`; c.fillRect(xx, yy, 9, 7); }
+        const nc = ['255,70,80', '80,200,255', '255,200,60', '120,255,170', '255,90,200'][i]; c.fillStyle = `rgba(${nc},0.9)`; const sy = 470 - h * (0.4 + r() * 0.3); c.fillRect(x + w * 0.2, sy, w * 0.5, 16);
+        c.save(); c.globalCompositeOperation = 'lighter'; glow(x + w * 0.45, sy + 8, 60, nc, 0.35); c.restore(); }); });
+    // trails on the far side of the roundabout, seen either side of the island
+    L('road', 0.3, () => { c.fillStyle = vg(CY - 70, H, [[0, '#1c1a22'], [1, '#121118']]); c.fillRect(-M, CY - 70, W + 2 * M, H);
+      c.save(); c.globalCompositeOperation = 'lighter'; for (let i = 0; i < 4; i++) { const col = i < 2 ? '255,236,200' : '255,60,50';
+        for (let j = 0; j < 3; j++) { c.strokeStyle = `rgba(${col},${0.35 - j * 0.1})`; c.lineWidth = 1.2 + j * 2.5; c.beginPath(); c.ellipse(640, CY, RX[i], RY[i], 0, Math.PI, TAU); c.stroke(); } } c.restore(); });
+    L('island', 0.4, () => { // raised island: retaining wall, steps, trees with uplights
+      c.fillStyle = vg(470, 500, [[0, '#6a5a48'], [1, '#2e2820']]); c.beginPath(); c.ellipse(640, 486, 380, 26, 0, 0, TAU); c.fill(); c.fillStyle = '#3a4a2e'; c.beginPath(); c.ellipse(640, 474, 372, 16, 0, 0, TAU); c.fill();
+      c.fillStyle = '#8a7660'; for (let k = 0; k < 4; k++) c.fillRect(600 - k * 6, 470 + k * 6, 80 + k * 12, 6);
+      const r = rng(1884); [[330, 70], [410, 90], [870, 90], [950, 70], [280, 50], [1000, 50]].forEach(([tx, th]) => { line(tx, 474, tx, 474 - th * 0.5, '#2a2018', 4);
+        for (let k = 0; k < 26; k++) { const a = r() * TAU, rr = r() * th * 0.42; oval(tx + Math.cos(a) * rr, 474 - th * 0.62 + Math.sin(a) * rr * 0.75, 10 + r() * 10, 8 + r() * 8, 0, mix('#2e4a2a', '#9aa848', r() * (0.4 + 0.6 * Math.max(0, Math.sin(a))))); } });
+      eastGate(640, 472); });
+    D(0.4, () => { c.save(); c.globalCompositeOperation = 'lighter'; glow(640, 420, 240, '255,190,110', 0.22); glow(640, 300, 150, '255,170,90', 0.18); [-150, 150].forEach(k => glow(640 + k, 470, 50, '255,210,140', 0.5)); c.restore(); });
+    // near side of the roundabout: static long-exposure streaks plus moving head/tail lights
+    D(0.6, () => { c.save(); c.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 4; i++) { const col = i < 2 ? '255,236,200' : '255,60,50';
+        for (let j = 0; j < 3; j++) { c.strokeStyle = `rgba(${col},${0.5 - j * 0.14})`; c.lineWidth = 1.4 + j * 3; c.beginPath(); c.ellipse(640, CY + 6, RX[i] + 10, RY[i] + 6, 0, 0.02, Math.PI - 0.02); c.stroke(); }
+        for (let k = 0; k < 5; k++) { const th = mod((i < 2 ? -1 : 1) * lt * 0.18 + k / 5 + i * 0.13, 1) * Math.PI, px = 640 + Math.cos(th) * (RX[i] + 10), py = CY + 6 + Math.sin(th) * (RY[i] + 6); glow(px, py, 16, col, 0.7); } }
+      c.restore(); [[150, 560], [1130, 560]].forEach(([x, y]) => { line(x, y, x, y - 130, '#18161e', 3); line(x, y - 130, x + 20, y - 134, '#18161e', 3); glow(x + 22, y - 132, 46, '255,210,150', 0.6); }); });
     L('wall', 0.95, () => { c.fillStyle = vg(576, H, [[0, '#4a4650'], [1, '#22202a']]); c.fillRect(-M, 580, W + 2 * M, 200); for (let x = -M; x < W + M; x += 46) line(x, 580, x, H, 'rgba(0,0,0,0.4)', 1); line(-M, 580, W + M, 580, 'rgba(255,200,140,0.35)', 1.5); });
     D(0.95, () => actCat({ x: 900, y: 582, s: 1.05, pose: 'sit', face: -1, rim: '255,190,130', look: -0.18, blink: blinkAt(lt, 16), shadowA: 0.25 }));
   } });
