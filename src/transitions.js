@@ -198,17 +198,55 @@ V('T5', '臺東縣 · 太麻里', '多良車站', 'Duoliang Station', '22.51°N 
     bushes(16, 560, 720, x => 600 + (720 - x) * 0.3, 357, '#2f5a2c', '#5f9446', 18); });
   D(0.95, () => drawCat3({ x: 880, y: 606, s: 1.0, face: -1, pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [1.4, 'surprised'], [2.4, 'happy']]), hr: lt > 1.4 && lt < 2.6 ? -0.12 : -0.02, ts: 1.6 }), emote: emoAt(lt, [[1.4, 2.3, '!']]), shadow: false }));
 });
-/* T6 高屏溪斜張橋 */
+/* T6 高屏溪斜張橋 — per photos (blue hour, from the wooded bank): the asymmetric single-pylon cable-stayed bridge, an
+   inverted-Y pylon floodlit white and blue with a red beacon, the long main span's cables lit pink-red fanning down one side
+   and the denser back stays on the other, orange deck lamps and light trails, the wide braided riverbed below. */
+const T6D = x => 452 + (x + 60) / 1400 * 86, T6TH = x => 5 + (x + 60) / 1400 * 15, T6PX = 430;
 V('T6', '屏東 → 高雄', '高屏溪斜張橋', 'Kao-Ping Hsi Bridge', '22.64°N 120.43°E', ['跨過高屏溪，就到高雄了。', 'Across the Gaoping River lies Kaohsiung.'], [1.02, 1.06, -20, 20, 0, 0], function (lt) {
-  L('sky', 0, () => { sky([[0, '#5b8ec7'], [1, '#eae3d0']]); cumulus(250, 210, 300, 60, 361, '#ffffff', '#cdd3d9', 0.3); }, { blur: 2 });
-  L('far', 0.06, () => mountain({ base: 390, amp: 60, f: 0.003, seed: 362, top: '#8d9fb6', bot: '#a8b2b8', haze: 'rgba(230,230,220,0.5)' }), { blur: 1 });
-  L('br', 0.25, () => { c.fillStyle = vg(400, H, [[0, '#9fb2b0'], [1, '#6f8582']]); c.fillRect(-M, 410, W + 2 * M, H); c.fillStyle = '#d9d6cc'; c.fillRect(-M, 400, W + 2 * M, 9); for (let x = -40; x < W + M; x += 70) { c.fillStyle = '#bdb9ae'; c.fillRect(x, 409, 7, 26); }
-    const px = 760, py = 400, top = 120; poly([[px - 26, py], [px - 6, top], [px + 6, top], [px + 26, py]], '#e8e4da'); c.fillStyle = '#d8d3c6'; c.fillRect(px - 18, 290, 36, 8);
-    c.strokeStyle = 'rgba(80,80,80,0.75)'; c.lineWidth = 1; for (let k = 0; k < 14; k++) { const t = top + 6 + k * 4; c.beginPath(); c.moveTo(px, t); c.lineTo(px - 60 - k * 34, py); c.stroke(); c.beginPath(); c.moveTo(px, t); c.lineTo(px + 50 + k * 24, py); c.stroke(); } });
-  D(0.25, () => { shimmer(412, 560, 120, '255,255,255', 363, { a: 0.3 }); const cx = mod(lt * 140, 1600) - 200; c.fillStyle = '#c9402f'; c.fillRect(cx, 392, 20, 8); c.fillStyle = '#2f5f9a'; c.fillRect(1200 - mod(lt * 170, 1600), 392, 22, 8); });
-  L('levee', 0.9, () => { c.fillStyle = vg(570, H, [[0, '#7b9050'], [1, '#43582a']]); c.fillRect(-M, 580, W + 2 * M, 200); c.fillStyle = '#c9c0a8'; c.fillRect(-M, 594, W + 2 * M, 12); });
-  D(0.9, () => { const r = rng(364); for (let k = 0; k < 50; k++) { const x = r() * (W + 2 * M) - M, h = 40 + r() * 50, sw = Math.sin(T * 1.4 + x * 0.01) * 8; c.strokeStyle = 'rgba(110,100,60,0.9)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x, 640); c.quadraticCurveTo(x + sw * 0.3, 640 - h * 0.6, x + sw, 640 - h); c.stroke(); oval(x + sw + 3, 640 - h + 6, 3.5, 11, 0.4 + sw * 0.03, 'rgba(240,225,200,0.8)'); }
-    const q = { x: 280 + lt * 30, y: 598, s: 1.0 }; q.pose = { ...walkPose3(walkCyc3(lt * 30, 1)), ...ex('content', 0.7) }; drawCat3(q); });
+  const hz = 440;
+  L('sky', 0, () => { sky([[0, '#0a1844'], [0.35, '#183a82'], [0.62, '#3f62a8'], [0.8, '#8a8fb8'], [1, '#c99a8a']]); glow(140, hz, 520, '255,150,90', 0.22); glow(1100, hz, 360, '255,170,120', 0.1); stars(90, 361, 300, 0.5); });
+  // far hills on the Kaohsiung side with the city's lights along the horizon
+  L('far', 0.06, () => { mountain({ base: hz, amp: 34, f: 0.004, seed: 362, top: '#1e2c56', bot: '#26335e', floor: hz + 2 });
+    const r = rng(365); for (let k = 0; k < 260; k++) { const x = r() * (W + 2 * M) - M, y = hz - 2 - r() * 10 * r(); disc(x, y, 0.6 + r(), `rgba(255,${180 + r() * 60 | 0},${110 + r() * 60 | 0},${0.4 + r() * 0.5})`); } }, { blur: 0.6 });
+  // braided riverbed: grey sand bars and channels holding the sky
+  L('river', 0.15, () => { c.fillStyle = vg(hz, H, [[0, '#4a5574'], [1, '#2a3048']]); c.fillRect(-M, hz, W + 2 * M, H);
+    const r = rng(366); for (let k = 0; k < 16; k++) { const y = hz + 4 + Math.pow(r(), 1.4) * 190, x = r() * (W + 2 * M) - M, w = 120 + r() * 520, h = 2 + (y - hz) * 0.05 * (0.5 + r());
+      c.fillStyle = vg(y - h, y + h, [[0, '#7c8dbc'], [1, '#5a6a9a']]); c.beginPath(); c.ellipse(x, y, w, h, 0, 0, TAU); c.fill(); }
+    for (let k = 0; k < 700; k++) { const y = hz + r() * 200; disc(r() * (W + 2 * M) - M, y, 0.6 + (y - hz) * 0.01, 'rgba(20,24,40,0.25)'); } });
+  D(0.15, () => { shimmer(hz + 6, 620, 90, '160,180,240', 367, { a: 0.25 });
+    // reflections of the lit pylon and lamps in the channels
+    c.save(); c.globalCompositeOperation = 'lighter'; for (let k = 0; k < 18; k++) { const y = 520 + k * 6, w = 6 + Math.sin(T * 2 + k) * 3; c.fillStyle = `rgba(200,230,255,${0.12 * (1 - k / 18)})`; c.fillRect(T6PX - w + Math.sin(k + T * 3) * 3, y, w * 2, 2); } c.restore(); });
+  // the bridge: piers, deck, pylon and the two fans of stay cables (all floodlit)
+  L('br', 0.25, () => {
+    for (let x = -40, k = 0; x < W + M; k++) { const y = T6D(x), th = T6TH(x), w = 4 + th * 0.5; c.fillStyle = vg(y, y + 70 + th * 3, [[0, '#9aa8c8'], [1, '#3c4668']]); c.fillRect(x - w / 2, y + th, w, 62 + th * 3); x += 60 + k * 14; }
+    c.beginPath(); c.moveTo(-M, T6D(-M)); c.lineTo(W + M, T6D(W + M)); c.lineTo(W + M, T6D(W + M) + T6TH(W + M)); c.lineTo(-M, T6D(-M) + T6TH(-M)); c.closePath(); c.fillStyle = hg(-M, W + M, [[0, '#4a5680'], [1, '#6a76a0']]); c.fill();
+    line(-M, T6D(-M), W + M, T6D(W + M), '#c8d4ee', 2); line(-M, T6D(-M) - 4, W + M, T6D(W + M) - 9, 'rgba(200,215,245,0.6)', 1.2);
+    // inverted-Y pylon: two legs straddle the deck and meet in one mast
+    const yb = 528, yj = 300, yt = 118, px = T6PX;
+    const leg = (x0, x1, w0, w1) => { poly([[x0 - w0, yb], [x1 - w1, yj], [x1 + w1, yj], [x0 + w0, yb]]); };
+    c.fillStyle = hg(px - 60, px + 60, [[0, '#f2fbff'], [0.5, '#bfe2ff'], [1, '#6f96d8']]); leg(px - 50, px - 3, 8, 5); c.fill(); leg(px + 52, px + 3, 8, 5); c.fill();
+    poly([[px - 8, yj + 4], [px - 4.5, yt], [px + 4.5, yt], [px + 8, yj + 4]]); c.fill();
+    c.fillStyle = 'rgba(40,60,120,0.35)'; poly([[px + 1, yj + 4], [px + 1, yt], [px + 4.5, yt], [px + 8, yj + 4]]); c.fill();
+    // stay cables: back stays to the left (denser, shorter), main span to the right (long fan, lit pink-red)
+    c.save(); c.globalCompositeOperation = 'lighter'; c.lineWidth = 1.1;
+    for (let k = 0; k < 15; k++) { const ym = yt + 22 + k * 11, xa = 395 - (14 - k) * 24; c.strokeStyle = `rgba(170,220,255,${0.5 + k * 0.02})`; c.beginPath(); c.moveTo(px - 2, ym); c.lineTo(xa, T6D(xa)); c.stroke(); }
+    for (let k = 0; k < 15; k++) { const ym = yt + 22 + k * 11, xa = 500 + (14 - k) * 62 + (14 - k) * (14 - k) * 3; c.strokeStyle = `rgba(255,${110 + k * 6},${150 + k * 4},${0.55})`; c.beginPath(); c.moveTo(px + 2, ym); c.lineTo(xa, T6D(xa)); c.stroke(); }
+    glow(px, yt + 120, 160, '120,180,255', 0.22); glow(px, yj + 60, 120, '180,220,255', 0.18); c.restore();
+  });
+  // deck lamps, light trails and the beacon
+  D(0.25, () => { c.save(); c.globalCompositeOperation = 'lighter';
+    for (let x = -M, k = 0; x < W + M; k++) { const y = T6D(x) - 6 - T6TH(x) * 0.3; disc(x, y, 1 + T6TH(x) * 0.08, '#ffd08a'); glow(x, y + 3, 8 + T6TH(x), '255,170,90', 0.35); x += 26 + k * 2.5; }
+    for (let k = 0; k < 9; k++) { const sp = k % 2 ? 1 : -1, u = mod(lt * (0.25 + 0.04 * k) * sp + k * 0.13, 1), x0 = lerp(-M, W + M, u), len = 40 + T6TH(x0) * 6, col = sp > 0 ? '255,245,225' : '255,70,60';
+      const g = c.createLinearGradient(x0 - len * sp, 0, x0, 0); g.addColorStop(0, `rgba(${col},0)`); g.addColorStop(1, `rgba(${col},0.85)`); c.strokeStyle = g; c.lineWidth = 1.2 + T6TH(x0) * 0.1;
+      const yy = x => T6D(x) - 2 + (sp > 0 ? 0 : -2); c.beginPath(); c.moveTo(x0 - len * sp, yy(x0 - len * sp)); c.lineTo(x0, yy(x0)); c.stroke(); }
+    const bl = 0.6 + 0.4 * Math.sin(T * 4); glow(T6PX, 116, 26, '255,70,50', 0.9 * bl); disc(T6PX, 116, 2.4, '#ff6a50'); c.restore(); });
+  // the wooded bank in the foreground: silver grass, tree silhouettes, the cat on the path
+  L('levee', 0.9, () => { c.fillStyle = vg(570, H, [[0, '#1c2440'], [1, '#0c1020']]); c.fillRect(-M, 588, W + 2 * M, 200); c.fillStyle = '#3c4462'; c.fillRect(-M, 598, W + 2 * M, 8);
+    bushes(40, -M, 260, x => 560 + Math.abs(x - 60) * 0.1, 368, '#0b1020', '#1a2240', 34); bushes(26, 1080, W + M, x => 560 - (x - 1080) * 0.25, 369, '#0b1020', '#1a2240', 38);
+    c.fillStyle = '#080c18'; c.beginPath(); c.moveTo(W + M, 92); c.lineTo(1190, 92); c.quadraticCurveTo(1150, 240, 1210, 420); c.lineTo(W + M, 520); c.fill();
+    const r = rng(370); for (let k = 0; k < 140; k++) { const x = 1140 + r() * 200, y = 92 + r() * 380; oval(x, y, 10 + r() * 18, 6 + r() * 10, r() * 3, mix('#070a14', '#16203a', r())); } });
+  D(0.9, () => { const r = rng(364); for (let k = 0; k < 46; k++) { const x = r() * (W + 2 * M) - M, h = 40 + r() * 50, sw = Math.sin(T * 1.4 + x * 0.01) * 8; c.strokeStyle = 'rgba(40,46,70,0.95)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x, 640); c.quadraticCurveTo(x + sw * 0.3, 640 - h * 0.6, x + sw, 640 - h); c.stroke(); oval(x + sw + 3, 640 - h + 6, 3.5, 11, 0.4 + sw * 0.03, 'rgba(190,200,235,0.55)'); }
+    const q = { x: 280 + lt * 30, y: 598, s: 1.0, haze: '16,24,66,0.55', rim: '170,205,255' }; q.pose = { ...walkPose3(walkCyc3(lt * 30, 1)), ...ex('content', 0.7), hr: -0.12 }; drawCat3(q); });
 });
 /* T7 渡輪 */
 V('T7', '臺灣海峽', '高雄 → 馬公 渡輪', 'Ferry to Penghu', '23.00°N 120.00°E', ['第一次搭船，風好大。', 'First time on a ferry. So windy!'], [1.02, 1.05, 0, 0, 0, 4], function (lt) {
