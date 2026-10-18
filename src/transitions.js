@@ -136,17 +136,54 @@ V('T3', '宜蘭 → 花蓮', '蘇花海岸 · 臺鐵', 'Along the Suhua coast by
   D(1, () => drawCat3({ x: 470, y: 512, s: 1.25, pose: sit3(lt, { ...ex('delighted'), hr: -0.05, ear: -0.1, turn: turnAt(lt, [[1.6, 3.0, 0.9]]) }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
 });
 /* T4 花東縱谷 */
+/* T4 花東縱谷 — per photos: ripe golden rice paddies across the valley floor, field dikes running off in perspective, the steep
+   forested Central Range close on the left, blue ranges receding down the valley, and a colourful Puyuma express crossing a red
+   arch bridge on the line through the fields */
+function hdPaddies(y0, y1, vx, vy, seed) {
+  const r = rng(seed); c.fillStyle = vg(y0, y1, [[0, '#c8b43a'], [0.4, '#e2c63a'], [1, '#d8b42a']]); c.fillRect(-M, y0, W + 2 * M, y1 - y0);
+  // patches of slightly different ripeness
+  for (let k = 0; k < 40; k++) { const y = y0 + Math.pow(r(), 1.3) * (y1 - y0), d = (y - y0) / (y1 - y0), x = -M + r() * (W + 2 * M); oval(x, y, 60 + d * 260 * r(), 3 + d * 20, 0, r() < 0.25 ? 'rgba(150,170,50,0.35)' : 'rgba(255,220,90,0.3)'); }
+  // dikes: grassy lines radiating from the vanishing point, plus cross dikes getting closer together with distance
+  c.save(); c.beginPath(); c.rect(-M, y0, W + 2 * M, y1 - y0); c.clip();
+  for (let k = -14; k <= 14; k++) { const xb = vx + k * 140; line(vx + (xb - vx) * 0.02, y0, xb, y1 + 60, 'rgba(90,120,40,0.55)', 1 + Math.abs(k) * 0.1 + 1.2); }
+  for (let k = 1; k < 12; k++) { const y = y0 + Math.pow(k / 12, 1.8) * (y1 - y0); line(-M, y, W + M, y, 'rgba(100,125,40,0.5)', 0.8 + k * 0.25); }
+  // rice heads: short warm strokes, bigger near the bottom
+  for (let k = 0; k < 3200; k++) { const y = y0 + Math.pow(r(), 0.7) * (y1 - y0), d = (y - y0) / (y1 - y0), x = -M + r() * (W + 2 * M), l = 1 + d * 6;
+    line(x, y, x + l * 0.3, y - l, r() < 0.5 ? 'rgba(255,236,130,0.55)' : 'rgba(170,140,30,0.45)', 0.6 + d * 1.2); }
+  c.restore();
+}
+function puyuma(x, y, n) { // white electric express with an orange-red stripe and a red-black pointed nose, heading left
+  for (let k = 0; k < n; k++) { const cx = x + k * 96;
+    if (k === 0) { c.fillStyle = '#f4f4f2'; c.beginPath(); c.moveTo(cx + 92, y - 30); c.lineTo(cx + 26, y - 30); c.quadraticCurveTo(cx - 4, y - 26, cx - 12, y - 4); c.lineTo(cx - 12, y); c.lineTo(cx + 92, y); c.closePath(); c.fill();
+      c.fillStyle = '#d6332a'; c.beginPath(); c.moveTo(cx + 34, y - 30); c.quadraticCurveTo(cx - 2, y - 26, cx - 12, y - 4); c.lineTo(cx - 12, y); c.lineTo(cx + 30, y); c.quadraticCurveTo(cx + 20, y - 14, cx + 34, y - 30); c.fill();
+      c.fillStyle = '#1e2430'; c.beginPath(); c.moveTo(cx + 26, y - 27); c.quadraticCurveTo(cx + 8, y - 25, cx + 2, y - 16); c.lineTo(cx + 18, y - 16); c.closePath(); c.fill(); }
+    else { c.fillStyle = '#f4f4f2'; c.beginPath(); c.roundRect(cx, y - 30, 92, 30, 3); c.fill(); c.fillStyle = '#2a3442'; c.fillRect(cx + 6, y - 24, 80, 8); }
+    c.fillStyle = '#e8622a'; c.fillRect(cx + (k === 0 ? 28 : 0), y - 12, k === 0 ? 64 : 92, 3); c.fillStyle = '#d6332a'; c.fillRect(cx + (k === 0 ? 28 : 0), y - 8, k === 0 ? 64 : 92, 2);
+    c.fillStyle = 'rgba(0,0,0,0.18)'; c.fillRect(cx, y - 3, 92, 3); c.fillStyle = '#2a2a2e'; c.fillRect(cx + 10, y, 14, 3); c.fillRect(cx + 68, y, 14, 3); }
+}
 V('T4', '花蓮 → 臺東', '花東縱谷', 'Huadong Valley', '23.40°N 121.35°E', ['縱谷好長，長到可以一直跑。', 'The rift valley is long enough to run and run.'], [1.02, 1.05, 0, 0, 0, 0], function (lt) {
-  const off = lt * 120;
-  L('sky', 0, () => { sky([[0, '#4c87c4'], [1, '#dbe8ee']]); cumulus(300, 170, 380, 70, 341, '#ffffff', '#c7d2df', 0.3); cumulus(1000, 150, 330, 70, 342, '#ffffff', '#c7d2df', 0.3); }, { blur: 2 });
-  L('cr', 0.05, () => mountain({ base: 330, amp: 130, f: 0.003, seed: 343, top: '#6c86a8', bot: '#8ea2b4', haze: 'rgba(210,225,235,0.5)', peak: 1.3 }), { blur: 1 });
-  L('cr2', 0.12, () => mountain({ base: 380, amp: 50, f: 0.005, seed: 344, top: '#5f8a64', bot: '#73986f', tex: 'forest', dark: '#4a6f50', mid: '#5f8a60', light: '#9cbf88', depth: 60, n: 900, r: 3 }), { blur: 0.6, dx: -off * 0.05 });
-  L('fields', 0.5, () => { c.fillStyle = vg(390, H, [[0, '#7dbb4f'], [1, '#4f9a2d']]); c.fillRect(-M, 390, W + 2 * M, H); for (let k = 0; k < 9; k++) { const y = 390 + Math.pow(k / 9, 1.7) * 330; line(-M, y, W + M, y, 'rgba(60,110,40,0.5)', 1 + k * 0.4); } });
-  D(0.5, () => { c.fillStyle = '#8a8378'; c.fillRect(-M, 448, W + 2 * M, 10); c.fillStyle = '#4b4540'; c.fillRect(-M, 456, W + 2 * M, 3); for (let x = -mod(off, 40) - M; x < W + M; x += 40) c.fillRect(x, 448, 3, 10);
-    const tx = 1500 - lt * 420; for (let k = 0; k < 6; k++) { const x = tx + k * 92; c.fillStyle = '#f2f2ee'; c.beginPath(); c.roundRect(x, 418, 88, 30, 6); c.fill(); c.fillStyle = '#e07a2c'; c.fillRect(x, 436, 88, 4); c.fillStyle = '#2b3b4a'; c.fillRect(x + 6, 424, 76, 8); }
-    c.save(); c.globalCompositeOperation = 'lighter'; for (let w = 0; w < 5; w++) { const u = mod(lt * 0.3 + w / 5, 1), y = 470 + u * 240; c.fillStyle = `rgba(230,255,170,${0.1 * Math.sin(u * Math.PI)})`; c.fillRect(-M, y - 10, W + 2 * M, 20); } c.restore(); });
+  const off = lt * 120, TY = 452;
+  L('sky', 0, () => { sky([[0, '#2a6cc0'], [0.6, '#6aa4dc'], [1, '#d4e6f0']]); cumulus(560, 210, 380, 70, 341, '#ffffff', '#c7d2df', 0.3); cumulus(1080, 170, 300, 60, 342, '#ffffff', '#c7d2df', 0.3); }, { blur: 1.5 });
+  // ranges receding down the valley (blue, hazy) and the low Coastal Range far right
+  L('cr', 0.04, () => { mountain({ fn: x => 352 - 70 * Math.exp(-Math.pow((x - 820) / 260, 2)) - fbm1(x * 0.008 + 3) * 26, floor: 400, bottom: 400, top: '#7f9cbc', bot: '#a2b6c8', seed: 343 });
+    mountain({ fn: x => 386 - 30 * Math.exp(-Math.pow((x - 1150) / 200, 2)) - fbm1(x * 0.012 + 7) * 14, floor: 410, bottom: 410, top: '#8aa8a4', bot: '#a8bcb8', seed: 346 }); }, { blur: 0.8 });
+  // the Central Range close on the left: a steep forested wall stepping down into the valley
+  L('cr2', 0.12, () => mountain({ fn: x => x < 760 ? 150 + Math.pow(Math.max(0, x + 60) / 820, 1.6) * 260 - fbm1(x * 0.01 + 1) * 40 : 412 + (x - 760) * 0.02, floor: 430, bottom: 430, top: '#2f6a34', bot: '#4e8a42', tex: 'forest', dark: '#245a2c', mid: '#3f7e3a', light: '#8cbc66', depth: 280, n: 4200, r: 3.6, seed: 344, haze: 'rgba(170,200,220,0.25)' }), { blur: 0.4, dx: -off * 0.03 });
+  L('fields', 0.5, () => { hdPaddies(404, H, 1100, 404, 347);
+    c.fillStyle = '#4a7a36'; for (let k = 0; k < 22; k++) { const x = 760 + k * 28 + hash(k) * 10; oval(x, 410, 9 + hash(k + 3) * 8, 6, 0, mix('#3a6a2e', '#6a9a46', hash(k + 5))); } // farmhouse tree line
+    c.fillStyle = '#e8e2d6'; c.fillRect(980, 402, 26, 9); poly([[976, 402], [993, 395], [1010, 402]], '#8a4a3a');
+    c.fillStyle = vg(404, 452, [[0, 'rgba(190,210,200,0.55)'], [1, 'rgba(190,210,200,0)']]); c.fillRect(-M, 404, W + 2 * M, 48);
+    poly([[-M, 525], [W + M, 518], [W + M, 527], [-M, 535]], '#d8ccae'); poly([[-M, 535], [W + M, 527], [W + M, 529], [-M, 538]], 'rgba(110,100,70,0.5)');
+    // low embankment, ballast, rails, catenary poles; a red arch bridge over a creek on the right
+    c.fillStyle = '#8a8070'; c.fillRect(-M, TY - 2, W + 2 * M, 10); c.fillStyle = '#5a554e'; c.fillRect(-M, TY + 6, W + 2 * M, 3); line(-M, TY - 1, W + M, TY - 1, '#3a3a3a', 1.5);
+    for (let x = -M; x < W + M; x += 70) { line(x, TY - 2, x, TY - 46, '#6a6a6a', 1.6); line(x - 6, TY - 42, x + 10, TY - 42, '#6a6a6a', 1.2); } line(-M, TY - 40, W + M, TY - 40, 'rgba(60,60,60,0.6)', 0.8);
+    c.fillStyle = hg(850, 1090, [[0, 'rgba(90,150,180,0)'], [0.15, '#6aa6c0'], [0.85, '#6aa6c0'], [1, 'rgba(90,150,180,0)']]); c.fillRect(850, TY + 8, 240, 6); line(850, TY + 8, 1090, TY + 8, 'rgba(200,190,160,0.8)', 1.5); line(850, TY + 14, 1090, TY + 14, 'rgba(150,140,110,0.8)', 1.5);
+    [[870, 120], [960, 110]].forEach(([bx, bw]) => { c.strokeStyle = '#c8322a'; c.lineWidth = 4; c.beginPath(); c.moveTo(bx, TY - 2); c.quadraticCurveTo(bx + bw / 2, TY - 70, bx + bw, TY - 2); c.stroke();
+      c.lineWidth = 1.4; for (let k = 1; k < 8; k++) { const u = k / 8, ax = bx + u * bw, ay = TY - 2 - 34 * 4 * u * (1 - u); line(ax, ay, ax, TY - 2, '#c8322a', 1.2); } }); });
+  D(0.5, () => { const tx = 1460 - lt * 430; puyuma(tx, TY - 2, 8);
+    c.save(); c.globalCompositeOperation = 'lighter'; for (let w = 0; w < 5; w++) { const u = mod(lt * 0.3 + w / 5, 1), y = 470 + u * 240; c.fillStyle = `rgba(255,240,170,${0.1 * Math.sin(u * Math.PI)})`; c.fillRect(-M, y - 10, W + 2 * M, 20); } c.restore(); });
   L('path', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#b8a888'], [1, '#8a7a5c']]); c.fillRect(-M, 596, W + 2 * M, 200); });
-  D(0.95, () => { grassTufts(590, 600, 80, ['#4f8a2c', '#6fa83f'], 345, 1.2, 14); drawCat3({ x: 60 + lt * 210, y: 600, s: 1.0, pose: { ...gallopPose3(gallopCyc3(lt * 210, 1)), ...ex('happy'), ear: 0.4 }, emote: emoAt(lt, [[1.0, 2.6, 'note']]) }); });
+  D(0.95, () => { grassTufts(590, 600, 80, ['#8a9a34', '#c8b240'], 345, 1.2, 14); drawCat3({ x: 60 + lt * 210, y: 600, s: 1.0, pose: { ...gallopPose3(gallopCyc3(lt * 210, 1)), ...ex('happy'), ear: 0.4 }, emote: emoAt(lt, [[1.0, 2.6, 'note']]) }); });
 });
 /* T5 多良車站 */
 V('T5', '臺東縣 · 太麻里', '多良車站', 'Duoliang Station', '22.51°N 120.96°E', ['多良車站，離太平洋最近的月台。', 'Duoliang — the platform closest to the Pacific.'], [1.02, 1.06, 0, 0, 0, 0], function (lt) {
