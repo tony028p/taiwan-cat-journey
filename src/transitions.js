@@ -408,15 +408,58 @@ V('T17', '新竹市', '南寮 · 十七公里海岸', 'Nanliao kites', '24.85°N
   L('shore', 0.4, () => { c.fillStyle = vg(400, 470, [[0, '#4a8fb0'], [1, '#6fb2c4']]); c.fillRect(-M, 420, W + 2 * M, 60); c.fillStyle = vg(470, H, [[0, '#8fbf5a'], [1, '#5f8f38']]); c.fillRect(-M, 470, W + 2 * M, H); for (let x = -M; x < W + M; x += 200) { line(x + 80, 470, x + 80, 300, '#e8e8e8', 3); for (let k = 0; k < 3; k++) { c.save(); c.translate(x + 80, 300); c.rotate(T * 2 + k * TAU / 3 + x); poly([[0, -2], [40, 0], [0, 2]], '#f2f2f2'); c.restore(); } } });
   D(0.4, () => { grassTufts(560, 620, 100, ['#6f9f42', '#4f7f2a'], 472, 3, 14); drawCat3({ x: 520, y: 604, s: 1.15, pose: sit3(lt, { ...ex('delighted'), hr: -0.55 + Math.sin(lt * 1.3) * 0.15, ear: 0.35, ts: 3 }), emote: emoAt(lt, [[1.0, 2.6, 'spark']]) }); });
 });
-/* T18 永安漁港 彩虹橋 */
+/* T18 永安漁港 彩虹橋 — per photos: at blue hour a white steel footbridge spans the harbour mouth; its two tubular arches
+   lean apart like a basket handle, hung with cables to a slim deck on piers, and LED strips along the arches run through the
+   rainbow; long coloured reflections in the still water, white fishing boats moored below, harbour buildings and a light
+   tower at either end. Ours walks along the quay in front. */
+const YA = { x0: 300, x1: 990, dk: 438, wl: 452, top: 318 };
+function yaArch(u, back) { // point on an arch, u 0..1; the back arch is slightly higher and set in, so the pair reads as leaning apart
+  const x = lerp(YA.x0 + (back ? 26 : 0), YA.x1 - (back ? 26 : 0), u), h = (YA.dk - YA.top + (back ? 14 : 0)) * Math.pow(Math.sin(Math.PI * u), 0.85);
+  return [x, YA.dk - (back ? 6 : 0) - h];
+}
 V('T18', '桃園市 · 新屋', '永安漁港彩虹橋', 'Rainbow Bridge, Yong’an', '24.99°N 121.01°E', ['永安漁港的彩虹橋，夜裡會一直換顏色。', 'Yong’an’s Rainbow Bridge keeps changing colour through the night.'], [1.02, 1.07, 0, 0, 0, 0], function (lt) {
-  L('sky', 0, () => { sky([[0, '#151c3a'], [0.6, '#3d3a6a'], [1, '#a46a7a']]); stars(80, 481, 300, 0.6); });
-  L('town', 0.15, () => { skyline(470, 482, '#232540', '#2f3050', { hmin: 10, hvar: 50, win: 0.12 }); c.fillStyle = vg(470, H, [[0, '#1d2340'], [1, '#0d1226']]); c.fillRect(-M, 470, W + 2 * M, H); });
-  D(0.4, () => { const cols = [[255, 80, 80], [255, 170, 60], [255, 230, 80], [90, 220, 120], [80, 170, 255], [170, 110, 255]], ph = Math.floor(T * 1.5);
-    for (let k = 0; k < 7; k++) { const col = cols[(k + ph) % 6]; c.strokeStyle = `rgb(${col})`; c.lineWidth = 6; c.beginPath(); c.moveTo(260 + k * 3, 500); c.quadraticCurveTo(640, 260 + k * 8, 1020 - k * 3, 500); c.stroke(); c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = `rgba(${col},0.25)`; c.lineWidth = 20; c.stroke(); c.restore();
-      c.save(); c.beginPath(); c.rect(-M, 500, W + 2 * M, 200); c.clip(); c.globalAlpha = 0.35; c.strokeStyle = `rgb(${col})`; c.lineWidth = 6; c.beginPath(); c.moveTo(260 + k * 3, 500); c.quadraticCurveTo(640, 740 - k * 8, 1020 - k * 3, 500); c.stroke(); c.restore(); }
-    c.fillStyle = '#1a1a26'; c.fillRect(240, 494, 800, 10); shimmer(505, H, 120, '255,200,150', 483, { a: 0.4, op: 'lighter' });
-    const q = { x: 300 + lt * 70, y: 494, s: 0.85, sil: true, rim: '255,170,200', shadow: false }; q.pose = { ...walkPose3(walkCyc3(lt * 70, 0.85, true), { trot: 1 }), ...ex('happy', 0.8) }; drawCat3(q); });
+  L('sky', 0, () => { sky([[0, '#0d1838'], [0.3, '#1f3a74'], [0.52, '#56689c'], [0.62, '#c88a7a'], [0.68, '#f2aa6a'], [1, '#f2aa6a']]); glow(1100, YA.wl, 420, '255,160,100', 0.25); stars(60, 481, 250, 0.5);
+    stratus(400, 300, 700, 30, 'rgba(255,170,150,0.25)'); stratus(980, 340, 600, 24, 'rgba(255,190,150,0.3)'); });
+  // harbour buildings, the light tower and the far breakwater
+  L('town', 0.15, () => { const wl = YA.wl, r = rng(482);
+    c.fillStyle = '#1a2440'; c.fillRect(-M, wl - 14, W + 2 * M, 14);
+    [[20, 120, 46], [120, 90, 34], [190, 70, 52], [255, 60, 28]].forEach(([x, w, h]) => { c.fillStyle = '#202a48'; c.fillRect(x, wl - h, w, h); poly([[x - 4, wl - h], [x + w / 2, wl - h - 14], [x + w + 4, wl - h]], '#5a2a2a');
+      for (let k = 0; k < w / 12; k++) for (let j = 0; j < h / 14 - 1; j++) if (r() < 0.6) { c.fillStyle = `rgba(255,${200 + r() * 40 | 0},140,0.85)`; c.fillRect(x + 4 + k * 12, wl - h + 8 + j * 14, 6, 6); } });
+    c.fillStyle = '#d8d4cc'; c.fillRect(150, wl - 96, 16, 50); c.fillStyle = '#9a3a32'; c.fillRect(146, wl - 104, 24, 10); glow(158, wl - 108, 30, '255,230,180', 0.8);
+    [[1030, 110, 30], [1150, 140, 40], [1110, 60, 22]].forEach(([x, w, h]) => { c.fillStyle = '#1e2846'; c.fillRect(x, wl - h, w, h); for (let k = 0; k < w / 14; k++) if (r() < 0.5) { c.fillStyle = 'rgba(255,214,150,0.8)'; c.fillRect(x + 5 + k * 14, wl - h + 8, 6, 5); } });
+    for (let k = 0; k < 12; k++) { const x = r() < 0.5 ? 20 + r() * 260 : 1000 + r() * 260; line(x, wl - 14, x, wl - 34, '#3a4060', 1.2); glow(x, wl - 35, 10, '255,220,160', 0.9); }
+    // masts of moored boats against the sky at both ends
+    for (let k = 0; k < 18; k++) { const x = r() < 0.5 ? 40 + r() * 230 : 1010 + r() * 240; line(x, wl - 6, x, wl - 40 - r() * 40, 'rgba(30,36,60,0.9)', 1.2); } });
+  L('water', 0.2, () => { c.fillStyle = vg(YA.wl, H, [[0, '#4a5a8a'], [0.15, '#2a3a6a'], [1, '#0c1430']]); c.fillRect(-M, YA.wl, W + 2 * M, H);
+    const r = rng(484); for (let k = 0; k < 40; k++) { const x = r() < 0.5 ? 20 + r() * 260 : 1000 + r() * 260, y = YA.wl + 4 + r() * 60; line(x, y, x, y + 10 + r() * 24, `rgba(255,210,150,${0.25 + r() * 0.3})`, 2); } });
+  // the bridge: piers and deck, cables, the white arches with LED strips cycling through the rainbow, and their reflections
+  D(0.3, () => { const hue = u => (u * 300 + T * 70) % 360;
+    [[YA.x0, 1], [YA.x1, -1]].forEach(([x, s]) => { c.fillStyle = '#8a8fa0'; c.fillRect(x - 10, YA.dk, 20, YA.wl - YA.dk + 6); poly([[x - 26 * s, YA.dk + 2], [x + 4 * s, YA.dk - 10], [x + 16 * s, YA.dk + 2]], '#b8bcc8'); });
+    for (let x = YA.x0 + 120; x < YA.x1 - 60; x += 170) { c.fillStyle = '#6a7084'; c.fillRect(x - 4, YA.dk + 4, 8, YA.wl - YA.dk); }
+    c.fillStyle = '#c8ccd6'; c.fillRect(YA.x0 - 40, YA.dk - 2, YA.x1 - YA.x0 + 80, 6); c.fillStyle = '#4a5068'; c.fillRect(YA.x0 - 40, YA.dk + 4, YA.x1 - YA.x0 + 80, 3);
+    c.strokeStyle = 'rgba(220,226,236,0.6)'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(YA.x0 - 40, YA.dk - 9); c.lineTo(YA.x1 + 40, YA.dk - 9); c.stroke();
+    for (let u = 0.06; u < 0.95; u += 0.035) { const [x, y] = yaArch(u, false); line(x, y + 3, x, YA.dk - 2, 'rgba(225,230,240,0.55)', 0.8); }
+    [true, false].forEach(back => { const N = 60; c.lineCap = 'round';
+      for (let i = 0; i < N; i++) { const a = yaArch(i / N, back), b = yaArch((i + 1) / N, back); c.strokeStyle = back ? '#7c8294' : '#a4a9b8'; c.lineWidth = back ? 4 : 5; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }
+      c.save(); c.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < N; i++) { const u = i / N, a = yaArch(u, back), b = yaArch((i + 1) / N, back), h = hue(u + (back ? 0.08 : 0));
+        c.strokeStyle = `hsla(${h},100%,60%,1)`; c.lineWidth = 3.5; c.beginPath(); c.moveTo(a[0], a[1] + 2); c.lineTo(b[0], b[1] + 2); c.stroke();
+        c.strokeStyle = `hsla(${h},100%,58%,0.2)`; c.lineWidth = 18; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }
+      // reflections: long vertical streaks below the mirrored arch, wobbling with the water
+      for (let i = 0; i < N; i++) { const u = i / N, [x, y] = yaArch(u, back), ry = 2 * YA.wl - y, h = hue(u + (back ? 0.08 : 0)), wob = Math.sin(T * 2 + i * 1.7) * 3;
+        c.strokeStyle = `hsla(${h},100%,58%,${0.4 - (ry - YA.wl) / 500})`; c.lineWidth = 3; c.beginPath(); c.moveTo(x + wob, ry - 10); c.lineTo(x - wob, ry + 10); c.stroke(); }
+      c.restore(); });
+    for (let x = YA.x0 - 30; x < YA.x1 + 40; x += 40) glow(x, YA.dk + 4, 8, '255,230,190', 0.6);
+    shimmer(YA.wl + 6, H, 120, '255,210,170', 483, { a: 0.3, op: 'lighter' }); });
+  // white fishing boats moored on the near side
+  D(0.55, () => { [[150, 574, 1.05, '#3a7fc0', 0], [470, 566, 0.85, '#c0392b', 1.3], [860, 568, 0.9, '#2a9d6a', 2.1], [1150, 578, 1.1, '#3a7fc0', 0.7]].forEach(([x, y, s, st, ph]) => {
+    c.save(); c.globalAlpha = 0.35; c.translate(0, 2 * y + 4); c.scale(1, -0.6); boat(x, y, s, st, ph); c.restore(); boat(x, y, s, st, ph); glow(x - 10 * s, y - 34 * s, 16, '255,230,170', 0.6); }); });
+  // the quay along the front
+  L('quay', 0.9, () => { c.fillStyle = vg(588, H, [[0, '#6a6c78'], [0.12, '#4a4c58'], [1, '#22232c']]); c.fillRect(-M, 590, W + 2 * M, H); c.fillStyle = '#8a8c98'; c.fillRect(-M, 588, W + 2 * M, 5);
+    for (let x = 60; x < W + M; x += 260) { c.fillStyle = '#2a2a32'; c.beginPath(); c.roundRect(x - 9, 576, 18, 16, 4); c.fill(); c.fillStyle = '#9a9ca8'; c.fillRect(x - 11, 574, 22, 4); }
+    line(980, 140, 980, 590, '#3a3c48', 5); line(980, 140, 1010, 132, '#3a3c48', 4); });
+  D(0.9, () => { glow(1012, 140, 90, '255,220,170', 0.35); glow(1012, 140, 16, '255,240,210', 0.9); glow(994, 596, 60, '255,210,150', 0.18);
+    const q = { x: 300 + lt * 40, y: 606, s: 1.0, haze: '30,40,80,0.42', rim: '255,190,160', emote: emoAt(lt, [[1.6, 3.2, 'spark']]) }; q.pose = { ...walkPose3(walkCyc3(lt * 40, 1.0), { hr: -0.12 }), ...ex('delighted', 0.8), turn: turnAt(lt, [[1.4, 3.2, 0.3]]) }; drawCat3(q); });
 });
 /* T19 飛往金門 */
 V('T19', '臺灣海峽上空', '飛往金門', 'Flying to Kinmen', '24.50°N 119.50°E', ['飛越臺灣海峽，去金門。', 'Up over the Taiwan Strait, bound for Kinmen.'], [1.0, 1.02, 0, 0, 0, 0], function (lt) {
