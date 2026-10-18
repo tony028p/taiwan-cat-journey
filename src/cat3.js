@@ -183,14 +183,15 @@ function hull2(P) { const p = P.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1
 function earGeo(H, p, s) {
   const e = p.ear || 0, dn = p.earDown || 0;
   // ear ≈ 0.4 of the skull height, set wide at 10 and 2 o'clock with a softly rounded tip — tall spikes close together read as a fox
-  const b1 = [s * 3.4, -10.9, 4.4], b2 = [s * 12.2, -5.8, -3.4], tp = [s * (11 + dn * 7), EARH + dn * 9 + Math.max(0, e) * 2, -0.6 - e * 6 - dn * 2];
+  const pf = Math.abs(1 - clamp(H.tn, 0, 2));   // 1 in profile, 0 facing the camera: in profile the ear base sits on TOP of the skull, the round occiput shows below it
+  const b1 = [s * 3.4, -10.9 - 0.6 * pf, 1.6], b2 = [s * 12.2, lerp(-5.8, -11.4, pf), lerp(-6.2, -5.4, pf)], tp = [s * (11 + dn * 7), EARH + dn * 9 + Math.max(0, e) * 2, -3.6 - e * 6 - dn * 2];
   const dep = H.d(s * 7, 0), q1 = H.pr(...b1), q2 = H.pr(...b2), edge = clamp(1 - Math.hypot(q1[0] - q2[0], q1[1] - q2[1]) / 12.4);
   // seen edge-on (or foreshortened behind the head) an ear would stand up as a thin spike: lower its tip
   tp[1] += 3.2 * Math.max(edge, dep < 0 ? clamp(-dep / 5) : 0);
   const L3 = (u, a, b) => a.map((v, i) => v + (b[i] - v) * u), tA = L3(0.16, tp, b1), tB = L3(0.16, tp, b2), tc = L3(0.05, tp, L3(0.5, b1, b2));
-  const off = dep < 0 ? [-5 * (1 - H.tn), -1 * (1 - H.tn)] : [0, 0];   // the far ear peeks out behind in profile
+  const off = dep < 0 ? [-2.2 * (1 - H.tn), -0.6 * (1 - H.tn)] : [0, 0];   // the far ear peeks out behind in profile
   // the ear is a shallow cup, not a flat card: the hull of its rim and back keeps some width at every yaw
-  let pts = hull2([b1, b2, tB, tc, tA, [s * 6.4, -8.6, -4.6], [s * 6.2, -9.6, 3.2]].map(v => { const q = H.pr(...v); return [q[0] + off[0], q[1] + off[1]]; }));
+  let pts = hull2([b1, b2, tB, tc, tA, [s * 6.4, lerp(-8.6, -12.6, pf), lerp(-7.4, -4.6, pf)], [s * 6.2, -9.6 - 2 * pf, 0.4]].map(v => { const q = H.pr(...v); return [q[0] + off[0], q[1] + off[1]]; }));
   // and never narrower than ~2/3 of its full width, so a turned ear reads as a smaller ear, not a spike
   const xs = pts.map(q => q[0]), w = Math.max(...xs) - Math.min(...xs), cx = (Math.max(...xs) + Math.min(...xs)) / 2;
   if (w < 6.5) pts = pts.map(q => [cx + (q[0] - cx) * 6.5 / Math.max(w, 0.5), q[1]]);
@@ -200,11 +201,13 @@ function earGeo(H, p, s) {
 /* head outline: the skull, cheeks, muzzle and chin are merged into ONE smooth contour. A ray is cast from the head
    centre every 5.6°, the outermost piece wins, then a radial closing + blur removes the notches between pieces. */
 function headPath(H, p) {
-  const sk = H.pr(0, -2, 0), w = Math.hypot(13.2 * H.cs, 11.5 * H.sn), C = [sk[0], sk[1] + 1.5], circ = [];
+  const sk = H.pr(0, -2, -1.6), w = Math.hypot(13.2 * H.cs, 11.5 * H.sn), C = [sk[0], sk[1] + 1.5], circ = [];
   [-1, 1].forEach(s => { const q = H.pr(s * 7.4, 2.4, 2.6); circ.push([q[0], q[1], 6]); });   // cheeks: rounded, no square jowls
-  const mz = H.pr(0, 3.3, 9), ch = H.pr(0, 6.2, 6.6); circ.push([mz[0], mz[1], 5], [ch[0], ch[1], 3.8]);
+  // profile landmarks: brow → a soft stop at the eyes → short nose bridge → nose tip (most forward) → whisker pad → small chin set back
+  const br = H.pr(0, -4.6, 7.2), nb = H.pr(0, -0.6, 10.6), nt = H.pr(0, 0.9, 12.1), mz = H.pr(0, 3.6, 8.9), ch = H.pr(0, 6.5, 5.9);
+  circ.push([br[0], br[1], 3.6], [nb[0], nb[1], 2.4], [nt[0], nt[1], 2.0], [mz[0], mz[1], 4.6], [ch[0], ch[1], 3.4]);
   if ((p.mouth || 0) > 0.05) { const j = H.pr(0, 5.8 + 3.6 * p.mouth, 8.4); circ.push([j[0], j[1], 4.2]); }
-  const N = 64, r = [], dx0 = C[0] - sk[0], dy0 = C[1] - sk[1];
+  const N = 96, r = [], dx0 = C[0] - sk[0], dy0 = C[1] - sk[1];
   for (let i = 0; i < N; i++) { const a = i / N * TAU, ux = Math.cos(a), uy = Math.sin(a);
     const A = (ux / w) ** 2 + (uy / 11) ** 2, Bq = 2 * (dx0 * ux / (w * w) + dy0 * uy / 121), Cq = (dx0 / w) ** 2 + (dy0 / 11) ** 2 - 1;
     let best = (-Bq + Math.sqrt(Math.max(0, Bq * Bq - 4 * A * Cq))) / (2 * A);
