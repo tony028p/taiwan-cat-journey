@@ -122,15 +122,81 @@ V('T4', '花蓮 → 臺東', '花東縱谷', 'Huadong Valley', '23.40°N 121.35�
   L('path', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#b8a888'], [1, '#8a7a5c']]); c.fillRect(-M, 596, W + 2 * M, 200); });
   D(0.95, () => { grassTufts(590, 600, 80, ['#4f8a2c', '#6fa83f'], 345, 1.2, 14); drawCat3({ x: 60 + lt * 210, y: 600, s: 1.0, pose: { ...gallopPose3(gallopCyc3(lt * 210, 1)), ...ex('happy'), ear: 0.4 }, emote: emoAt(lt, [[1.0, 2.6, 'note']]) }); });
 });
-/* T5 多良車站 */
+/* T5 多良車站 — per photos: from the station's hillside deck, the South-Link line runs straight along the Pacific shore
+   into a tunnel under the green headland; red railing on the seaward platform edge, pebble beach and surf below, catenary
+   masts, and an orange diesel locomotive hauling orange coaches toward us. Drawn as a one-point perspective. */
+const T5VP = [1060, 360], T5F = 600, T5CY = 5;
+function t5P(X, Y, Z) { return [T5VP[0] + T5F * X / Z, T5VP[1] + T5F * (T5CY - Y) / Z]; }
+function t5Strip(X0, X1, Y, z0, z1, col) { poly([t5P(X0, Y, z0), t5P(X1, Y, z0), t5P(X1, Y, z1), t5P(X0, Y, z1)], col); }
+function t5Train(zf) {
+  // cars from the far end so nearer ones overlap; clipped at the tunnel mouth (Z = 330)
+  const cars = [[17, 1]]; for (let k = 0; k < 6; k++) cars.push([20, 0]);
+  let z = zf; const list = []; cars.forEach(([len, loco]) => { list.push([z, z + len, loco]); z += len + 1.2; });
+  const XL = -19.8, XR = -16.8, Y0 = 0.55, Y1 = 4.2;
+  for (let i = list.length - 1; i >= 0; i--) { let [z0, z1, loco] = list[i]; if (z0 > 330) continue; z1 = Math.min(z1, 330);
+    const body = loco ? '#e4602a' : '#c8612e', band = loco ? '#f2c94a' : '#efdcb5';
+    // right side
+    poly([t5P(XR, Y0, z0), t5P(XR, Y1, z0), t5P(XR, Y1, z1), t5P(XR, Y0, z1)], body);
+    poly([t5P(XR, 1.6, z0), t5P(XR, 1.9, z0), t5P(XR, 1.9, z1), t5P(XR, 1.6, z1)], band);
+    if (!loco) { poly([t5P(XR, 2.4, z0 + 0.6), t5P(XR, 3.3, z0 + 0.6), t5P(XR, 3.3, z1 - 0.6), t5P(XR, 2.4, z1 - 0.6)], '#2a2f36');
+      for (let w = z0 + 2; w < z1 - 1; w += 2.2) { const a = t5P(XR, 2.4, w), b = t5P(XR, 3.3, w); line(a[0], a[1], b[0], b[1], 'rgba(200,120,80,0.8)', Math.max(0.6, 140 / w)); } }
+    else { poly([t5P(XR, 2.5, z0 + 0.5), t5P(XR, 3.5, z0 + 0.5), t5P(XR, 3.5, z0 + 2.6), t5P(XR, 2.5, z0 + 2.6)], '#2a2f36');
+      for (let v = z0 + 4; v < z1 - 1; v += 1.6) { const a = t5P(XR, 2.2, v), b = t5P(XR, 3.6, v); line(a[0], a[1], b[0], b[1], 'rgba(120,40,10,0.45)', Math.max(0.5, 90 / v)); } }
+    // roof
+    poly([t5P(XL, Y1, z0), t5P(XR, Y1, z0), t5P(XR, Y1, z1), t5P(XL, Y1, z1)], loco ? '#b6532a' : '#8f8c86');
+    // bogies
+    poly([t5P(XR - 0.2, 0, z0 + 0.5), t5P(XR - 0.2, Y0, z0 + 0.5), t5P(XR - 0.2, Y0, z1 - 0.5), t5P(XR - 0.2, 0, z1 - 0.5)], '#26221f');
+    if (i === 0) { // locomotive face with yellow chevrons, cab windows, headlight
+      const f = [t5P(XL, Y0, z0), t5P(XR, Y0, z0), t5P(XR, Y1, z0), t5P(XL, Y1, z0)]; poly(f, '#ea6a2e');
+      const q = (u, v) => [lerp(lerp(f[0][0], f[1][0], u), lerp(f[3][0], f[2][0], u), v), lerp(lerp(f[0][1], f[1][1], u), lerp(f[3][1], f[2][1], u), v)];
+      for (let k = 0; k < 3; k++) poly([q(0, 0.1 + k * 0.13), q(0.5, 0.2 + k * 0.13), q(1, 0.1 + k * 0.13), q(1, 0.16 + k * 0.13), q(0.5, 0.26 + k * 0.13), q(0, 0.16 + k * 0.13)], '#f4d03a');
+      poly([q(0.12, 0.62), q(0.46, 0.62), q(0.46, 0.84), q(0.12, 0.84)], '#283038'); poly([q(0.54, 0.62), q(0.88, 0.62), q(0.88, 0.84), q(0.54, 0.84)], '#283038');
+      const hl = q(0.5, 0.52), rr = Math.max(1, 260 / z0); glow(hl[0], hl[1], rr * 5, '255,240,200', 0.6); disc(hl[0], hl[1], rr, '#fffbe8'); }
+  }
+}
 V('T5', '臺東縣 · 太麻里', '多良車站', 'Duoliang Station', '22.51°N 120.96°E', ['多良車站，離太平洋最近的月台。', 'Duoliang — the platform closest to the Pacific.'], [1.02, 1.06, 0, 0, 0, 0], function (lt) {
-  L('sky', 0, () => { sky([[0, '#3f7fc4'], [1, '#cfe2ef']]); cumulus(900, 200, 300, 60, 351, '#ffffff', '#cad5e0', -0.3); }, { blur: 2 });
-  L('sea', 0.12, () => { c.fillStyle = vg(330, H, [[0, '#1f5f9e'], [0.5, '#2f86b7'], [1, '#4aa7c4']]); c.fillRect(-M, 330, W + 2 * M, H); c.fillStyle = 'rgba(255,255,255,0.7)'; c.fillRect(-M, 500, W + 2 * M, 4); c.fillStyle = vg(500, 540, [[0, '#7a7a7a'], [1, '#5a5a5a']]); c.fillRect(-M, 504, W + 2 * M, 40); });
-  D(0.12, () => shimmer(332, 495, 200, '255,255,255', 352, { a: 0.4 }));
-  L('track', 0.5, () => { mountain({ fn: x => 380 + (x < 200 ? 0 : (x - 200) * 0.0) + fbm1(x * 0.01 + 9) * 20 - (x < 260 ? (260 - x) * 0.8 : 0), floor: 560, top: '#4a7a46', bot: '#3d6339', tex: 'forest', dark: '#2f4f2e', mid: '#4a7a46', light: '#8fb47a', depth: 60, n: 500, r: 4, seed: 353 }); c.fillStyle = '#6f6a62'; c.fillRect(-M, 540, W + 2 * M, 14); c.fillStyle = '#3e3a36'; c.fillRect(-M, 538, W + 2 * M, 3); c.fillRect(-M, 548, W + 2 * M, 3); });
-  D(0.5, () => { const tx = -900 + lt * 520; for (let k = 0; k < 5; k++) { const x = tx + k * 150; c.fillStyle = '#f4f3ef'; c.beginPath(); c.roundRect(x, 492, 146, 46, 8); c.fill(); c.fillStyle = '#d23a2e'; c.fillRect(x, 520, 146, 6); c.fillStyle = '#2a3440'; c.fillRect(x + 8, 500, 130, 12); } });
-  L('plat', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#9a9690'], [1, '#5f5c58']]); c.fillRect(-M, 600, W + 2 * M, 200); c.strokeStyle = '#2f6fb0'; c.lineWidth = 4; line(-M, 572, W + M, 572, '#2f6fb0', 5); line(-M, 588, W + M, 588, '#2f6fb0', 3); for (let x = -M; x < W + M; x += 26) line(x, 572, x, 602, '#2f6fb0', 2.4); });
-  D(0.95, () => drawCat3({ x: 520, y: 572, s: 1.0, pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [1.4, 'surprised'], [2.4, 'happy']]), hr: lt > 1.4 && lt < 2.6 ? -0.15 : -0.05, ts: 1.6 }), emote: emoAt(lt, [[1.4, 2.3, '!']]), shadow: false }));
+  const hz = T5VP[1];
+  L('sky', 0, () => { sky([[0, '#2f76c6'], [0.45, '#6fa7dc'], [0.62, '#cfe4f2'], [1, '#e8f1f4']]); cumulus(300, 170, 420, 70, 351, '#ffffff', '#c3d0de', 0.3); cumulus(760, 230, 300, 46, 354, '#ffffff', '#c9d5e1', 0.3); cumulus(120, 300, 360, 26, 355, '#ffffff', '#d4dde6', 0.3); }, { blur: 1.5 });
+  // the Pacific: deep blue at the horizon, turquoise over the shelf; the pebble beach, embankment and the two tracks
+  L('sea', 0.12, () => { c.fillStyle = vg(hz, H, [[0, '#2a6fb0'], [0.18, '#2e82bd'], [0.5, '#38a6c4'], [1, '#56c0c6']]); c.fillRect(-M, hz, W + 2 * M, H);
+    c.fillStyle = 'rgba(255,255,255,0.35)'; c.fillRect(-M, hz, W + 2 * M, 1.5);
+    c.fillStyle = 'rgba(120,150,170,0.55)'; c.beginPath(); c.moveTo(880, hz + 1); c.quadraticCurveTo(960, hz - 18, 1060, hz - 10); c.lineTo(1060, hz + 1); c.fill();
+    poly([t5P(-34, -1, 9), t5P(-23, -1, 9), t5P(-23, -1, 2000), t5P(-34, -1, 2000)], '#a8a296');
+    const r = rng(356); for (let k = 0; k < 900; k++) { const X = -34 + r() * 11, Z = 9 + Math.pow(r(), 2.2) * 300, p = t5P(X, -1, Z), rr = Math.max(0.4, 9 / Z); disc(p[0], p[1], rr, r() < 0.5 ? '#c9c4b8' : '#7e796f'); }
+    poly([t5P(-23, -1, 9), t5P(-21.6, 0.9, 9), t5P(-21.6, 0.9, 2000), t5P(-23, -1, 2000)], '#8c877e');
+    t5Strip(-21.6, -19.9, 0.9, 9, 2000, '#bdb8ac');
+    t5Strip(-19.9, -12.5, 0, 9, 2000, '#7b7066');
+    for (const X of [-18.3, -14.6]) { for (let Z = 9; Z < 600; Z += 0.65) { const a = t5P(X - 1.1, 0, Z), b = t5P(X + 1.1, 0, Z); if (b[1] - a[1] > 0.4 || Z < 100) line(a[0], a[1], b[0], b[1], 'rgba(70,58,48,0.8)', Math.max(0.5, 30 / Z)); }
+      for (const g of [-0.54, 0.54]) { const a = t5P(X + g, 0.15, 9), b = t5P(X + g, 0.15, 2000); line(a[0], a[1], b[0], b[1], '#5a524c', 2); line(a[0], a[1] - 1, b[0], b[1], 'rgba(230,225,215,0.7)', 1); } }
+  });
+  D(0.12, () => { // surf lines washing along the beach
+    poly([t5P(-36.5, -1, 9), t5P(-34, -1, 9), t5P(-34, -1, 2000), t5P(-36.5, -1, 2000)], 'rgba(235,250,250,0.35)');
+    for (let w = 0; w < 4; w++) { const u = mod(lt * 0.35 + w / 4, 1), X = -36.5 + u * 2.5, a = Math.sin(u * Math.PI);
+      c.strokeStyle = `rgba(255,255,255,${0.85 * a})`; c.lineWidth = 2.5; c.beginPath(); for (let Z = 12; Z < 900; Z *= 1.08) { const p = t5P(X - Math.sin(Z * 0.3 + w) * 0.4, -1, Z); Z === 12 ? c.moveTo(p[0], p[1]) : c.lineTo(p[0], p[1]); } c.stroke(); }
+    shimmer(hz + 3, 560, 160, '255,255,255', 352, { a: 0.35 }); });
+  // the headland the line tunnels under, with the portal
+  L('hill', 0.2, () => { const foot = Z => t5P(-12.5, 0, Z); const ridge = x => hz - 6 - Math.max(0, x - 905) * 0.72 - fbm1(x * 0.012 + 3) * 26;
+    const f0 = foot(9.5), f1 = foot(330);
+    c.save(); c.beginPath(); c.moveTo(f0[0], H + 20); c.lineTo(f0[0], f0[1]); c.lineTo(f1[0], f1[1]); for (let x = 905; x <= W + M; x += 6) c.lineTo(x, Math.min(f1[1], ridge(x))); c.lineTo(W + M, H + 20); c.closePath(); c.clip();
+    mountain({ fn: x => Math.min(H - 10, ridge(Math.max(905, x))), floor: H + 20, top: '#3f7a3c', bot: '#2f5e30', tex: 'forest', dark: '#24482a', mid: '#3f7a3c', light: '#9cc47a', depth: 560, n: 2600, r: 6, seed: 353 });
+    c.fillStyle = vg(100, 600, [[0, 'rgba(190,215,230,0)'], [0.55, 'rgba(190,215,230,0.4)'], [1, 'rgba(190,215,230,0)']]); c.fillRect(-M, 92, W + 2 * M, 520); c.restore();
+    const pa = t5P(-21, 0, 330), pb = t5P(-12, 0, 330), pt = t5P(-16.5, 7, 330); c.fillStyle = '#bdb6a8'; c.fillRect(pa[0] - 4, pt[1] - 6, pb[0] - pa[0] + 8, pa[1] - pt[1] + 6);
+    c.fillStyle = '#141412'; c.beginPath(); c.moveTo(pa[0] + 1, pa[1]); c.lineTo(pa[0] + 1, lerp(pa[1], pt[1], 0.55)); c.quadraticCurveTo((pa[0] + pb[0]) / 2, pt[1] - 2, pb[0] - 1, lerp(pa[1], pt[1], 0.55)); c.lineTo(pb[0] - 1, pb[1]); c.fill(); });
+  // catenary masts on the hillside side, arms reaching over the tracks
+  L('cat', 0.2, () => { for (let Z = 330; Z >= 20; Z -= 45) { const a = t5P(-12.6, 0, Z), b = t5P(-12.6, 7.6, Z), e = t5P(-19, 7.2, Z); line(a[0], a[1], b[0], b[1], '#8e9196', Math.max(1, 70 / Z)); line(b[0], b[1], e[0], e[1], '#8e9196', Math.max(0.8, 40 / Z)); }
+    for (const X of [-18.3, -14.6]) { const a = t5P(X, 6.6, 12), b = t5P(X, 6.6, 330); line(a[0], a[1], b[0], b[1], 'rgba(50,50,55,0.6)', 1); } });
+  // the train, then the red railing on the seaward platform edge
+  D(0.2, () => { t5Train(95 - lt * 20);
+    for (let Z = 330; Z >= 9.5; Z -= 2.5) { const a = t5P(-21.6, 0.9, Z), b = t5P(-21.6, 2.0, Z); line(a[0], a[1], b[0], b[1], '#d4352b', Math.max(0.6, 26 / Z)); }
+    for (const Y of [2.0, 1.45]) { const a = t5P(-21.6, Y, 9.5), b = t5P(-21.6, Y, 330); line(a[0], a[1], b[0], b[1], '#e2433a', Y === 2 ? 3 : 2); } });
+  // the station's viewing deck in the foreground, blue railing
+  L('plat', 0.95, () => { poly([[600, H + 40], [700, 588], [W + M, 588], [W + M, H + 40]], '#a8a49c'); c.fillStyle = vg(588, H, [[0, 'rgba(0,0,0,0)'], [1, 'rgba(0,0,0,0.25)']]); c.fillRect(600, 588, W, 60);
+    for (let x = 720; x < W + M; x += 40) line(x, 588, x - 30, H, 'rgba(90,85,78,0.35)', 1);
+    line(700, 588, W + M, 588, '#7b776f', 3);
+    for (let x = 712; x < W + M; x += 34) line(x, 588, x, 546, '#2f86c8', 3); line(706, 548, W + M, 548, '#3a96d6', 5); line(706, 568, W + M, 568, '#2f86c8', 3);
+    line(600, H + 10, 700, 588, '#7b776f', 3); for (let u = 0.1; u < 1; u += 0.25) { const x = lerp(600, 700, u), y = lerp(H + 10, 588, u); line(x, y, x, y - 42, '#2f86c8', 3); } line(612, 610, 704, 548, '#3a96d6', 5);
+    bushes(16, 560, 720, x => 600 + (720 - x) * 0.3, 357, '#2f5a2c', '#5f9446', 18); });
+  D(0.95, () => drawCat3({ x: 880, y: 606, s: 1.0, face: -1, pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [1.4, 'surprised'], [2.4, 'happy']]), hr: lt > 1.4 && lt < 2.6 ? -0.12 : -0.02, ts: 1.6 }), emote: emoAt(lt, [[1.4, 2.3, '!']]), shadow: false }));
 });
 /* T6 高屏溪斜張橋 */
 V('T6', '屏東 → 高雄', '高屏溪斜張橋', 'Kao-Ping Hsi Bridge', '22.64°N 120.43°E', ['跨過高屏溪，就到高雄了。', 'Across the Gaoping River lies Kaohsiung.'], [1.02, 1.06, -20, 20, 0, 0], function (lt) {
