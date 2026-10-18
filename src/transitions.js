@@ -250,15 +250,60 @@ V('T12', '彰化縣', '八卦山大佛', 'Great Buddha of Baguashan', '24.08°N 
   L('path', 0.9, () => { c.fillStyle = vg(580, H, [[0, '#a89c88'], [1, '#6a604e']]); c.fillRect(-M, 590, W + 2 * M, 200); for (let x = -M; x < W + M; x += 90) line(x, 560, x, 594, '#8a8070', 4); line(-M, 560, W + M, 560, '#8a8070', 3); });
   D(0.9, () => { const q = { x: 260 + lt * 28, y: 594, s: 1.0 }; q.pose = { ...walkPose3(walkCyc3(lt * 28, 1), { hr: -0.15 }), ...ex('content') }; drawCat3(q); });
 });
-/* T13 集集綠色隧道 */
+/* T13 集集綠色隧道 — per photos: a straight two-lane road (white edge lines, yellow centre line) running far into the
+   distance under rows of old camphor trees; thick, gnarled, mossy trunks lean in from both verges and their limbs arch
+   over the road into a closed canopy, dappled sunlight on the asphalt, a bright opening at the far end */
+const JJ = { vx: 690, hz: 392, y0: 660 };
+const jjY = z => JJ.hz + (JJ.y0 - JJ.hz) / z, jjCx = z => JJ.vx + 70 * Math.pow(1 - 1 / z, 2), jjHw = z => 470 / z;
+function jjTree(z, side, seed) {
+  const r = rng(seed), p = 1 / z, by = jjY(z), bx = jjCx(z) + side * (jjHw(z) + (70 + r() * 40) * p), hz = clamp((1 - p) * 1.05);
+  const bark = hexMix2('#3d3a2f', '#b9c8a6', hz * 0.85), moss = hexMix2('#4e5c34', '#bccaa4', hz * 0.85), lit = `rgba(240,230,190,${0.28 * (1 - hz)})`;
+  const th = (340 + r() * 60) * p, lean = -side * (70 + r() * 60) * p, wb = (54 + r() * 18) * p;
+  // gnarled trunk: two wobbly edges, a flared root foot, leaning in toward the road
+  const pts = [], N = 10; for (let i = 0; i <= N; i++) { const u = i / N, x = bx + lean * u * u + Math.sin(u * 7 + seed) * 8 * p, y = by - th * 0.62 * u, w = wb * (1 - u * 0.45) * (1 + (u < 0.12 ? (0.12 - u) * 5 : 0)); pts.push([x, y, w]); }
+  c.beginPath(); pts.forEach(([x, y, w], i) => i ? c.lineTo(x - w / 2, y) : c.moveTo(x - w / 2, y)); for (let i = N; i >= 0; i--) c.lineTo(pts[i][0] + pts[i][2] / 2, pts[i][1]); c.closePath();
+  c.fillStyle = bark; c.fill(); c.save(); c.clip();
+  for (let k = 0; k < 18; k++) { const u = r(), q = pts[Math.round(u * N)]; oval(q[0] + (r() - 0.5) * q[2], q[1], q[2] * (0.15 + r() * 0.3), 6 * p + r() * 14 * p, 0, r() < 0.5 ? moss : 'rgba(0,0,0,0.18)'); }
+  c.fillStyle = lit; pts.forEach(([x, y, w], i) => { if (i < N) c.fillRect(x - w * 0.3, pts[i + 1][1], w * 0.2, y - pts[i + 1][1] + 1); }); c.restore();
+  // limbs: one arches over the road toward the centre, one climbs, one reaches out over the verge
+  const f = pts[N], tips = [];
+  const limb = (dx, dy, cx2, cy2, w0) => { c.strokeStyle = bark; c.lineCap = 'round'; const sx = f[0], sy = f[1], ex = sx + dx, ey = sy + dy;
+    const P = t => [(1 - t) * (1 - t) * sx + 2 * (1 - t) * t * (sx + cx2) + t * t * ex, (1 - t) * (1 - t) * sy + 2 * (1 - t) * t * (sy + cy2) + t * t * ey];
+    for (let s = 0; s < 5; s++) { const a = s / 5, A = P(a), B = P((s + 1) / 5); c.lineWidth = w0 * (1 - a * 0.75); c.beginPath(); c.moveTo(A[0], A[1]); c.lineTo(B[0], B[1]); c.stroke(); } tips.push([ex, ey]); };
+  const toC = jjCx(z) - f[0];
+  limb(toC * (0.75 + r() * 0.3), -th * 0.55, toC * 0.1, -th * 0.5, wb * 0.55);
+  limb(-side * 20 * p, -th * 0.5, -side * 10 * p, -th * 0.3, wb * 0.4);
+  limb(side * 120 * p, -th * 0.3, side * 50 * p, -th * 0.35, wb * 0.35);
+  return { tips, hz, p };
+}
+function jjLeaves(t, seed) {
+  const r = rng(seed), { tips, hz, p } = t; tips.forEach(([x, y], i) => { for (let k = 0; k < 120; k++) { const a = r() * TAU, d = Math.sqrt(r()) * (100 + i * 10) * p, lx = x + Math.cos(a) * d * 1.4, ly = y + Math.sin(a) * d * 0.7 - 10 * p, up = clamp(0.5 - Math.sin(a) * 0.5);
+    oval(lx, ly, (6 + r() * 9) * p + 1.5, (4 + r() * 6) * p + 1, r() * 3, mix(hexMix2('#24481f', '#c3d2a8', hz * 0.8), hexMix2('#9cc25a', '#d6e2bc', hz * 0.8), up * 0.85 * r() + up * 0.15, 0.92)); } });
+}
 V('T13', '南投縣 · 集集', '綠色隧道', 'Jiji Green Tunnel', '23.83°N 120.78°E', ['集集的樟樹，排成了一條綠色隧道。', 'In Jiji, camphor trees arch over the road into a green tunnel.'], [1.02, 1.05, 30, -30, 0, 0], function (lt) {
-  L('bg', 0, () => { sky([[0, '#cfe0c0'], [1, '#e8ead9']]); const r = rng(431); for (let k = 0; k < 1400; k++) { const x = r() * (W + 2 * M) - M, y = r() * 330; oval(x, y, 8 + r() * 18, 6 + r() * 12, 0, mix('#2f5a2a', '#9cc06a', r() * (y < 150 ? 0.7 : 1), 0.85)); } }, { blur: 1.5 });
-  L('trees', 0.5, () => { for (let x = -M; x < W + M; x += 110) { c.strokeStyle = '#4a3a2c'; c.lineWidth = 16; c.lineCap = 'round'; c.beginPath(); c.moveTo(x, 600); c.quadraticCurveTo(x + 10, 400, x + 60, 220); c.stroke(); c.lineWidth = 7; c.beginPath(); c.moveTo(x + 30, 380); c.quadraticCurveTo(x + 90, 300, x + 150, 250); c.stroke(); }
-    c.fillStyle = vg(450, 620, [[0, '#6f6a60'], [1, '#55514a']]); c.fillRect(-M, 520, W + 2 * M, 30); c.fillStyle = '#4a463f'; c.fillRect(-M, 550, W + 2 * M, 4); });
-  D(0.5, () => { const x = 1500 - lt * 360; c.fillStyle = '#f2c230'; c.beginPath(); c.roundRect(x, 470, 210, 50, 8); c.fill(); c.fillStyle = '#2b3846'; for (let k = 0; k < 6; k++) c.fillRect(x + 14 + k * 32, 480, 22, 14); c.fillStyle = '#d8a020'; c.fillRect(x, 506, 210, 6);
-    c.save(); c.globalCompositeOperation = 'lighter'; const r = rng(432); for (let k = 0; k < 40; k++) { const xx = r() * W, yy = 540 + r() * 80, a = 0.15 + 0.1 * Math.sin(T * 0.8 + k); oval(xx + Math.sin(T * 0.5 + k) * 6, yy, 16 + r() * 30, 4 + r() * 5, 0, `rgba(255,240,180,${a})`); } c.restore(); });
-  L('road', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#5d5a55'], [1, '#3a3834']]); c.fillRect(-M, 560, W + 2 * M, 200); for (let k = 0; k < 14; k++) c.fillStyle = '#e9d9a8', c.fillRect(-M + k * 130, 640, 70, 4); });
-  D(0.95, () => { const q = { x: 200 + lt * 46, y: 600, s: 1.05 }; q.pose = { ...walkPose3(walkCyc3(lt * 46, 1.05, true), { trot: 1 }), ...ex('happy', 0.8) }; drawCat3(q); });
+  // the canopy vault and the bright far end of the tunnel
+  L('bg', 0, () => { c.fillStyle = vg(BAR, JJ.hz + 40, [[0, '#2c4a24'], [1, '#6f8f4a']]); c.fillRect(-M, 0, W + 2 * M, H); const ex = jjCx(30), r = rng(431);
+    const g = c.createRadialGradient(ex, JJ.hz - 10, 0, ex, JJ.hz - 10, 260); g.addColorStop(0, '#f4f6dc'); g.addColorStop(0.25, '#d0dfa6'); g.addColorStop(1, 'rgba(120,150,80,0)'); c.fillStyle = g; c.fillRect(-M, 0, W + 2 * M, H);
+    for (let k = 0; k < 6000; k++) { const x = r() * (W + 2 * M) - M, y = r() * (JJ.hz + 30), dd = Math.hypot((x - ex) / 1.4, y - JJ.hz) / 300; if (dd < 0.18 + r() * 0.2) continue;
+      oval(x, y, 4 + r() * 8, 3 + r() * 5, r() * 3, mix(hexMix2('#2a4c22', '#c8d8a6', clamp(1 - dd)), hexMix2('#8db454', '#e2ead0', clamp(1 - dd)), r(), 0.8)); }
+    c.fillStyle = vg(JJ.hz - 20, JJ.hz + 30, [[0, 'rgba(70,100,50,0)'], [1, 'rgba(90,120,60,0.9)']]); c.fillRect(-M, JJ.hz - 20, W + 2 * M, 60); }, { blur: 1.2 });
+  // road, verges and the far rows of trees
+  L('far', 0.3, () => { const zs = []; for (let z = 30; z > 2.2; z /= 1.22) zs.push(z);
+    c.beginPath(); c.moveTo(-M, H); for (let z = 1; z <= 40; z *= 1.1) c.lineTo(jjCx(z) - jjHw(z) * 2.4, jjY(z)); for (let z = 40; z >= 1; z /= 1.1) c.lineTo(jjCx(z) + jjHw(z) * 2.4, jjY(z)); c.lineTo(W + M, H); c.closePath(); c.fillStyle = vg(JJ.hz, H, [[0, '#9fb57a'], [0.3, '#5c7f36'], [1, '#3f6426']]); c.fill();
+    const edge = o => { const a = []; for (let z = 0.9; z <= 40; z *= 1.08) a.push([jjCx(z) + jjHw(z) * o, jjY(z)]); return a; };
+    const L1 = edge(-1.08), R1 = edge(1.08); c.beginPath(); L1.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); R1.reverse().forEach(q => c.lineTo(q[0], q[1])); c.closePath(); c.fillStyle = vg(JJ.hz, H, [[0, '#bdbfb2'], [0.25, '#8c8d86'], [1, '#55554f']]); c.fill();
+    [-1, 1].forEach(o => { c.strokeStyle = '#f0eee4'; for (let z = 0.9; z <= 40; z *= 1.05) { const z2 = z * 1.05; c.lineWidth = 3 / z + 0.3; c.beginPath(); c.moveTo(jjCx(z) + jjHw(z) * o * 0.95, jjY(z)); c.lineTo(jjCx(z2) + jjHw(z2) * o * 0.95, jjY(z2)); c.stroke(); } });
+    for (let z = 1; z < 40; z *= 1.18) { const z2 = z * 1.07; c.strokeStyle = '#e6b632'; c.lineWidth = 4 / z + 0.3; c.beginPath(); c.moveTo(jjCx(z), jjY(z)); c.lineTo(jjCx(z2), jjY(z2)); c.stroke(); }
+    const r = rng(433); for (let k = 0; k < 500; k++) { const z = 1.2 * Math.pow(30, r()), side = r() < 0.5 ? -1 : 1, p = 1 / z, x = jjCx(z) + side * (jjHw(z) * (1.25 + r() * 1.3)), y = jjY(z), hz = clamp((1 - p) * 1.05);
+      oval(x, y - 6 * p, (10 + r() * 16) * p + 1, (6 + r() * 9) * p + 1, 0, mix(hexMix2('#2f5426', '#8fa872', hz * 0.8), hexMix2('#6f9e40', '#a8bc86', hz * 0.8), r(), 0.9)); }
+    zs.forEach((z, i) => [-1, 1].forEach(side => { const t = jjTree(z, side, 440 + i * 2 + (side > 0 ? 1 : 0)); jjLeaves(t, 470 + i * 2 + (side > 0 ? 1 : 0)); })); });
+  // the near trees: huge trunks framing the shot, canopy closing overhead
+  L('near', 0.7, () => { [1.85, 1.5, 1.2].forEach((z, i) => [-1, 1].forEach(side => { const t = jjTree(z, side, 520 + i * 2 + (side > 0 ? 1 : 0)); jjLeaves(t, 540 + i * 2 + (side > 0 ? 1 : 0)); }));
+    const r = rng(560); for (let k = 0; k < 2600; k++) { const x = r() * (W + 2 * M) - M, y = BAR - 30 + Math.pow(r(), 1.6) * 170; oval(x, y, 5 + r() * 10, 3.5 + r() * 6, r() * 3, mix('#1f3f1a', '#86ae4c', r() * clamp(1 - (y - BAR) / 200), 0.95)); } });
+  // dappled sunlight drifting on the road and verges as the leaves move
+  D(0.3, () => { c.save(); c.globalCompositeOperation = 'lighter'; const r = rng(432); for (let k = 0; k < 70; k++) { const z = 1 + r() * 9, p = 1 / z, x = jjCx(z) + (r() - 0.5) * jjHw(z) * 3 + Math.sin(T * 0.6 + k) * 6 * p, y = jjY(z), a = (0.08 + 0.05 * Math.sin(T * 0.9 + k)) * (0.5 + 0.5 * p);
+    oval(x, y, (12 + r() * 30) * p, (3 + r() * 4) * p, 0, `rgba(255,230,150,${a})`); } c.restore(); godrays(jjCx(30), BAR - 40, 520, 9, '255,248,210', 0.05, 434, 0.9); });
+  D(0.95, () => { const q = { x: 200 + lt * 46, y: 612, s: 1.05 }; q.pose = { ...walkPose3(walkCyc3(lt * 46, 1.05, true), { trot: 1 }), ...ex('happy', 0.8) }; drawCat3(q); });
 });
 /* T14 彩虹眷村 */
 V('T14', '臺中市 · 南屯', '彩虹眷村', 'Rainbow Village', '24.13°N 120.61°E', ['彩虹眷村，每一面牆都畫滿了顏色。', 'At Rainbow Village, every wall is painted in colour.'], [1.02, 1.06, 20, -20, 0, 0], function (lt) {
