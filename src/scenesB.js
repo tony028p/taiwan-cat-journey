@@ -52,22 +52,58 @@ function minnanHouse(x, y, w, h, s = 1) {
   c.strokeStyle = '#4a2a20'; c.lineWidth = 4 * s; c.beginPath(); c.moveTo(x - 4 * s, rt - 8 * s); c.quadraticCurveTo(x + 14 * s, rt + 8 * s, x + w / 2, rt + 5 * s); c.quadraticCurveTo(x + w - 14 * s, rt + 8 * s, x + w + 4 * s, rt - 8 * s); c.stroke();
 }
 
+/* Xiluo Bridge in perspective: red Warren-truss spans (sloped end posts, slightly arched top chord, verticals) on concrete piers,
+   receding from the near right toward a vanishing point at the left; two truss planes joined by top bracing give it depth.
+   s(z) = 1 / (1 + z): z is distance along the bridge, 0 at the near end. */
+const XL = { V: [170, 402], P: [1520, 556], Hn: 300, O: [-120, -40], dz: 0.42 };
+function xlPt(z, h, far) { const s = 1 / (1 + z), o = far ? XL.O : [0, 0]; return [XL.V[0] + (XL.P[0] + o[0] - XL.V[0]) * s, XL.V[1] + (XL.P[1] + o[1] - XL.V[1] - h * XL.Hn) * s]; }
+function xiluoBridge() {
+  const NS = 34, NP = 8, ht = p => (p <= 0 || p >= NP) ? 0 : 0.78 + 0.22 * Math.sin(Math.PI * p / NP);
+  const seg = (a, b, col, w) => { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); };
+  const truss = (far, i) => { const z0 = i * XL.dz, sm0 = 1 / (1 + z0), col = far ? '#86221c' : '#cc2e22', hi = far ? null : 'rgba(255,170,140,0.5)', w = Math.max(0.8, (far ? 5 : 7.5) * sm0);
+    const B = p => xlPt(z0 + XL.dz * p / NP, 0, far), Tp = p => xlPt(z0 + XL.dz * p / NP, ht(p), far);
+    const mem = []; mem.push([B(0), B(NP)]); for (let p = 1; p < NP - 1; p++) mem.push([Tp(p), Tp(p + 1)]);
+    mem.push([B(0), Tp(1)], [Tp(NP - 1), B(NP)]); for (let p = 1; p < NP; p++) mem.push([B(p), Tp(p)]);
+    for (let p = 1; p < NP - 1; p++) mem.push(p % 2 ? [Tp(p), B(p + 1)] : [B(p), Tp(p + 1)]);
+    mem.forEach(([a, b]) => seg(a, b, col, w)); if (hi) mem.forEach(([a, b]) => seg([a[0] - w * 0.25, a[1] - w * 0.25], [b[0] - w * 0.25, b[1] - w * 0.25], hi, Math.max(0.5, w * 0.3))); };
+  c.lineCap = 'round';
+  // piers and deck (far to near)
+  for (let i = NS; i >= 0; i--) { const z = i * XL.dz, s0 = 1 / (1 + z), a = xlPt(z, 0, false), b = xlPt(z, 0, true), pw = 18 * s0, ph = 120 * s0;
+    c.fillStyle = hg(a[0] - pw, a[0] + pw, [[0, '#b8b4aa'], [0.6, '#9a968c'], [1, '#6e6b64']]); c.fillRect((a[0] + b[0]) / 2 - pw, Math.min(a[1], b[1]) + 6 * s0, pw * 2, ph);
+    c.fillStyle = 'rgba(40,40,40,0.18)'; c.fillRect((a[0] + b[0]) / 2 - pw, Math.min(a[1], b[1]) + ph * 0.92, pw * 2.4, 6 * s0); }
+  const z1 = (NS + 1) * XL.dz; const dn = [xlPt(0, 0, false), xlPt(z1, 0, false), xlPt(z1, 0, true), xlPt(0, 0, true)];
+  poly(dn, '#6a5a52'); const dt = [xlPt(0, 0, false), xlPt(z1, 0, false), xlPt(z1, -0.05, false), xlPt(0, -0.05, false)]; poly(dt, '#8a7e74');
+  for (let i = NS; i >= 0; i--) truss(true, i);
+  // top bracing between the two planes
+  for (let i = NS; i >= 0; i--) for (let p = 1; p < NP; p++) { const z = i * XL.dz + XL.dz * p / NP, s0 = 1 / (1 + z), h = ht(p); seg(xlPt(z, h, false), xlPt(z, h, true), '#a83226', Math.max(0.6, 4 * s0));
+      if (p < NP - 1) { const z2 = z + XL.dz / NP; seg(xlPt(z, h, false), xlPt(z2, ht(p + 1), true), 'rgba(150,40,30,0.8)', Math.max(0.4, 2 * s0)); } }
+  for (let i = NS; i >= 0; i--) truss(false, i);
+  // railing along the near side of the deck
+  const r0 = xlPt(0, 0.06, false), r1 = xlPt(z1, 0.06, false); seg(r0, r1, '#e8dccd', 2); seg(xlPt(0, 0, false), xlPt(z1, 0, false), '#5a4840', 3);
+  // aerial perspective: the far spans fade into the haze over the plain
+  c.save(); c.globalCompositeOperation = 'source-atop'; c.fillStyle = hg(240, 760, [[0, 'rgba(205,215,220,0.9)'], [0.5, 'rgba(205,215,220,0.35)'], [1, 'rgba(205,215,220,0)']]); c.fillRect(-M, 0, 800, H); c.restore();
+}
 /* 12 — 雲林縣 西螺大橋 */
-SCENES.push({ county: '雲林縣', place: '西螺大橋', en: 'Xiluo Bridge over the Zhuoshui', ll: '23.80°N 120.46°E', cam: [1.02, 1.08, 30, -30, 0, 0],
+SCENES.push({ county: '雲林縣', place: '西螺大橋', en: 'Xiluo Bridge over the Zhuoshui', ll: '23.80°N 120.46°E', sun: () => [980, 120, 0.4], cam: [1.02, 1.08, 30, -30, 0, 0],
   sub: ['雲林的西螺大橋，紅色鋼架橫過濁水溪。', 'In Yunlin, the red Xiluo Bridge strides across the Zhuoshui River.'],
   draw(lt) {
-    const hz = 400;
-    L('sky', 0, () => { sky([[0, '#5f8fc0'], [0.55, '#d9d6c6'], [1, '#f2dcae']]); cumulus(300, 250, 400, 70, 151, '#fff6e6', '#d4c3b4', 0.4); cumulus(1000, 220, 300, 60, 152, '#fff6e6', '#d2c1b2', 0.4); }, { blur: 2 });
-    L('far', 0.06, () => mountain({ base: 392, amp: 40, f: 0.003, seed: 153, top: '#9aa2b0', bot: '#b5b5b4', haze: 'rgba(230,220,200,0.5)' }), { blur: 2 });
-    L('river', 0.3, () => { c.fillStyle = vg(hz, H, [[0, '#b6a988'], [1, '#8a7d62']]); c.fillRect(-M, hz, W + 2 * M, H);
-      const r = rng(154); for (let k = 0; k < 9; k++) { const y = hz + 8 + Math.pow(r(), 1.3) * 160, x = r() * W, w = 120 + r() * 400; oval(x, y, w, 3 + (y - hz) * 0.06, 0, 'rgba(150,160,165,0.75)'); oval(x, y - 1, w * 0.8, 1 + (y - hz) * 0.02, 0, 'rgba(230,230,225,0.5)'); }
-      for (let k = 0; k < 600; k++) { const y = hz + Math.pow(r(), 1.2) * 220; disc(r() * (W + 2 * M) - M, y, 0.5 + (y - hz) * 0.01, 'rgba(90,80,60,0.25)'); } });
-    L('bridge', 0.3, () => { const y0 = 360, y1 = 392, x0 = -M, x1 = W + M; c.fillStyle = '#7a5145'; c.fillRect(x0, y1, x1 - x0, 6); for (let x = x0; x < x1; x += 120) { c.fillStyle = '#8f8a80'; c.fillRect(x + 50, y1 + 6, 12, 30); }
-      c.strokeStyle = '#c73a2c'; c.lineWidth = 3; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y0); c.moveTo(x0, y1); c.lineTo(x1, y1); c.stroke();
-      c.lineWidth = 2.2; c.beginPath(); for (let x = x0; x < x1; x += 120) { const top = u => y0 - 14 * Math.sin(u * Math.PI); c.moveTo(x, y1); for (let k = 0; k <= 6; k++) c.lineTo(x + k * 20, top(k / 6)); c.lineTo(x + 120, y1); for (let k = 0; k < 6; k++) { c.moveTo(x + k * 20, k % 2 ? top(k / 6) : y1); c.lineTo(x + k * 20 + 20, k % 2 ? y1 : top((k + 1) / 6)); } } c.stroke();
-      c.lineWidth = 1.2; c.beginPath(); for (let x = x0; x < x1; x += 10) { c.moveTo(x, y0); c.lineTo(x, y1); } c.strokeStyle = 'rgba(160,40,30,0.7)'; c.stroke(); });
-    D(0.3, () => { const vx = mod(lt * 60, 1400) - 100; c.fillStyle = '#e8e2d0'; c.fillRect(vx, 384, 18, 7); c.fillStyle = '#3c5d8a'; c.fillRect(1100 - mod(lt * 80, 1400), 384, 14, 7); shimmer(hz + 10, 560, 80, '255,250,235', 155, { a: 0.4 }); flock(5, 500, 260, 14, 0.6, 'rgba(60,55,50,0.8)', 156, lt); });
-    L('bank', 0.9, () => { c.fillStyle = vg(560, H, [[0, '#7c8a4a'], [1, '#3f4a24']]); c.beginPath(); c.moveTo(-M, H); c.lineTo(-M, 574); c.quadraticCurveTo(600, 560, W + M, 580); c.lineTo(W + M, H); c.fill(); c.fillStyle = '#b4a382'; c.fillRect(-M, 590, W + 2 * M, 14); });
+    // per photos: the red truss spans march off into the distance over the wide braided riverbed of the Zhuoshui, under a
+    // clear blue sky; silver grass and green fields on the near bank
+    const hz = 402;
+    L('sky', 0, () => { sky([[0, '#2f6fb8'], [0.5, '#79a9d8'], [1, '#d8e4e6']]); cumulus(560, 230, 420, 70, 151, '#ffffff', '#c3d2e2', 0.4); cumulus(1080, 180, 300, 56, 152, '#ffffff', '#c6d4e3', 0.4); stratus(800, 140, 900, 30, 'rgba(255,255,255,0.35)'); }, { blur: 1.5 });
+    L('far', 0.06, () => { const r = rng(153); for (let x = -M; x < W + M; x += 6) { const h = 4 + r() * 10 + Math.max(0, Math.sin(x * 0.013)) * 8; c.fillStyle = mix('#6e8a6a', '#8fa08a', r(), 0.9); c.fillRect(x, hz - h, 7, h + 2); } c.fillStyle = 'rgba(200,215,225,0.45)'; c.fillRect(-M, hz - 24, W + 2 * M, 26); }, { blur: 1 });
+    L('river', 0.3, () => { c.fillStyle = vg(hz, H, [[0, '#b9b49c'], [0.5, '#a49c7c'], [1, '#7f8a58']]); c.fillRect(-M, hz, W + 2 * M, H);
+      const r = rng(154); for (let k = 0; k < 14; k++) { const y = hz + 4 + Math.pow(r(), 1.4) * 150, x = r() * (W + 2 * M) - M, w = 140 + r() * 420 * (0.4 + (y - hz) / 150), th = 2 + (y - hz) * 0.07;
+        oval(x, y, w, th, 0, 'rgba(120,145,160,0.85)'); oval(x - w * 0.1, y - th * 0.3, w * 0.8, th * 0.35, 0, 'rgba(225,235,240,0.55)'); }
+      for (let k = 0; k < 40; k++) { const y = hz + 6 + Math.pow(r(), 1.2) * 170, x = r() * (W + 2 * M) - M, w = 40 + r() * 140 * (0.3 + (y - hz) / 170); oval(x, y, w, 2 + (y - hz) * 0.05, 0, mix('#7a9450', '#a2b06a', r(), 0.7)); }
+      for (let k = 0; k < 700; k++) { const y = hz + Math.pow(r(), 1.2) * 230; disc(r() * (W + 2 * M) - M, y, 0.5 + (y - hz) * 0.01, 'rgba(90,80,60,0.22)'); } });
+    L('bridge', 0.3, xiluoBridge);
+    D(0.3, () => { // traffic on the deck: a car heading out, a scooter coming in
+      [[mod(lt * 0.5, 6), '#3c5d8a', 1], [mod(4 - lt * 0.6, 6), '#e8e2d0', 0.6]].forEach(([z, col, ln]) => { const a = xlPt(z, 0, false), b = xlPt(z, 0, true), s0 = 1 / (1 + z), m = [(a[0] * 0.6 + b[0] * 0.4), (a[1] * 0.6 + b[1] * 0.4)];
+        c.fillStyle = col; c.fillRect(m[0] - 14 * s0 * ln, m[1] - 12 * s0, 28 * s0 * ln, 10 * s0); c.fillStyle = 'rgba(30,30,35,0.8)'; c.fillRect(m[0] - 9 * s0 * ln, m[1] - 18 * s0, 16 * s0 * ln, 6 * s0); });
+      shimmer(hz + 10, 560, 80, '255,250,235', 155, { a: 0.35 }); flock(5, 520, 230, 14, 0.6, 'rgba(60,55,50,0.8)', 156, lt); });
+    L('bank', 0.9, () => { c.fillStyle = vg(560, H, [[0, '#7f9a46'], [1, '#3f5a24']]); c.beginPath(); c.moveTo(-M, H); c.lineTo(-M, 574); c.quadraticCurveTo(600, 560, W + M, 580); c.lineTo(W + M, H); c.fill(); c.fillStyle = '#c4b694'; c.fillRect(-M, 590, W + 2 * M, 14); line(-M, 590, W + M, 590, 'rgba(255,250,230,0.5)', 1);
+      const r = rng(158); for (let k = 0; k < 900; k++) { const x = r() * (W + 2 * M) - M, y = 572 + r() * 18; line(x, y, x + (r() - 0.5) * 3, y - 3 - r() * 5, mix('#4f6a2a', '#a8c060', r(), 0.8), 1); } });
     D(0.9, () => { const r = rng(157); c.lineCap = 'round'; for (let k = 0; k < 70; k++) { const x = r() * (W + 2 * M) - M, y = 600 + r() * 40, h = 50 + r() * 60, sw = Math.sin(T * 1.4 + x * 0.01) * 10; c.strokeStyle = 'rgba(90,85,50,0.9)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + sw * 0.3, y - h * 0.6, x + sw, y - h); c.stroke(); oval(x + sw + 4, y - h + 6, 4, 12, 0.4 + sw * 0.03, 'rgba(240,225,200,0.75)'); }
       const x = 420 + lt * 28; actCat({ x, y: 594, s: 0.9, pose: 'walk', ph: walkPh(lt * 28, 0.9), rim: '255,230,180', look: -0.02, blink: blinkAt(lt, 11), shadowA: 0.3 }); });
   } });
