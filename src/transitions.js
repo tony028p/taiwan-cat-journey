@@ -401,16 +401,59 @@ V('T10', '嘉義縣 · 竹崎', '阿里山林鐵 · 獨立山', 'Alishan Forest 
   });
   D(0.95, () => drawCat3({ x: 330, y: 604, s: 1.2, pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [1.0, 'curious'], [2.2, 'happy']]), hr: -0.18 + Math.sin(lt * 1.5) * 0.04 }), emote: emoAt(lt, [[1.2, 2.8, 'note']]), shadow: false }));
 });
-/* T11 高鐵 */
+/* T11 高鐵 — per photos: standing in the rice fields of the Chiayi–Yunlin plain beside the THSR viaduct, which sweeps in
+   from the haze overhead (concrete box girder on T-head piers, low parapet, catenary masts); a white 700T with its long
+   duck-bill nose, dark window band and orange stripe rushes out of the distance and is gone. One-point perspective. */
+const T11VP = [200, 418], T11F = 640, T11CY = 2.5;
+// the viaduct is drawn at X ≈ 18–22 and shifted 10 m further out so it sweeps out of the top-right corner
+function t11P(X, Y, Z) { return [T11VP[0] + T11F * (X + 10) / Z, T11VP[1] + T11F * (T11CY - Y) / Z]; }
+function t11Q(X, Y0, Y1, z0, z1, col) { poly([t11P(X, Y0, z0), t11P(X, Y1, z0), t11P(X, Y1, z1), t11P(X, Y0, z1)], col); }
+function t11Train(zf) {
+  const XN = 18.4, YB = 13.0, YT = 16.6, ZN = 13;
+  const nose = d => d >= 10 ? 1 : Math.sqrt(Math.max(0, d / 10)) * 0.75 + 0.25; // nose taper over the first 10 m
+  const N = 12, CL = 25;
+  for (let k = N - 1; k >= 0; k--) { const z0 = zf + k * CL, z1 = z0 + CL - 0.4; if (z1 < ZN || z0 > 1500) continue; const a = Math.max(z0, ZN);
+    if (k === 0) { // the nose, built from thin slices so the profile tapers in perspective
+      for (let z = a; z < z1; z += 0.5) { const d = z - zf, h = nose(d), h2 = nose(d + 0.5), yt = YB + (YT - YB) * h, yt2 = YB + (YT - YB) * h2; poly([t11P(XN, YB, z), t11P(XN, yt, z), t11P(XN, yt2, z + 0.5), t11P(XN, YB, z + 0.5)], '#f6f6f3'); }
+      for (let z = Math.max(a, zf + 3.5); z < zf + 9; z += 0.5) { const d = z - zf, yt = YB + (YT - YB) * nose(d), yt2 = YB + (YT - YB) * nose(d + 0.5); poly([t11P(XN, yt - 0.9, z), t11P(XN, yt, z), t11P(XN, yt2, z + 0.5), t11P(XN, yt2 - 0.9, z + 0.5)], '#1f2a3c'); }
+      const zs = Math.max(a, zf + 1); t11Q(XN, 14.15, 14.5, zs, z1, '#e8792c'); t11Q(XN, 14.02, 14.15, Math.max(a, zf + 2), z1, '#1c1c1e'); t11Q(XN, 14.9, 15.6, Math.max(a, zf + 11), z1, '#27324a');
+      continue; }
+    t11Q(XN, YB, YT, a, z1, '#f6f6f3'); t11Q(XN, 14.15, 14.5, a, z1, '#e8792c'); t11Q(XN, 14.02, 14.15, a, z1, '#1c1c1e'); t11Q(XN, 14.9, 15.6, a + 0.6, z1 - 3, '#27324a');
+    if (z1 - 2.4 > ZN) t11Q(XN, 13.2, 16.0, Math.max(a, z1 - 2.4), z1 - 1.4, '#c9ccce');
+    const p = t11P(XN, YB, z1), q = t11P(XN, YT, z1); line(p[0], p[1], q[0], q[1], 'rgba(40,40,45,0.6)', Math.max(0.6, 30 / z1));
+    t11Q(XN, YT - 0.25, YT, a, z1, 'rgba(160,165,170,0.6)'); }
+}
 V('T11', '嘉義 → 雲林', '台灣高鐵', 'Taiwan High Speed Rail', '23.74°N 120.42°E', ['高鐵一眨眼就不見了。', 'The bullet train is gone in the blink of an eye.'], [1.02, 1.05, 0, 0, 0, 0], function (lt) {
-  L('sky', 0, () => { sky([[0, '#5f95cc'], [1, '#e7ebe2']]); cumulus(600, 190, 500, 70, 411, '#ffffff', '#cbd5df', 0.2); }, { blur: 2 });
-  L('far', 0.08, () => { mountain({ base: 410, amp: 30, f: 0.003, seed: 412, top: '#93a6b8', bot: '#aab6bc' }); bushes(80, -M, W + M, () => 418, 413, '#5d7a4c', '#86a36a', 12); }, { blur: 1 });
-  L('via', 0.35, () => { c.fillStyle = vg(420, H, [[0, '#8fbf5e'], [1, '#5f9a36']]); c.fillRect(-M, 420, W + 2 * M, H); for (let k = 0; k < 8; k++) { const y = 420 + Math.pow(k / 8, 1.7) * 300; line(-M, y, W + M, y, 'rgba(60,100,40,0.4)', 1); }
-    c.fillStyle = '#d6d3cb'; c.fillRect(-M, 360, W + 2 * M, 18); c.fillStyle = '#b8b4aa'; c.fillRect(-M, 378, W + 2 * M, 5); for (let x = -40; x < W + M; x += 120) { c.fillStyle = '#c9c5bc'; c.fillRect(x, 383, 16, 60); line(x + 8, 360, x + 8, 300, '#8a8a8a', 2); line(x - 10, 304, x + 26, 304, '#8a8a8a', 2); } line(-M, 306, W + M, 306, 'rgba(60,60,60,0.6)', 1); });
-  D(0.35, () => { const u = clamp((lt - 0.8) / 1.0), x = lerp(-1400, 1600, u); c.save(); c.translate(x, 336); c.fillStyle = '#f7f7f4'; c.beginPath(); c.moveTo(0, 24); c.lineTo(0, 4); c.lineTo(1080, 4); c.quadraticCurveTo(1150, 6, 1180, 24); c.closePath(); c.fill(); c.fillStyle = '#e8792c'; c.fillRect(0, 16, 1170, 4); c.fillStyle = '#2b3846'; for (let k = 0; k < 40; k++) c.fillRect(20 + k * 26, 8, 16, 6); c.restore();
-    if (u > 0 && u < 1) { c.save(); c.globalAlpha = 0.3; c.fillStyle = '#ffffff'; c.fillRect(x - 200, 340, 200, 16); c.restore(); } });
-  L('fg', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#7aa84c'], [1, '#4f7a2c']]); c.fillRect(-M, 600, W + 2 * M, 200); });
-  D(0.95, () => { const u = clamp((lt - 0.9) / 1.0); drawCat3({ x: 620, y: 606, s: 1.15, face: -1, pose: sit3(lt, { ...exSeq(lt, [[0, 'neutral'], [0.9, 'surprised'], [2.1, 'curious']]), hr: lerp(0.3, -0.5, sm(u)), ear: u > 0.1 && u < 0.9 ? 0.3 : 0, ts: 3 }), emote: emoAt(lt, [[0.95, 1.8, '!'], [2.2, 3.4, '?']]) }); grassTufts(600, 640, 100, ['#5f8f35', '#86b452'], 414, 1, 14); });
+  const hz = T11VP[1];
+  L('sky', 0, () => { sky([[0, '#3f82c8'], [0.55, '#9ec6e6'], [1, '#e6eee8']]); cumulus(560, 180, 520, 70, 411, '#ffffff', '#c6d2df', 0.2); cumulus(140, 250, 300, 44, 415, '#ffffff', '#cdd8e3', 0.2); }, { blur: 1.5 });
+  // the plain: Central Range in the haze, farmhouses and betel palms, then the rice fields
+  L('far', 0.08, () => { mountain({ base: hz, amp: 46, f: 0.003, seed: 412, top: '#8ea4ba', bot: '#a9b8c2', haze: 'rgba(220,228,232,0.5)', floor: hz + 2 });
+    const r = rng(416); for (let k = 0; k < 40; k++) { const x = r() * (W + 2 * M) - M, w = 8 + r() * 14, h = 5 + r() * 6; c.fillStyle = mix('#c9c4b8', '#e6e2d8', r()); c.fillRect(x, hz - h, w, h); c.fillStyle = mix('#8a5a44', '#5a6a7a', r()); c.fillRect(x - 1, hz - h - 2, w + 2, 3); }
+    for (let k = 0; k < 50; k++) { const x = r() * (W + 2 * M) - M, h = 14 + r() * 16; line(x, hz, x, hz - h, 'rgba(90,100,80,0.8)', 1); oval(x, hz - h, 4, 2.4, 0, 'rgba(70,100,60,0.85)'); }
+    bushes(70, -M, W + M, () => hz + 1, 413, '#62804e', '#88a46c', 9); }, { blur: 0.8 });
+  L('fields', 0.2, () => { c.fillStyle = vg(hz, H, [[0, '#a9b25a'], [0.4, '#bdbb52'], [1, '#9aa83a']]); c.fillRect(-M, hz, W + 2 * M, H);
+    for (let X = -70; X <= 70; X += 9) { const a = t11P(X, 0, 4), b = t11P(X, 0, 3000); line(a[0], a[1], b[0], b[1], 'rgba(110,120,50,0.45)', 1.2); }
+    for (let Z = 6; Z < 2000; Z *= 1.22) { const y = t11P(0, 0, Z)[1]; line(-M, y, W + M, y, 'rgba(110,120,50,0.4)', Math.max(0.5, 12 / Z)); }
+    const r = rng(417); for (let k = 0; k < 1600; k++) { const Z = 4 + Math.pow(r(), 2) * 300, X = (r() - 0.5) * 3 * Z, p = t11P(X, 0, Z); if (p[1] > H) continue; disc(p[0], p[1], Math.max(0.5, 16 / Z), mix('#e0d46a', '#6f8a30', r(), 0.7)); } });
+  // the viaduct: piers, deck, parapet
+  L('via', 0.25, () => {
+    for (let Z = 1500; Z >= 9; Z -= 32) { t11Q(19.2, 0, 9.6, Z, Z + 1.6, '#b9b5ac'); poly([t11P(19.2, 0, Z), t11P(19.2, 9.6, Z), t11P(20.8, 9.6, Z), t11P(20.8, 0, Z)], '#d4d0c6');
+      poly([t11P(17.8, 9.3, Z), t11P(17.8, 10.4, Z), t11P(22.2, 10.4, Z), t11P(22.2, 9.3, Z)], '#cfcbc1'); }
+    poly([t11P(17.6, 10.4, 9), t11P(22.4, 10.4, 9), t11P(22.4, 10.4, 3000), t11P(17.6, 10.4, 3000)], '#8e8a83');
+    t11Q(17.6, 10.4, 12, 9, 3000, '#d6d2c8'); t11Q(17.6, 10.4, 10.7, 9, 3000, 'rgba(90,85,78,0.35)');
+  });
+  // catenary masts behind the train (far side), the train, then the parapet and near-side masts in front
+  D(0.25, () => { for (let Z = 1500; Z >= 12; Z -= 50) { const a = t11P(22.1, 12, Z), b = t11P(22.1, 19.4, Z), e = t11P(19.8, 18.6, Z); line(a[0], a[1], b[0], b[1], '#9a9a98', Math.max(0.6, 26 / Z)); line(b[0], b[1], e[0], e[1], '#9a9a98', Math.max(0.5, 16 / Z)); }
+    t11Train(360 - (lt - 0.5) * 220);
+    t11Q(17.6, 12, 13.3, 9, 3000, '#e6e3db'); t11Q(17.6, 13.1, 13.3, 9, 3000, '#bdb9b0');
+    for (let Z = 1525; Z >= 12; Z -= 50) { const a = t11P(17.9, 13.2, Z), b = t11P(17.9, 19.6, Z), e = t11P(19.9, 18.8, Z); line(a[0], a[1], b[0], b[1], '#a3a3a0', Math.max(0.6, 30 / Z)); line(b[0], b[1], e[0], e[1], '#a3a3a0', Math.max(0.5, 18 / Z)); }
+    for (const [X, Y] of [[19.6, 17.2], [20.2, 18.6]]) { const a = t11P(X, Y, 12), b = t11P(X, Y, 1500); line(a[0], a[1], b[0], b[1], 'rgba(60,60,60,0.5)', 1); }
+    // a gust of pressure haze trailing behind the nose
+    const zf = 360 - (lt - 0.5) * 220; if (zf > 13 && zf < 400) { c.save(); c.globalAlpha = 0.25; const p = t11P(18.4, 14.4, zf + 40), q = t11P(18.4, 14.4, zf + 2); c.strokeStyle = '#ffffff'; c.lineWidth = Math.max(2, 120 / zf); line(p[0], p[1], q[0], q[1], '#ffffff', Math.max(2, 120 / zf)); c.restore(); } });
+  L('fg', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#a8a644'], [1, '#7a8a2e']]); c.fillRect(-M, 600, W + 2 * M, 200); c.fillStyle = '#9a8a62'; c.fillRect(-M, 598, W + 2 * M, 8); });
+  D(0.95, () => { const u = clamp((lt - 1.0) / 1.2), gust = Math.max(0, Math.sin(clamp((lt - 1.6) / 1.4) * Math.PI));
+    drawCat3({ x: 640, y: 606, s: 1.15, face: -1, pose: sit3(lt, { ...exSeq(lt, [[0, 'neutral'], [1.0, 'surprised'], [2.3, 'curious']]), hr: lerp(0.3, -0.5, sm(u)), ear: u > 0.1 && u < 0.9 ? 0.3 : 0, ts: 3 }), emote: emoAt(lt, [[1.1, 1.9, '!'], [2.3, 3.4, '?']]) });
+    grassTufts(600, 640, 110, ['#b4a848', '#d6c860'], 414, 1 + gust * 2.5, 16); });
 });
 /* T12 八卦山大佛 — the bronze-brown seated Buddha on a golden lotus throne, temple roofs and palms, blue sky */
 V('T12', '彰化縣', '八卦山大佛', 'Great Buddha of Baguashan', '24.08°N 120.55°E', ['八卦山的大佛，在山上看了好久的風景。', 'The Great Buddha of Baguashan has watched over this view for a long time.'], [1.02, 1.07, 20, -20, 0, 0], function (lt) {
