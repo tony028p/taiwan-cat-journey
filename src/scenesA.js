@@ -43,6 +43,28 @@ function skyline(y, seed, c1, c2, o = {}) {
 /* overhanging tree branch silhouette in the top-right corner (clear of the location card) (Xiangshan viewpoint), leaves sway gently */
 function treeBranch(col, a0) { c.save(); c.translate(W, 0); c.scale(-1, 1); c.fillStyle = col; c.strokeStyle = col; c.lineCap = 'round'; c.lineWidth = 9; c.beginPath(); c.moveTo(-M, 60); c.quadraticCurveTo(80, 70, 190, 132); c.stroke(); c.lineWidth = 5; c.beginPath(); c.moveTo(70, 80); c.quadraticCurveTo(110, 120, 120, 170); c.stroke(); c.beginPath(); c.moveTo(150, 112); c.quadraticCurveTo(230, 120, 280, 150); c.stroke();
   const r = rng(91); for (let k = 0; k < 90; k++) { const t = r(), bx = lerp(-M, 280, t), by = 60 + t * 90 + (r() - 0.5) * 70, sw = Math.sin(T * 1.2 + k) * 1.5; c.beginPath(); c.ellipse(bx + sw, by, 7 + r() * 9, 4 + r() * 5, r() * 3, 0, TAU); c.fill(); } c.restore(); }
+/* faceted coastal boulder sitting in water at y: irregular top, upper-left faces lit, cracks, optional rim and glowing waterline.
+   o: { col, dk, lit, n, cracks, rim, wl (rgba waterline glow), sink } */
+function boulder(x, y, w, h, seed, o = {}) {
+  const r = rng(seed), n = o.n || 7, top = [], sk = o.sink ?? 4, pw = o.round ?? 0.55, jt = o.jit ?? 0.4;
+  for (let i = 0; i <= n; i++) { const u = i / n, pr = Math.pow(Math.sin(Math.PI * (0.04 + u * 0.92)), pw);
+    top.push([x - w / 2 + u * w + (i && i < n ? (r() - 0.5) * w / n * 0.7 : 0), i && i < n ? y - h * pr * (1 - jt * 0.75 + r() * jt) : y]); }
+  const col = o.col || '#3c3b42', dk = o.dk || '#0b0c11', lit = o.lit || 'rgba(255,232,205,0.12)';
+  const outl = [...top, [x + w / 2, y + sk], [x - w / 2, y + sk]];
+  poly(outl); c.fillStyle = vg(y - h, y + sk, [[0, col], [1, dk]]); c.fill();
+  c.save(); poly(outl); c.clip();
+  // rough faces: bands hanging from each top segment, lit if they face up-left, plus mottling
+  for (let i = 0; i < n; i++) { const a = top[i], b = top[i + 1], d1 = h * (0.25 + r() * 0.45), d2 = h * (0.25 + r() * 0.45), sh = (r() - 0.5) * w / n * 0.6;
+    const sl = (b[1] - a[1]) / Math.max(1, b[0] - a[0]); poly([a, b, [b[0] + sh, b[1] + d2], [a[0] + sh, a[1] + d1]], sl < 0.1 ? lit : `rgba(0,0,0,${0.1 + r() * 0.14})`);
+    if (r() < 0.6) poly([[a[0] + sh, a[1] + d1], [b[0] + sh, b[1] + d2], [lerp(a[0], b[0], 0.5) + sh * 2, Math.max(a[1] + d1, b[1] + d2) + h * 0.3 * r()]], `rgba(0,0,0,${0.08 + r() * 0.1})`); }
+  for (let k = 0; k < w * h / 60; k++) { const px = x + (r() - 0.5) * w, py = y - r() * h; disc(px, py, 0.8 + r() * 2.2, r() < 0.5 ? 'rgba(255,240,220,0.05)' : 'rgba(0,0,0,0.12)'); }
+  for (let k = 0; k < (o.cracks ?? 4); k++) { const cx = x + (r() - 0.5) * w * 0.8, cy = y - r() * h * 0.8; c.strokeStyle = 'rgba(0,0,0,0.35)'; c.lineWidth = 1 + r();
+    c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + (r() - 0.5) * 14, cy + 6 + r() * 12); c.lineTo(cx + (r() - 0.5) * 18, cy + 14 + r() * 16); c.stroke(); }
+  c.restore();
+  if (o.rim) { c.beginPath(); top.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.strokeStyle = o.rim; c.lineWidth = 1.3; c.stroke(); }
+  if (o.wl) { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = o.wl; c.beginPath(); c.ellipse(x, y + 1, w * 0.56, 3.5 + h * 0.06, 0, 0, TAU); c.fill(); c.restore(); }
+  return top;
+}
 function rockFG(pts, top, bot, rim, seed) {
   poly(pts); c.fillStyle = vg(Math.min(...pts.map(p => p[1])), H, [[0, top], [1, bot]]); c.fill();
   c.save(); poly(pts); c.clip(); const r = rng(seed);

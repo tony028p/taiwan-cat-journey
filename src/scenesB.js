@@ -298,28 +298,52 @@ SCENES.push({ county: '金門縣', place: '風獅爺與閩南古厝', en: 'Wind 
     D(0.75, () => actCat({ x: 470, y: 604, s: 1.05, pose: 'sit', face: -1, rim: '255,250,235', look: 0.3, blink: blinkAt(lt, 18) }));
   } });
 
-/* 21 — 連江縣 馬祖藍眼淚 */
+/* 21 — 連江縣 馬祖藍眼淚 — per photos: dark granite shore, the bioluminescent surf glows electric blue where waves break on
+   the rocks (long-exposure streaks), a few rocks out in the cove, island lights on the horizon. The two cats stand on two
+   rock ledges either side of a small inlet and take turns tapping the water. */
 SCENES.push({ county: '連江縣', place: '馬祖藍眼淚', en: 'Blue Tears of Matsu', ll: '26.16°N 119.95°E', cam: [1.02, 1.08, -20, 20, 0, 0],
   sub: ['馬祖的海，到了夜裡會發出藍光。', 'In Matsu, the sea glows blue at night.'],
   draw(lt) {
     const hz = 400;
-    L('sky', 0, () => { sky([[0, '#05070f'], [0.6, '#0e1a33'], [1, '#1d2b45']]); c.save(); c.translate(700, 200); c.rotate(-0.5); stratus(0, 0, 1300, 150, 'rgba(140,150,200,0.25)'); stratus(0, 0, 900, 70, 'rgba(220,210,230,0.18)'); c.restore(); stars(500, 241, 420, 0.9); });
-    L('isl', 0.1, () => { mountain({ base: hz, amp: 70, f: 0.005, seed: 242, top: '#0d1322', bot: '#121a2c', shape: (x, n) => x > 650 ? n : n * 0.2, floor: hz + 1 }); const r = rng(243); for (let k = 0; k < 40; k++) { const x = 700 + r() * 500, y = hz - 10 - r() * 40 * (1 - Math.abs(x - 950) / 300); c.fillStyle = '#1a2032'; c.fillRect(x, y, 14, 10); if (r() < 0.6) { c.fillStyle = 'rgba(255,200,120,0.85)'; c.fillRect(x + 4, y + 3, 4, 4); } } });
-    L('sea', 0.2, () => { c.fillStyle = vg(hz, H, [[0, '#0b1426'], [1, '#04070e']]); c.fillRect(-M, hz, W + 2 * M, H); });
-    D(0.2, () => { shimmer(hz + 2, H, 120, '160,180,230', 244, { a: 0.25 }); c.save(); c.globalCompositeOperation = 'lighter';
-      for (let w = 0; w < 6; w++) { const u = mod(lt * 0.16 + w / 6, 1), y = lerp(440, 600, u), a = Math.sin(u * Math.PI);
-        c.strokeStyle = `rgba(60,170,255,${0.55 * a})`; c.lineWidth = 3; c.beginPath(); for (let x = -M; x <= W + M; x += 10) { const yy = y + Math.sin(x * 0.012 + w * 2 + lt) * 6; x === -M ? c.moveTo(x, yy) : c.lineTo(x, yy); } c.stroke();
-        c.strokeStyle = `rgba(120,220,255,${0.4 * a})`; c.lineWidth = 1; c.stroke(); }
-      const r = rng(245); for (let k = 0; k < 220; k++) { const x = r() * (W + 2 * M) - M, y = 450 + r() * 170, a = Math.max(0, Math.sin(T * 3 * (0.5 + r()) + k)); disc(x, y, 1 + r() * 1.5, `rgba(90,200,255,${a * 0.85})`); }
-      // blue surf breaking around the reef rocks
-      const r2 = rng(247); for (let k = 0; k < 26; k++) { const x = 420 + r2() * 860, y = 470 + r2() * 120, w = 40 + r2() * 90; r2(); const ph = mod(lt * 0.5 + k * 0.37, 1), a2 = Math.sin(ph * Math.PI);
-        c.strokeStyle = `rgba(70,190,255,${0.8 * a2})`; c.lineWidth = 3; c.beginPath(); c.ellipse(x, y + 2, w * (0.55 + ph * 0.3), 6 + ph * 6, 0, 0, Math.PI); c.stroke(); glow(x, y, w * 0.9, '40,160,255', 0.35 * a2); }
-      glow(640, 560, 500, '40,140,255', 0.18); c.restore(); });
-    // reef rocks stretching out into the bay (dark granite, catching the blue glow on their edges)
-    L('reef', 0.35, () => { const r = rng(247); for (let k = 0; k < 26; k++) { const x = 420 + r() * 860, y = 470 + r() * 120, w = 40 + r() * 90, h = 20 + r() * 50 * ((y - 440) / 180);
-        c.fillStyle = vg(y - h, y, [[0, '#2a3650'], [1, '#0a0e18']]); c.beginPath(); c.moveTo(x - w / 2, y); c.quadraticCurveTo(x - w * 0.4, y - h, x - w * 0.1, y - h * 1.1); c.quadraticCurveTo(x + w * 0.3, y - h * 0.9, x + w / 2, y); c.closePath(); c.fill();
-        c.strokeStyle = 'rgba(110,200,255,0.7)'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(x - w / 2, y); c.quadraticCurveTo(x - w * 0.4, y - h, x - w * 0.1, y - h * 1.1); c.quadraticCurveTo(x + w * 0.3, y - h * 0.9, x + w / 2, y); c.stroke(); } });
-    L('rock', 0.95, () => { const pts = [[-M, H], [-M, 560], [90, 548], [220, 560], [330, 590], [400, 640], [430, H]]; rockFG(pts, '#141b2a', '#06080e', 'rgba(90,190,255,0.55)', 246); });
+    L('sky', 0, () => { sky([[0, '#04060e'], [0.55, '#0c1730'], [0.88, '#1c2a48'], [1, '#3a3a52']]); glow(980, hz, 420, '255,170,110', 0.12); glow(180, hz, 260, '255,190,130', 0.07);
+      c.save(); c.translate(700, 200); c.rotate(-0.5); stratus(0, 0, 1300, 150, 'rgba(140,150,200,0.2)'); stratus(0, 0, 900, 70, 'rgba(220,210,230,0.14)'); c.restore(); stars(520, 241, 380, 0.9); });
+    L('isl', 0.1, () => { mountain({ base: hz, amp: 34, f: 0.01, seed: 249, top: '#0b101c', bot: '#0f1626', shape: (x, n) => x < 330 ? n * (1 - x / 330) : 0, floor: hz + 1 });
+      mountain({ base: hz, amp: 80, f: 0.005, seed: 242, top: '#0d1322', bot: '#121a2c', shape: (x, n) => x > 650 ? n * sm((x - 650) / 160) : 0, floor: hz + 1 });
+      const r = rng(243); for (let k = 0; k < 60; k++) { const x = 700 + r() * 560, y = hz - 4 - r() * 46 * sm((x - 680) / 200); disc(x, y, 0.9 + r() * 1.3, `rgba(255,${190 + r() * 50 | 0},120,${0.5 + r() * 0.5})`); }
+      for (let k = 0; k < 18; k++) { const x = -M + r() * 300; disc(x, hz - 2 - r() * 10, 0.8 + r(), 'rgba(255,210,150,0.7)'); }
+      for (let x = 700; x < 1280; x += 9) { const a = r(); if (a < 0.5) line(x, hz + 2, x, hz + 4 + r() * 14, `rgba(255,190,120,${0.15 * a})`, 2); } });
+    L('sea', 0.2, () => { c.fillStyle = vg(hz, H, [[0, '#0e1c38'], [0.35, '#0a1430'], [1, '#03060e']]); c.fillRect(-M, hz, W + 2 * M, H); });
+    // the glowing surf: dark open water with a blue sheen; wave fronts light up only as they break near the shore and on the rocks
+    D(0.2, () => { shimmer(hz + 2, 480, 90, '150,170,220', 244, { a: 0.18 }); c.save(); c.globalCompositeOperation = 'lighter';
+      for (let w = 0; w < 6; w++) { const u = mod(lt * 0.13 + w / 6, 1), y = lerp(462, 626, u), a = Math.pow(Math.sin(u * Math.PI), 0.7) * (0.25 + 0.75 * u * u), ph = w * 2.1;
+        const yy = x => y + Math.sin(x * 0.009 + ph + lt * 0.5) * (5 + u * 8) + Math.sin(x * 0.027 + ph) * 3;
+        c.fillStyle = vg(y - 40, y + 4, [[0, 'rgba(20,110,255,0)'], [1, `rgba(30,130,255,${0.42 * a})`]]);
+        c.beginPath(); c.moveTo(-M, y - 44); for (let x = -M; x <= W + M; x += 12) c.lineTo(x, yy(x)); c.lineTo(W + M, y - 44); c.fill();
+        // the breaking crest: bright cyan, broken up like real foam, brightest where it meets rock
+        const r = rng(250 + w); for (let x = -M + r() * 40; x < W + M; x += 40 + r() * 70) { const len = 20 + r() * 70, b = r() * (0.4 + 0.6 * Math.max(0, Math.sin(x * 0.006 + ph)));
+          c.strokeStyle = `rgba(${90 + b * 90 | 0},${210 + b * 40 | 0},255,${0.9 * a * b})`; c.lineWidth = 1.2 + u * 2.4; c.beginPath();
+          for (let xx = x; xx <= x + len; xx += 7) xx === x ? c.moveTo(xx, yy(xx)) : c.lineTo(xx, yy(xx)); c.stroke();
+          if (b > 0.5) glow(x + len / 2, yy(x + len / 2), len * 0.6, '40,160,255', 0.25 * a * b); }
+        for (let k = 0; k < 10; k++) { const x = r() * (W + 2 * M) - M, l = 20 + r() * 50; c.strokeStyle = `rgba(80,190,255,${0.25 * a * r()})`; c.lineWidth = 1;
+          c.beginPath(); c.moveTo(x, yy(x) - 2); c.quadraticCurveTo(x + l * 0.5, yy(x) - 6 - r() * 8, x + l, yy(x) - 12 - r() * 10); c.stroke(); } }
+      const r = rng(245); for (let k = 0; k < 220; k++) { const x = r() * (W + 2 * M) - M, y = 480 + r() * 140, a = Math.max(0, Math.sin(T * 3 * (0.5 + r()) + k)) * (y - 470) / 150; disc(x, y, 0.8 + r() * 1.4, `rgba(110,215,255,${a * 0.85})`); }
+      // near shore the surf is churned into glowing foam (as in long exposures of the Blue Tears)
+      const rf = rng(258); for (let k = 0; k < 70; k++) { const x0 = rf() * (W + 2 * M) - M, y0 = 588 + rf() * 40, sp = 0.4 + rf() * 0.6, v = mod(lt * sp * 0.5 + rf(), 1), b = Math.sin(v * Math.PI), l = 30 + rf() * 80;
+        c.strokeStyle = rf() < 0.6 ? `rgba(40,150,255,${0.7 * b})` : `rgba(150,235,255,${0.6 * b})`; c.lineWidth = 1 + rf() * 2; c.beginPath(); c.moveTo(x0, y0 - v * 10); c.bezierCurveTo(x0 + l * 0.3, y0 - v * 10 - 6, x0 + l * 0.6, y0 - v * 10 + 5, x0 + l, y0 - v * 10 - 2); c.stroke(); }
+      glow(700, 640, 600, '30,140,255', 0.24); glow(1000, 600, 300, '60,190,255', 0.12); c.restore(); });
+    // rocks out in the cove: a granite outcrop on the right, a few low rocks; the surf glows around their feet
+    const ROCKS = [[1090, 522, 300, 104, 261], [1250, 540, 190, 70, 262], [930, 505, 120, 36, 263], [760, 538, 110, 30, 264], [600, 506, 64, 18, 265], [500, 566, 96, 26, 266], [690, 590, 80, 20, 267]];
+    D(0.35, () => { c.save(); c.globalCompositeOperation = 'lighter'; ROCKS.forEach(([x, y, w, h], i) => { const ph = mod(lt * 0.45 + i * 0.31, 1), a = Math.sin(ph * Math.PI);
+        glow(x, y, w * 0.55, '30,150,255', 0.22 + 0.25 * a); for (let j = 0; j < 2; j++) { const v = mod(ph + j * 0.5, 1), b = Math.sin(v * Math.PI); c.strokeStyle = `rgba(130,230,255,${0.75 * b})`; c.lineWidth = 2 - v;
+          c.beginPath(); c.ellipse(x, y + 1, w * (0.5 + v * 0.22), 2 + v * 6, 0, 0.15, Math.PI - 0.15); c.stroke(); } }); c.restore(); });
+    L('reef', 0.35, () => ROCKS.forEach(([x, y, w, h, sd]) => boulder(x, y, w, h, sd, { col: '#4a4650', dk: '#07090f', lit: 'rgba(255,205,160,0.12)', rim: 'rgba(110,200,255,0.4)', n: Math.max(6, Math.round(w / 18)), cracks: Math.round(w / 30), round: 0.75, jit: 0.3 })));
+    // the inlet between the two ledges: churning glowing water
+    D(0.95, () => { c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = vg(540, H, [[0, 'rgba(30,120,255,0.25)'], [1, 'rgba(20,80,200,0.1)']]); c.fillRect(190, 540, 140, H - 540);
+      const ri = rng(259); for (let k = 0; k < 14; k++) { const u = mod(lt * (0.2 + ri() * 0.2) + ri(), 1), y = lerp(556, 640, ri()), x = 200 + ri() * 100, a = Math.sin(u * Math.PI); c.strokeStyle = `rgba(120,225,255,${0.55 * a})`; c.lineWidth = 1 + ri() * 1.5;
+        c.beginPath(); c.ellipse(x, y, 10 + u * 22, 2 + u * 4, (ri() - 0.5) * 0.4, ri() * 3, ri() * 3 + 2.4); c.stroke(); } glow(258, 600, 70, '40,160,255', 0.35); c.restore(); });
+    L('rock', 0.95, () => { rockFG([[-M, H], [-M, 556], [60, 552], [160, 554], [214, 560], [228, 600], [200, 650], [214, H]], '#3a3c48', '#08090d', 'rgba(110,200,255,0.6)', 246);
+      rockFG([[268, H], [282, 640], [300, 590], [312, 558], [380, 552], [470, 556], [520, 590], [560, 640], [600, H]], '#383a46', '#08090d', 'rgba(110,200,255,0.6)', 248);
+      boulder(1180, 690, 360, 80, 268, { col: '#1d1f28', dk: '#040508', lit: 'rgba(170,200,255,0.06)', rim: 'rgba(110,200,255,0.4)', sink: 40 }); });
     D(0.95, () => actCat({ x: 200, y: 556, s: 1.05, pose: 'sit', sil: true, rim: '90,190,255', look: 0.12, blink: blinkAt(lt, 19), shadow: false }));
   } });
 
