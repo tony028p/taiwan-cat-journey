@@ -431,14 +431,33 @@ SCENES.push({ county: '臺南市', place: '井仔腳瓦盤鹽田', sun: lt => [6
     const skyP = () => { sky([[0, '#3d2f5c'], [0.3, '#a2506a'], [0.48, '#f07a4f'], [0.53, '#ffad5e'], [0.6, '#ffcf86'], [1, '#ffcf86']]); stratus(400, 250, 900, 40, 'rgba(255,120,110,0.5)'); stratus(1000, 300, 800, 30, 'rgba(255,160,120,0.5)'); cumulus(250, 300, 320, 40, 101, 'rgba(255,160,120,0.9)', 'rgba(120,60,90,0.9)', 0.4); };
     L('sky', 0, skyP, { blur: 2 });
     D(0, () => { glow(sx, sy, 440, '255,150,80', 0.55); c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(sx, sy, 28, '#ffe0a0'); glow(sx, sy, 70, '255,220,160', 0.7); c.restore(); });
-    L('land', 0.15, () => { skyline(hz, 102, '#3a2a35', '#4a3340', { hmin: 2, hvar: 14 }); c.fillStyle = '#3a2a35'; c.fillRect(-M, hz - 2, W + 2 * M, 4); });
+    // per photos: a wooden lookout tower and the salt-works sheds on the far bank; flat pans paved with broken pottery tiles,
+    // separated by narrow earth dikes running into the distance; white salt cones stand on the dikes and mirror in the water
+    L('land', 0.15, () => { skyline(hz, 102, '#3a2a35', '#4a3340', { hmin: 2, hvar: 10 }); c.fillStyle = '#3a2a35'; c.fillRect(-M, hz - 2, W + 2 * M, 4);
+      c.fillStyle = '#3d2b36'; c.fillRect(150, hz - 22, 70, 22); c.fillRect(170, hz - 30, 34, 8); c.fillRect(240, hz - 14, 40, 14);
+      const tx = 1090; c.strokeStyle = '#33232d'; c.lineWidth = 2.2; [[tx - 22, tx - 16], [tx + 22, tx + 16]].forEach(([a, b]) => line(a, hz, b, hz - 62, '#33232d', 2.4));
+      for (let k = 0; k < 4; k++) { const y = hz - 12 - k * 15; line(tx - 21 + k * 1.5, y, tx + 21 - k * 1.5, y, '#33232d', 1.6); line(tx - 21 + k * 1.5, y, tx + 20 - k * 1.5, y - 14, '#33232d', 1); }
+      c.fillStyle = '#33232d'; c.fillRect(tx - 26, hz - 66, 52, 5); line(tx - 24, hz - 66, tx - 24, hz - 80, '#33232d', 1.6); line(tx + 24, hz - 66, tx + 24, hz - 80, '#33232d', 1.6); line(tx - 25, hz - 80, tx + 25, hz - 80, '#33232d', 1.6);
+      line(tx + 10, hz - 66, tx + 10, hz - 92, '#33232d', 1.2); });
     L('pans', 0.4, () => { c.save(); c.beginPath(); c.rect(-M, hz, W + 2 * M, H); c.clip(); c.translate(0, 2 * hz); c.scale(1, -1); c.drawImage(getLayer('sky', skyP), -M, 0, W + 2 * M, H); c.restore();
-      c.fillStyle = 'rgba(80,40,60,0.18)'; c.fillRect(-M, hz, W + 2 * M, H);
-      for (let k = 1; k < 9; k++) { const y = hz + Math.pow(k / 9, 1.7) * (H - hz); line(-M, y, W + M, y, 'rgba(60,35,45,0.85)', 1 + k * 0.8); }
-      for (let k = -14; k <= 14; k++) { line(640 + k * 30, hz, 640 + k * 260, H, 'rgba(60,35,45,0.7)', 1.2); }
-      const r = rng(103); for (let k = 0; k < 18; k++) { const y = hz + 6 + Math.pow(r(), 1.6) * 80, x = r() * W, s = 4 + (y - hz) * 0.25; poly([[x - s, y], [x, y - s * 0.9], [x + s, y]], 'rgba(255,225,215,0.9)'); poly([[x, y - s * 0.9], [x + s, y], [x + s * 0.3, y]], 'rgba(160,110,120,0.6)'); } });
-    D(0.4, () => { shimmer(hz + 2, H, 120, '255,200,150', 104, { xc: sx, spread: 220, a: 0.5, op: 'lighter' }); const x = 300 + lt * 26, y = 500;
-      c.fillStyle = 'rgba(60,35,45,0.95)'; c.fillRect(-M, y, W + 2 * M, 5);
+      c.fillStyle = vg(hz, H, [[0, 'rgba(255,190,150,0.10)'], [1, 'rgba(70,35,60,0.28)']]); c.fillRect(-M, hz, W + 2 * M, H);
+      const dk = k => hz + Math.pow(k / 9, 1.7) * (H - hz), vx = 640, px = (k, y) => vx + k * (44 + (y - hz) * 1.15);
+      // the tile mosaic shows through the shallow brine, finer with distance
+      const r = rng(105); for (let y = hz + 30; y < H; ) { const sz = 3 + (y - hz) * 0.075, th = sz * (0.35 + (y - hz) / (H - hz) * 0.25);
+        for (let x = -M + r() * sz; x < W + M; x += sz * (0.8 + r() * 0.5)) { const w = sz * (0.6 + r() * 0.5); c.strokeStyle = `rgba(60,30,45,${(0.05 + (y - hz) / (H - hz) * 0.1) * (0.5 + r())})`; c.lineWidth = 0.6 + (y - hz) * 0.004;
+          c.beginPath(); c.moveTo(x, y + (r() - 0.5) * th * 0.4); c.lineTo(x + w, y + (r() - 0.5) * th * 0.4); c.lineTo(x + w + (r() - 0.5) * 2, y + th); c.lineTo(x + (r() - 0.5) * 2, y + th); c.closePath(); c.stroke(); }
+        y += th; }
+      // dikes: earth strips with a warm lit top edge
+      for (let k = -10; k <= 10; k++) { const x0 = px(k, hz), x1 = px(k, H + 40), w0 = 0.6, w1 = 7; poly([[x0 - w0, hz], [x0 + w0, hz], [x1 + w1, H + 40], [x1 - w1, H + 40]], 'rgba(62,34,46,0.85)'); line(x0, hz, x1 - w1 * 0.6, H + 40, 'rgba(255,190,150,0.22)', 1); }
+      for (let k = 1; k < 9; k++) { const y = dk(k), t = 1 + k * 1.1; c.fillStyle = 'rgba(66,36,48,0.92)'; c.fillRect(-M, y - t / 2, W + 2 * M, t); line(-M, y - t / 2, W + M, y - t / 2, 'rgba(255,195,150,0.45)', 0.6 + k * 0.12); }
+      // salt cones on the dikes, each mirrored in the pan
+      const cones = []; const r2 = rng(103); for (let k = 1; k < 9; k++) { const y = dk(k); for (let j = -10; j <= 10; j++) { if (r2() > (k <= 4 ? 0.62 : 0.2)) continue; const x = px(j, y) + (44 + (y - hz) * 1.15) * 0.5, sz = 4 + (y - hz) * 0.24;
+          if (y > 470 && y < 540 && x > 200 && x < 640) continue; if (x < -M || x > W + M) continue; cones.push([x, y, sz]); } }
+      cones.forEach(([x, y, sz]) => { c.globalAlpha = 0.45; poly([[x - sz, y], [x, y + sz * 0.95], [x + sz, y]], '#e8d6dc'); poly([[x, y + sz * 0.95], [x + sz, y], [x + sz * 0.25, y]], 'rgba(120,80,100,0.6)'); c.globalAlpha = 1; });
+      cones.forEach(([x, y, sz]) => { poly([[x - sz, y], [x - sz * 0.1, y - sz * 0.95], [x + sz * 0.1, y - sz * 0.95], [x + sz, y]], '#fff1ec'); poly([[x + sz * 0.1, y - sz * 0.95], [x + sz, y], [x + sz * 0.2, y]], 'rgba(150,95,120,0.55)');
+        poly([[x - sz * 0.1, y - sz * 0.95], [x - sz * 0.45, y - sz * 0.5], [x - sz * 0.2, y - sz * 0.5]], 'rgba(255,215,170,0.5)'); }); });
+    D(0.4, () => { shimmer(hz + 2, H, 160, '255,200,150', 104, { xc: sx, spread: 160, a: 0.6, op: 'lighter' }); glow(sx, hz + 30, 160, '255,170,100', 0.22); const x = 300 + lt * 26, y = 500;
+      c.fillStyle = 'rgba(64,36,48,0.97)'; c.fillRect(-M, y, W + 2 * M, 6); line(-M, y, W + M, y, 'rgba(255,195,150,0.5)', 1);
       actCat({ x, y, s: 0.85, pose: 'walk', ph: walkPh(lt * 26, 0.85), sil: true, rim: '255,170,110', shadow: false });
       c.save(); c.translate(0, 2 * y + 6); c.scale(1, -1); c.globalAlpha = 0.35; actCat({ x, y, s: 0.85, pose: 'walk', ph: walkPh(lt * 26, 0.85), sil: true, shadow: false }); c.restore(); });
   } });
