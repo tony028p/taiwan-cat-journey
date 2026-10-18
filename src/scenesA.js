@@ -507,19 +507,62 @@ SCENES.push({ county: '嘉義縣', place: '阿里山 · 雲海日出', sun: lt =
     D(0.95, () => actCat({ x: 520, y: 580, s: 1.05, pose: 'sit', sil: true, rim: '255,195,140', look: -0.1, blink: blinkAt(lt, 9), shadow: false }));
   } });
 
+/* Japanese-era forestry dormitory (Hinoki Village): dark-stained clapboard, glass windows in wooden grids, a black-tiled hipped
+   roof with deep eaves and a ridge cap, raised on a stone base. x0..x1 wall extent, ye eave line, yf floor line. o.haze fades it. */
+function hinokiHouse(x0, x1, ye, yf, o = {}) {
+  const w = x1 - x0, ov = o.ov ?? w * 0.055, rh = o.rh ?? (yf - ye) * 0.45, inset = o.inset ?? w * 0.18, nw = o.win ?? Math.max(2, Math.round(w / 128));
+  // wall
+  c.fillStyle = vg(ye, yf, [[0, '#2e2119'], [1, '#3e2c20']]); c.fillRect(x0, ye, w, yf - ye);
+  for (let y = ye + 4; y < yf; y += 6.5) { line(x0, y, x1, y, 'rgba(0,0,0,0.35)', 0.9); line(x0, y + 1, x1, y + 1, 'rgba(255,220,180,0.05)', 0.8); }
+  for (let k = 0; k <= nw; k++) { const x = x0 + k * w / nw; c.fillStyle = '#5a3f2b'; c.fillRect(x - 3, ye, 6, yf - ye); }
+  // windows: glass in a wooden grid, reflecting the sky
+  const ww = Math.min(86, w / nw * 0.62), wh = (yf - ye) * 0.47, wy = ye + (yf - ye) * 0.24;
+  for (let k = 0; k < nw; k++) { const x = x0 + (k + 0.5) * w / nw - ww / 2; c.fillStyle = '#6b4a30'; c.fillRect(x - 4, wy - 4, ww + 8, wh + 8);
+    c.fillStyle = vg(wy, wy + wh, [[0, '#9db6c4'], [0.5, '#5d707a'], [1, '#2c3438']]); c.fillRect(x, wy, ww, wh);
+    c.save(); c.beginPath(); c.rect(x, wy, ww, wh); c.clip(); c.fillStyle = 'rgba(255,255,255,0.16)'; poly([[x + ww * 0.1, wy + wh], [x + ww * 0.45, wy], [x + ww * 0.62, wy], [x + ww * 0.27, wy + wh]]); c.fill(); c.restore();
+    for (let q = 1; q < 4; q++) line(x + ww * q / 4, wy, x + ww * q / 4, wy + wh, '#4a3220', 1.6); for (let q = 1; q < 3; q++) line(x, wy + wh * q / 3, x + ww, wy + wh * q / 3, '#4a3220', 1.6);
+    c.fillStyle = '#7a5638'; c.fillRect(x - 6, wy + wh + 3, ww + 12, 4); }
+  // stone base
+  if (o.base !== 0) { c.fillStyle = '#6e6a62'; c.fillRect(x0 - 6, yf, w + 12, o.base ?? 10); }
+  // eave shadow on the wall
+  c.fillStyle = vg(ye, ye + 34, [[0, 'rgba(0,0,0,0.55)'], [1, 'rgba(0,0,0,0)']]); c.fillRect(x0, ye, w, 34);
+  // hipped roof with tile rows
+  const L0 = x0 - ov, R0 = x1 + ov, L1 = x0 + inset, R1 = x1 - inset, yr = ye - rh;
+  poly([[L0, ye], [L1, yr], [R1, yr], [R0, ye]]); c.fillStyle = vg(yr, ye, [[0, '#4a4c54'], [1, '#26272c']]); c.fill();
+  c.save(); poly([[L0, ye], [L1, yr], [R1, yr], [R0, ye]]); c.clip();
+  const nt = Math.round((R0 - L0) / 7); for (let k = 0; k <= nt; k++) { const u = k / nt; line(lerp(L0, R0, u), ye, lerp(L1, R1, u), yr, 'rgba(10,10,12,0.45)', 1.1); line(lerp(L0, R0, u) + 2, ye, lerp(L1, R1, u) + 1, yr, 'rgba(200,205,215,0.10)', 0.8); }
+  for (let y = yr + 7; y < ye; y += 7) line(L0, y, R0, y, 'rgba(0,0,0,0.18)', 0.7);
+  // hip faces: the side slopes catch less light
+  poly([[L0, ye], [L1, yr], [L1 + 6, yr], [L0 + rh * 0.9, ye]], 'rgba(255,255,255,0.05)'); poly([[R0, ye], [R1, yr], [R1 - 6, yr], [R0 - rh * 0.9, ye]], 'rgba(0,0,0,0.22)');
+  c.restore();
+  line(L0, ye, L1, yr, '#1e1f23', 3); line(R0, ye, R1, yr, '#1e1f23', 3);
+  c.fillStyle = '#1c1d21'; c.fillRect(L1 - 4, yr - 6, R1 - L1 + 8, 8); poly([[L1 - 8, yr + 2], [L1 - 10, yr - 12], [L1 + 6, yr - 6]], '#1c1d21'); poly([[R1 + 8, yr + 2], [R1 + 10, yr - 12], [R1 - 6, yr - 6]], '#1c1d21');
+  c.fillStyle = '#3a2a1e'; c.fillRect(L0, ye - 1, R0 - L0, 4); line(L0, ye + 3, R0, ye + 3, 'rgba(255,230,190,0.25)', 1);
+  if (o.haze) { c.fillStyle = o.haze; poly([[L0, ye], [L1, yr - 12], [R1, yr - 12], [R0, ye], [x1 + 6, ye], [x1 + 6, yf + 10], [x0 - 6, yf + 10], [x0 - 6, ye]]); c.fill(); }
+}
 /* 11 — 嘉義市 檜意森活村 */
 SCENES.push({ county: '嘉義市', place: '檜意森活村', sun: () => [1150, -40, 0.5], en: 'Hinoki Village', ll: '23.48°N 120.45°E', cam: [1.03, 1.09, 20, -20, 0, 0],
   sub: ['嘉義市的老木屋，還留著檜木的香氣。', 'Chiayi’s old wooden houses still smell of cypress.'],
   draw(lt) {
-    L('bg', 0, () => { sky([[0, '#9fbfcf'], [1, '#e8e2cf']]); const r = rng(141); for (let k = 0; k < 900; k++) { const x = r() * (W + 2 * M) - M, y = r() * 360, s = 6 + r() * 16; oval(x, y, s, s * 0.8, 0, mix('#3d5b35', '#9fbf6a', r() * (y < 200 ? 1 : 0.6), 0.85)); } }, { blur: 2.5 });
-    L('house', 0.4, () => {
-      c.fillStyle = vg(260, 530, [[0, '#5a3d2a'], [1, '#3a271b']]); c.fillRect(160, 270, 900, 260);
-      for (let k = 0; k < 60; k++) line(160, 280 + k * 4.2, 1060, 280 + k * 4.2, 'rgba(25,15,8,0.35)', 0.8);
-      for (let k = 0; k < 7; k++) { const x = 200 + k * 124; c.fillStyle = '#efe6d2'; c.fillRect(x, 330, 80, 110); c.strokeStyle = '#3a2618'; c.lineWidth = 3; c.strokeRect(x, 330, 80, 110); for (let q = 1; q < 4; q++) line(x, 330 + q * 27, x + 80, 330 + q * 27, '#3a2618', 1.2); line(x + 40, 330, x + 40, 440, '#3a2618', 1.5); }
-      poly([[110, 278], [300, 160], [920, 160], [1110, 278]]); c.fillStyle = vg(160, 280, [[0, '#4d4f55'], [1, '#2c2d32']]); c.fill(); for (let k = 0; k < 40; k++) line(130 + k * 25, 270, 310 + k * 15.5, 165, 'rgba(15,15,18,0.45)', 1.2);
-      c.fillStyle = '#6b4a33'; c.fillRect(140, 516, 940, 18); c.fillStyle = '#4a3222'; c.fillRect(140, 534, 940, 30); for (let k = 0; k < 10; k++) c.fillRect(150 + k * 100, 534, 8, 50); });
-    L('ground', 0.6, () => { c.fillStyle = vg(560, H, [[0, '#b5a58a'], [1, '#857559']]); c.fillRect(-M, 562, W + 2 * M, 200); const r = rng(142); for (let k = 0; k < 900; k++) disc(r() * (W + 2 * M) - M, 565 + r() * 150, 0.6 + r() * 1.4, `rgba(${r() < 0.5 ? '255,250,230' : '60,50,40'},0.3)`); });
-    D(0.6, () => { c.save(); c.globalCompositeOperation = 'multiply'; const r = rng(143); for (let k = 0; k < 30; k++) { const x = r() * W + Math.sin(T * 0.6 + k) * 6, y = 280 + r() * 330; oval(x, y, 20 + r() * 50, 8 + r() * 14, 0.3, 'rgba(90,80,110,0.35)'); } c.restore(); godrays(1150, -40, 900, 18, '255,235,190', 0.07, 144, 0.7, Math.PI * 0.68);
+    // per photos: a cluster of dark-stained Japanese-era dormitories with black tiled roofs under a clear sky, big shade trees,
+    // a lawn with a curving path and clipped shrubs; the cat's porch (engawa) runs along the front of the main house
+    L('bg', 0, () => { sky([[0, '#5f95c9'], [0.6, '#a9c9de'], [1, '#e6eadf']]); cumulus(980, 150, 380, 70, 146, '#ffffff', '#c9d6e2', -0.4); cumulus(520, 120, 260, 44, 147, '#ffffff', '#cdd9e4', -0.4);
+      const r = rng(141); for (let k = 0; k < 420; k++) { const x = r() * (W + 2 * M) - M, y = 150 + r() * 210 + Math.abs(x - 640) * 0.05, s = 10 + r() * 20; oval(x, y, s, s * 0.8, 0, mix('#3d5b35', '#8fb35e', r() * (y < 240 ? 1 : 0.6), 0.9)); } }, { blur: 2 });
+    L('far', 0.2, () => { hinokiHouse(-M - 40, 120, 330, 470, { haze: 'rgba(200,215,220,0.35)', win: 2 }); hinokiHouse(1120, W + M + 40, 340, 470, { haze: 'rgba(200,215,220,0.35)', win: 2 });
+      const r = rng(148); for (let k = 0; k < 80; k++) { const x = r() < 0.5 ? r() * 200 - M : 1100 + r() * 260, y = 470 + r() * 30, s = 8 + r() * 12; oval(x, y, s, s * 0.7, 0, mix('#3f6a33', '#7aa64a', r(), 0.95)); } }, { blur: 1 });
+    L('house', 0.4, () => { hinokiHouse(160, 1060, 278, 516, { ov: 60, rh: 108, inset: 190, win: 7, base: 0 });
+      c.fillStyle = '#6b4a33'; c.fillRect(140, 516, 940, 18); line(140, 516, 1080, 516, 'rgba(255,225,180,0.4)', 1.2); c.fillStyle = '#4a3222'; c.fillRect(140, 534, 940, 30); for (let k = 0; k < 10; k++) c.fillRect(150 + k * 100, 534, 8, 50);
+      c.fillStyle = '#7a756c'; c.fillRect(140, 556, 940, 10); for (let k = 0; k < 9; k++) { c.fillStyle = '#3a3630'; c.fillRect(200 + k * 100, 540, 22, 10); } });
+    L('ground', 0.6, () => { c.fillStyle = vg(560, H, [[0, '#7ea24e'], [1, '#4f7232']]); c.fillRect(-M, 562, W + 2 * M, 200);
+      const r = rng(142); for (let k = 0; k < 1400; k++) { const x = r() * (W + 2 * M) - M, y = 566 + r() * 150; line(x, y, x + (r() - 0.5) * 3, y - 3 - r() * 4, mix('#3f6228', '#a8c870', r(), 0.7), 1); }
+      // curving pale paved path toward the porch steps
+      c.beginPath(); c.moveTo(560, 566); c.bezierCurveTo(600, 610, 380, 640, 300, H + 10); c.lineTo(520, H + 10); c.bezierCurveTo(560, 650, 720, 610, 660, 566); c.closePath(); c.fillStyle = vg(566, H, [[0, '#cfc7b4'], [1, '#a9a08c']]); c.fill();
+      c.save(); c.clip(); for (let k = 0; k < 500; k++) disc(300 + r() * 400, 566 + r() * 160, 0.8 + r() * 1.6, `rgba(${r() < 0.5 ? '255,250,235' : '80,70,60'},0.3)`); c.restore();
+      c.fillStyle = '#8a8272'; c.fillRect(570, 560, 80, 8);
+      // clipped shrubs and garden rocks along the base of the house
+      for (let k = 0; k < 9; k++) { const x = 720 + k * 46 + r() * 10; oval(x, 572, 26, 16, 0, '#3e6a2c'); oval(x - 6, 566, 18, 10, 0, '#5f8f3c'); oval(x - 10, 562, 9, 5, 0, 'rgba(200,230,140,0.35)'); }
+      [[110, 600, 46, 22], [1180, 610, 60, 26], [760, 640, 38, 16]].forEach(([x, y, w, h]) => { oval(x, y, w, h, 0, '#8a8478'); oval(x - w * 0.2, y - h * 0.35, w * 0.6, h * 0.45, 0, 'rgba(255,250,235,0.25)'); oval(x, y + h * 0.7, w * 1.1, h * 0.3, 0, 'rgba(30,40,20,0.35)'); }); });
+    D(0.6, () => { c.save(); c.globalCompositeOperation = 'multiply'; const r = rng(143); for (let k = 0; k < 24; k++) { const x = r() * W + Math.sin(T * 0.6 + k) * 6, y = 300 + r() * 330; oval(x, y, 20 + r() * 50, 8 + r() * 14, 0.3, 'rgba(90,90,110,0.22)'); } c.restore(); godrays(1150, -40, 900, 18, '255,235,190', 0.07, 144, 0.7, Math.PI * 0.68);
       const x = 230 + lt * 30; actCat({ x, y: 516, s: 0.85, pose: 'walk', ph: walkPh(lt * 30, 0.85), rim: '255,230,180', look: 0.04, blink: blinkAt(lt, 10), shadowA: 0.3 });
       const r2 = rng(145); for (let k = 0; k < 14; k++) { const x2 = mod(r2() * W + T * 30, W + 100) - 50, y2 = mod(r2() * H + T * 40, H); c.save(); c.translate(x2, y2); c.rotate(T * 2 + k); oval(0, 0, 4, 2, 0, mix('#c58a2a', '#7aa23c', r2(), 0.85)); c.restore(); } });
   } });
