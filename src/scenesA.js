@@ -370,22 +370,53 @@ SCENES.push({ county: '花蓮縣', place: '清水斷崖', sun: () => [260, 120, 
     D(0.4, () => flock(3, 700, 230, -14, 0.7, 'rgba(40,50,60,0.8)', 58, lt));
   } });
 
-/* 5 — 臺東縣 伯朗大道 */
+/* the "Mr. Brown" (金城武) tree: a lone broad-crowned 茄苳 whose trunk leans and whose crown reaches out to one side (left) */
+function brownTree(x, y, h, seed) {
+  const r = rng(seed);
+  c.fillStyle = 'rgba(50,70,20,0.28)'; c.beginPath(); c.ellipse(x - h * 0.2, y + 3, h * 0.42, h * 0.035, 0, 0, TAU); c.fill();
+  const bark = (x0, y0, x1, y1, cx, cy, w0, w1) => { const n = 12; c.beginPath(); for (let i = 0; i <= n; i++) { const u = i / n, px = (1 - u) * (1 - u) * x0 + 2 * u * (1 - u) * cx + u * u * x1, py = (1 - u) * (1 - u) * y0 + 2 * u * (1 - u) * cy + u * u * y1; c.lineTo(px - lerp(w0, w1, u) / 2, py); }
+    for (let i = n; i >= 0; i--) { const u = i / n, px = (1 - u) * (1 - u) * x0 + 2 * u * (1 - u) * cx + u * u * x1, py = (1 - u) * (1 - u) * y0 + 2 * u * (1 - u) * cy + u * u * y1; c.lineTo(px + lerp(w0, w1, u) / 2, py); }
+    c.closePath(); c.fillStyle = hg(x0 - w0, x0 + w0, [[0, '#6a5a48'], [0.45, '#4a3d31'], [1, '#2b231c']]); c.fill(); };
+  bark(x, y, x - h * 0.06, y - h * 0.46, x + h * 0.03, y - h * 0.25, h * 0.085, h * 0.05);
+  bark(x - h * 0.06, y - h * 0.44, x - h * 0.5, y - h * 0.74, x - h * 0.2, y - h * 0.58, h * 0.045, h * 0.012);
+  bark(x - h * 0.06, y - h * 0.44, x - h * 0.12, y - h * 0.9, x - h * 0.02, y - h * 0.7, h * 0.04, h * 0.012);
+  bark(x - h * 0.05, y - h * 0.46, x + h * 0.26, y - h * 0.78, x + h * 0.08, y - h * 0.66, h * 0.035, h * 0.01);
+  // crown: leaf clusters, wider to the left; each a dark mass with sunlit dabs on top
+  const C = [[-0.55, 0.74, 0.17], [-0.38, 0.86, 0.2], [-0.15, 0.95, 0.22], [0.08, 0.9, 0.2], [0.27, 0.8, 0.16], [-0.62, 0.62, 0.12], [-0.3, 0.7, 0.2], [0.0, 0.72, 0.2], [0.2, 0.66, 0.13], [-0.45, 0.6, 0.12]];
+  C.forEach(([dx, dy, rr]) => { const cx = x + dx * h, cy = y - dy * h, R = rr * h; for (let k = 0; k < 160; k++) { const a = r() * TAU, d = Math.sqrt(r()) * R, px = cx + Math.cos(a) * d * 1.15, py = cy + Math.sin(a) * d * 0.8;
+      oval(px, py, 3 + r() * 4, 2.5 + r() * 3, r() * 3, mix('#1b3418', '#2c5222', r())); } });
+  C.forEach(([dx, dy, rr]) => { const cx = x + dx * h, cy = y - dy * h, R = rr * h; for (let k = 0; k < 420; k++) { const a = r() * TAU, d = Math.sqrt(r()) * R, px = cx + Math.cos(a) * d * 1.1, py = cy + Math.sin(a) * d * 0.75, up = clamp((cy - py) / R * 0.8 + 0.6 + (cx - px) / R * 0.15);
+      if (r() < up) oval(px, py - 2, 1.6 + r() * 2.6, 1.3 + r() * 2, r() * 3, mix('#3e7228', '#a4cc58', up * r())); } });
+}
+/* 5 — 臺東縣 伯朗大道 — per photos: the straight road running out through the paddies to the Central Range, the lone leaning
+   金城武 tree beside it, bright green-gold rice, big blue sky; mountains with low cloud on their flanks */
 SCENES.push({ county: '臺東縣', place: '池上伯朗大道', en: 'Mr. Brown Avenue, Chishang', ll: '23.10°N 121.22°E', cam: [1.02, 1.07, 0, 0, 0, 0],
   sub: ['臺東的稻田，風一吹就是一片海浪。', 'In Taitung, a breeze turns the rice fields into waves.'],
   draw(lt) {
-    const hz = 400;
-    L('sky', 0, () => { sky([[0, '#3f7ec2'], [0.55, '#9cc6e6'], [1, '#e2eef2']]); cumulus(250, 230, 380, 110, 61, '#ffffff', '#c3cfdf', 0.35); cumulus(760, 180, 300, 90, 62, '#ffffff', '#c8d2e0', 0.35); cumulus(1150, 250, 340, 100, 63, '#ffffff', '#c3cfdf', 0.35); }, { blur: 1.2 });
-    L('mtn', 0.06, () => { mountain({ base: 380, amp: 120, f: 0.0028, seed: 64, top: '#6f8fae', bot: '#93abc0', haze: 'rgba(200,220,235,0.5)' }); mountain({ base: 398, amp: 50, f: 0.006, seed: 65, top: '#5e8466', bot: '#7a9b7e', tex: 'forest', dark: '#4a6e52', mid: '#628868', light: '#90b08a', depth: 40, n: 900, r: 2.5 }); }, { blur: 0.8 });
-    D(0.06, () => { [[300, 210, 0.9, '#e5584a', '#f7d24a'], [520, 160, 0.7, '#4b8fd1', '#f4f1e8'], [980, 230, 0.8, '#f2a33b', '#7a3fa6']].forEach(([x, y, s, a, b], i) => { const yy = y - lt * 6 + Math.sin(lt + i) * 3; c.save(); c.translate(x, yy); c.scale(s, s); oval(0, 0, 26, 30, 0, a); c.save(); c.beginPath(); c.ellipse(0, 0, 26, 30, 0, 0, TAU); c.clip(); for (let k = -2; k <= 2; k += 2) oval(k * 9, 0, 4.5, 30, 0, b); c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(6, -30, 30, 60); c.restore(); line(-8, 26, -5, 40, '#333', 0.8); line(8, 26, 5, 40, '#333', 0.8); c.fillStyle = '#7a5a3a'; c.fillRect(-6, 40, 12, 9); c.restore(); }); });
-    L('fields', 0.5, () => { c.fillStyle = vg(hz, H, [[0, '#a7b75a'], [0.4, '#c7bd4f'], [1, '#9f8f2c']]); c.fillRect(-M, hz, W + 2 * M, H);
-      const r = rng(66); for (let k = 0; k < 9000; k++) { const pr = Math.pow(r(), 1.5), y = hz + pr * (H - hz), x = r() * (W + 2 * M) - M, l = 2 + pr * 9; c.strokeStyle = r() < 0.5 ? `rgba(240,225,130,${0.25 + r() * 0.3})` : `rgba(90,100,30,${0.2 + r() * 0.3})`; c.lineWidth = 0.6 + pr; c.beginPath(); c.moveTo(x, y); c.lineTo(x + (r() - 0.5) * 2, y - l); c.stroke(); }
-      for (let k = 0; k < 7; k++) { const y = hz + Math.pow(k / 7, 1.8) * (H - hz); line(-M, y, W + M, y, 'rgba(110,100,40,0.35)', 0.8 + k * 0.3); }
-      c.fillStyle = vg(560, 600, [[0, '#cdbd97'], [1, '#a8967a']]); c.fillRect(-M, 566, W + 2 * M, 30);
-      const tx = 1000; c.strokeStyle = '#4e3b2c'; c.lineWidth = 7; c.beginPath(); c.moveTo(tx, 560); c.quadraticCurveTo(tx + 4, 520, tx - 6, 488); c.stroke(); const r2 = rng(67); for (let k = 0; k < 160; k++) { const a = r2() * TAU, d = Math.sqrt(r2()) * 52; oval(tx + Math.cos(a) * d * 1.3, 450 + Math.sin(a) * d * 0.7, 6, 5, 0, mix('#2f5129', '#76a052', r2() * (Math.sin(a) < 0 ? 1 : 0.5), 0.9)); } });
-    D(0.5, () => { c.save(); c.globalCompositeOperation = 'lighter'; for (let w = 0; w < 6; w++) { const u = mod(lt * 0.18 + w / 6, 1), y = hz + Math.pow(u, 1.6) * (H - hz); c.fillStyle = vg(y - 14 * u, y + 14 * u, [[0, 'rgba(255,240,170,0)'], [0.5, 'rgba(255,240,170,0.12)'], [1, 'rgba(255,240,170,0)']]); c.fillRect(-M, y - 20, W + 2 * M, 40); } c.restore();
+    const hz = 402, vx = 905, rd = y => (y - hz) / (566 - hz);
+    L('sky', 0, () => { sky([[0, '#2f6fbf'], [0.5, '#7fb4e4'], [1, '#d8eaf4']]); cumulus(250, 240, 400, 120, 61, '#ffffff', '#bccbdd', 0.35); cumulus(760, 170, 300, 90, 62, '#ffffff', '#c3cfe0', 0.35); cumulus(1180, 260, 360, 110, 63, '#ffffff', '#bccbdd', 0.35); }, { blur: 1.2 });
+    L('mtn', 0.06, () => { mountain({ base: 386, amp: 175, f: 0.0022, seed: 64, oct: 5, top: '#5f81a6', bot: '#8aa6bf', haze: 'rgba(200,220,236,0.55)' });
+      stratus(380, 340, 900, 60, 'rgba(240,246,250,0.28)'); stratus(1000, 326, 800, 50, 'rgba(240,246,250,0.22)');
+      mountain({ base: 398, amp: 60, f: 0.005, seed: 65, top: '#4f7a5a', bot: '#6f9670', tex: 'forest', dark: '#3e6248', mid: '#58805e', light: '#8eb084', depth: 50, n: 1100, r: 2.4, haze: 'rgba(190,215,225,0.35)' }); }, { blur: 0.8 });
+    D(0.06, () => { [[300, 210, 0.9, '#e5584a', '#f7d24a'], [560, 150, 0.6, '#4b8fd1', '#f4f1e8']].forEach(([x, y, s, a, b], i) => { const yy = y - lt * 6 + Math.sin(lt + i) * 3; c.save(); c.translate(x, yy); c.scale(s, s); oval(0, 0, 26, 30, 0, a); c.save(); c.beginPath(); c.ellipse(0, 0, 26, 30, 0, 0, TAU); c.clip(); for (let k = -2; k <= 2; k += 2) oval(k * 9, 0, 4.5, 30, 0, b); c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(6, -30, 30, 60); c.restore(); line(-8, 26, -5, 40, '#333', 0.8); line(8, 26, 5, 40, '#333', 0.8); c.fillStyle = '#7a5a3a'; c.fillRect(-6, 40, 12, 9); c.restore(); }); });
+    L('fields', 0.5, () => { c.fillStyle = vg(hz, H, [[0, '#9fb256'], [0.25, '#b9c447'], [0.6, '#c9c040'], [1, '#a59a2c']]); c.fillRect(-M, hz, W + 2 * M, H);
+      // distant farm houses and windbreak trees along the foot of the range
+      const r0 = rng(69); for (let k = 0; k < 26; k++) { const x = r0() * (W + 2 * M) - M, w = 10 + r0() * 30; if (Math.abs(x - vx) < 30) continue; oval(x, hz + 1, w, 5 + r0() * 5, 0, mix('#3f6a3e', '#5f8a4e', r0(), 0.9)); if (r0() < 0.3) { c.fillStyle = '#e8e4da'; c.fillRect(x + w * 0.4, hz - 3, 8, 4); } }
+      // paddies: ridges between plots running toward the vanishing point, and across
+      for (let k = -24; k <= 24; k++) { if (k === 0) continue; const xb = vx + k * 150; c.strokeStyle = 'rgba(100,110,40,0.2)'; c.lineWidth = 1; c.beginPath(); c.moveTo(vx + k * 3, hz); c.lineTo(xb, H + 40); c.stroke(); }
+      for (let k = 0; k < 10; k++) { const y = hz + Math.pow(k / 10, 1.9) * (H - hz) + 2; line(-M, y, W + M, y, 'rgba(110,105,40,0.3)', 0.6 + k * 0.25); }
+      const r = rng(66); for (let k = 0; k < 9000; k++) { const pr = Math.pow(r(), 1.5), y = hz + pr * (H - hz), x = r() * (W + 2 * M) - M, l = 2 + pr * 9; c.strokeStyle = r() < 0.5 ? `rgba(245,232,130,${0.25 + r() * 0.3})` : `rgba(80,110,30,${0.2 + r() * 0.3})`; c.lineWidth = 0.6 + pr; c.beginPath(); c.moveTo(x, y); c.lineTo(x + (r() - 0.5) * 2, y - l); c.stroke(); }
+      // Mr. Brown Avenue itself: straight to the mountains, double yellow centre line
+      c.beginPath(); c.moveTo(vx - 2, hz); c.lineTo(vx + 2, hz); c.lineTo(1050, 566); c.lineTo(765, 566); c.closePath(); c.fillStyle = vg(hz, 566, [[0, '#9a9c9c'], [1, '#6c6d6e']]); c.fill();
+      c.strokeStyle = '#f0f0ea'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(vx - 1.6, hz); c.lineTo(778, 566); c.moveTo(vx + 1.6, hz); c.lineTo(1037, 566); c.stroke();
+      c.strokeStyle = '#e8c23a'; c.lineWidth = 1; c.beginPath(); c.moveTo(vx - 0.4, hz); c.lineTo(903, 566); c.moveTo(vx + 0.4, hz); c.lineTo(912, 566); c.stroke();
+      // the cross road the cat walks along
+      c.fillStyle = vg(566, 600, [[0, '#737475'], [1, '#5c5d5f']]); c.fillRect(-M, 566, W + 2 * M, 34); line(-M, 568, W + M, 568, 'rgba(240,240,232,0.8)', 1.5); line(-M, 598, W + M, 598, 'rgba(240,240,232,0.8)', 2);
+      const r3 = rng(70); for (let k = 0; k < 900; k++) disc(r3() * (W + 2 * M) - M, 566 + r3() * 34, 0.6 + r3() * 0.8, r3() < 0.5 ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)');
+      brownTree(1068, 524, 270, 67); });
+    D(0.5, () => { c.save(); c.globalCompositeOperation = 'lighter'; for (let w = 0; w < 6; w++) { const u = mod(lt * 0.18 + w / 6, 1), y = hz + Math.pow(u, 1.6) * (H - hz); if (y > 562 && y < 602) continue; c.fillStyle = vg(y - 14 * u, y + 14 * u, [[0, 'rgba(255,240,170,0)'], [0.5, 'rgba(255,240,170,0.13)'], [1, 'rgba(255,240,170,0)']]); c.fillRect(-M, y - 20, W + 2 * M, 40); } c.restore();
       const x = 260 + lt * 30; actCat({ x, y: 582, s: 0.85, pose: 'walk', ph: walkPh(lt * 30, 0.85), look: 0.02, blink: blinkAt(lt, 6), shadowA: 0.25 }); });
-    D(1, () => { grassTufts(608, 640, 120, ['#8f8a2c', '#b3a845', '#6f7426'], 68, 1.4, 26); });
+    D(1, () => { grassTufts(608, 640, 120, ['#7f8f2c', '#a8b045', '#5f7426'], 68, 1.4, 26); });
   } });
 
 /* 6 — 屏東縣 鵝鑾鼻 sunset */
