@@ -79,12 +79,38 @@ V('T1', '基隆市', '基隆港', 'Port of Keelung', '25.13°N 121.74°E', ['港
   D(0.95, () => drawCat3({ x: 262, y: 542, s: 1.05, pose: sit3(lt, { ...exSeq(lt, [[0, 'curious'], [1.2, 'delighted'], [2.6, 'content']]), look: [0.8, -0.3], hr: -0.05 + Math.sin(lt * 0.6) * 0.1 }), emote: emoAt(lt, [[1.2, 2.6, 'spark']]), shadow: false }));
 });
 /* T2 東北角 鼻頭角 */
+/* T2 鼻頭角 — per photos: a grassy green headland running out into deep blue sea, a wooden-railed boardwalk climbing its
+   ridge to a summit pavilion, the white lighthouse on the knoll at the cape tip, surf on the rock shelf; sandstone tofu rocks
+   in the foreground where the cat runs */
+const BT_PTS = [[540, 446], [610, 400], [700, 374], [780, 386], [840, 393], [900, 372], [1000, 304], [1100, 236], [1180, 204], [1260, 212], [1340, 230]];
+function btCrest(x) { if (x <= BT_PTS[0][0]) return 446; for (let i = 0; i < BT_PTS.length - 1; i++) { const [x0, y0] = BT_PTS[i], [x1, y1] = BT_PTS[i + 1]; if (x <= x1) { const u = (x - x0) / (x1 - x0); return lerp(y0, y1, u * u * (3 - 2 * u)); } } return 230; }
 V('T2', '新北市 · 東北角', '鼻頭角', 'Bitou Cape', '25.13°N 121.92°E', ['海浪把岩石刻成了一格一格的豆腐。', 'The waves have carved the rocks into blocks like tofu.'], [1.03, 1.07, 40, -40, 0, 0], function (lt) {
-  L('sky', 0, () => { sky([[0, '#6b9ac8'], [1, '#dfe6e6']]); }, {});
-  L('cape', 0.12, () => { mountain({ fn: x => x > 700 ? 380 - (x - 700) * 0.45 - fbm1(x * 0.01 + 2) * 30 : 420, floor: 420, top: '#5f805c', bot: '#7b8e70', tex: 'forest', dark: '#3f5c3e', mid: '#5c7c55', light: '#9db88a', depth: 120, n: 900, r: 3, seed: 321 }); lighthouse(1120, 214, 40); });
-  L('sea', 0.2, () => { c.fillStyle = vg(420, H, [[0, '#3b7fa6'], [1, '#2d6d8b']]); c.fillRect(-M, 420, W + 2 * M, H); });
-  D(0.2, () => { shimmer(422, 560, 160, '255,255,255', 322, { a: 0.4 }); for (let k = 0; k < 4; k++) { const u = mod(lt * 0.4 + k / 4, 1); c.strokeStyle = `rgba(255,255,255,${0.6 * Math.sin(u * Math.PI)})`; c.lineWidth = 2.5; c.beginPath(); c.moveTo(-M, 548 - u * 20); for (let x = -M; x < W + M; x += 30) c.lineTo(x, 548 - u * 20 + Math.sin(x * 0.03 + k) * 4); c.stroke(); } });
-  L('rocks', 0.85, () => { const r = rng(323); for (let row = 0; row < 3; row++) for (let k = 0; k < 16; k++) { const x = -M + k * 100 + row * 40 + r() * 20, y = 560 + row * 30, w = 92, h = 22 + row * 6; poly([[x, y], [x + w, y - 4], [x + w + 6, y + h], [x + 4, y + h + 4]], mix('#c8b48c', '#9b8763', r())); line(x + 2, y + 2, x + w, y - 2, 'rgba(255,245,220,0.6)', 1.5); } });
+  L('sky', 0, () => { sky([[0, '#2f6fb8'], [0.6, '#7fb0dc'], [1, '#d8e8f0']]); cumulus(300, 250, 260, 50, 324, '#ffffff', '#cdd8e2', 0.3); cumulus(820, 170, 200, 40, 325, '#ffffff', '#cdd8e2', 0.3); }, { blur: 1.2 });
+  L('sea', 0.1, () => { c.fillStyle = vg(400, H, [[0, '#1f5f9e'], [0.4, '#2470a8'], [1, '#2a86b0']]); c.fillRect(-M, 400, W + 2 * M, H); c.fillStyle = 'rgba(220,235,245,0.5)'; c.fillRect(-M, 399, W + 2 * M, 2);
+    mountain({ fn: x => x > 120 && x < 260 ? 400 - 14 * Math.sin((x - 120) / 140 * Math.PI) : 401, floor: 401, top: '#7a96a8', bot: '#8aa4b4', seed: 326 }); });
+  D(0.1, () => shimmer(404, 600, 160, '255,255,255', 322, { a: 0.4 }));
+  L('cape', 0.25, () => {
+    mountain({ fn: x => x < 540 ? 446 : btCrest(x), floor: 446, top: '#5e9a4a', bot: '#7aa856', tex: 'forest', dark: '#3e7a36', mid: '#62a04c', light: '#a8d07a', depth: 90, n: 1500, r: 2.6, seed: 321 });
+    // weathered sandstone cliffs along the seaward foot of the headland
+    c.save(); c.beginPath(); c.moveTo(540, 446); for (let x = 540; x <= W + M; x += 10) c.lineTo(x, Math.min(446, Math.max(btCrest(x) + 30, 446 - 18 - 30 * Math.sin((x - 540) / 220) * 0.6 - fbm1(x * 0.03) * 16))); c.lineTo(W + M, 446); c.closePath();
+    c.fillStyle = vg(400, 446, [[0, '#a08a68'], [1, '#6a5a44']]); c.fill(); c.clip(); const r = rng(327);
+    for (let k = 0; k < 260; k++) { const x = 540 + r() * 800, y = 400 + r() * 50; line(x, y, x + 8 + r() * 20, y + r() * 2, r() < 0.5 ? 'rgba(255,240,210,0.18)' : 'rgba(40,30,20,0.25)', 1 + r()); } c.restore();
+    // the boardwalk: a pale path along the crest with brown railing posts, climbing to a little pavilion on the summit
+    c.strokeStyle = '#c8b48a'; c.lineWidth = 2.6; c.beginPath(); for (let x = 620; x <= 1180; x += 6) { const y = btCrest(x) + 3; x === 620 ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke();
+    for (let x = 624; x <= 1176; x += 7) { const y = btCrest(x) + 3; line(x, y, x, y - 4.5, '#6a4a32', 1.2); }
+    c.strokeStyle = '#6a4a32'; c.lineWidth = 1; c.beginPath(); for (let x = 624; x <= 1176; x += 7) { const y = btCrest(x) - 1.5; x === 624 ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke();
+    const px = 1180, py = btCrest(1180); c.fillStyle = '#7a4a34'; c.fillRect(px - 9, py - 12, 2, 12); c.fillRect(px + 7, py - 12, 2, 12); poly([[px - 13, py - 12], [px, py - 20], [px + 13, py - 12]], '#5a3a2a');
+    // the lighthouse on the knoll at the cape tip
+    lighthouse(700, 376, 30); c.fillStyle = '#e8e4dc'; c.fillRect(712, 368, 22, 8); });
+  D(0.25, () => { c.save(); c.globalCompositeOperation = 'lighter'; for (let k = 0; k < 7; k++) { const u = mod(lt * 0.5 + k / 7, 1), x = 560 + k * 110 + Math.sin(k * 3) * 30, a = Math.sin(u * Math.PI);
+      c.strokeStyle = `rgba(255,255,255,${0.7 * a})`; c.lineWidth = 1.5 + u * 1.5; c.beginPath(); for (let j = 0; j <= 8; j++) { const xx = x - 30 - u * 20 + j * (60 + u * 40) / 8, yy = 446 - u * 3 - Math.abs(Math.sin(j * 1.7 + k)) * 4 * a; j ? c.lineTo(xx, yy) : c.moveTo(xx, yy); } c.stroke(); } c.restore(); });
+  D(0.2, () => { for (let k = 0; k < 4; k++) { const u = mod(lt * 0.4 + k / 4, 1); c.strokeStyle = `rgba(255,255,255,${0.6 * Math.sin(u * Math.PI)})`; c.lineWidth = 2.5; c.beginPath(); c.moveTo(-M, 548 - u * 20); for (let x = -M; x < W + M; x += 30) c.lineTo(x, 548 - u * 20 + Math.sin(x * 0.03 + k) * 4); c.stroke(); } });
+  // the tofu rocks: sandstone shelf cut into square blocks by joints, wet edges, little pools
+  L('rocks', 0.85, () => { const r = rng(323); c.fillStyle = vg(552, H, [[0, '#4a6e78'], [1, '#2e4a54']]); c.fillRect(-M, 556, W + 2 * M, H);
+    for (let row = 0; row < 4; row++) for (let k = 0; k < 17; k++) { const y = 558 + row * 22 + row * row * 3, w = 78 + row * 14, x = -M + k * (w + 8) - (row % 2) * w * 0.4 + r() * 6, h = 15 + row * 5;
+      poly([[x, y], [x + w, y - 2], [x + w + 4, y + h], [x + 3, y + h + 3]], mix('#c9b38a', '#a28c66', r())); poly([[x + 3, y + h + 3], [x + w + 4, y + h], [x + w + 4, y + h + 5], [x + 3, y + h + 8]], '#6e5e44');
+      line(x + 2, y + 1.5, x + w - 2, y - 0.5, 'rgba(255,248,226,0.7)', 1.4); if (r() < 0.3) oval(x + w * 0.5, y + h * 0.5, w * 0.22, h * 0.18, 0, 'rgba(90,150,170,0.6)');
+      for (let j = 0; j < 6; j++) disc(x + r() * w, y + r() * h, 0.8 + r(), 'rgba(90,70,50,0.25)'); } });
   D(0.85, () => { const u = mod(lt / 1.2, 1), x = 40 + lt * 190; const q = { x, y: 560 - Math.sin(u * Math.PI) * 26, s: 0.95, pose: { ...gallopPose3(gallopCyc3(lt * 190, 0.95)), ...ex('happy'), ear: 0.4 } }; drawCat3(q); });
 });
 /* T3 蘇花 by train */
