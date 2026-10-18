@@ -356,14 +356,43 @@ V('T15', '苗栗縣 · 三義', '勝興車站', 'Shengxing Station', '24.39°N 1
     line(1000, y + 10, 1000, y - 150, '#3a3a3a', 5); c.fillStyle = '#c0392b'; c.fillRect(992, y - 150, 50, 14); c.fillStyle = '#f2f2f2'; c.fillRect(1018, y - 150, 6, 14); });
   D(0.45, () => drawCat3({ x: 320, y: 548, s: 1.0, pose: lt < 2.1 ? sit3(lt, groom3(lt, 0.1, 2.15)) : sit3(lt, { ...exSeq(lt, [[0, 'content'], [2, 'curious']]), hr: lt > 2 ? 0.25 : -0.1, ts: 1.4 }), emote: emoAt(lt, [[2.2, 3.4, 'note']]) }));
 });
-/* T16 客家茶園 */
+/* T16 客家茶園 — per photos: rounded, neatly clipped tea hedges running in rows that follow the contours of the hill,
+   dark furrows between them, sunlit yellow-green new growth on top; scattered trees and a red-brick farmhouse on the
+   next hill, layered blue-green mountains with mist behind, pickers out among the rows */
+function teaRows(f, n, y0, gap0, gr, seed, hz0, hz1, cut, wav = 0.22) {
+  // rows from the far top (k = 0) to the near bottom; gap grows with k for perspective
+  let off = y0; const r = rng(seed);
+  for (let k = 0; k < n; k++) { const u = k / Math.max(1, n - 1), gap = gap0 * Math.pow(gr, k), th = gap * 0.72, hz = lerp(hz0, hz1, u), ph = k * 0.17;
+    const yb = x => f(x) + off * (1 + wav * Math.sin(x * 0.0042 + ph + seed));
+    if (cut && Math.min(yb(-M), yb(640), yb(W + M)) - th > cut) break;
+    const top = hexMix2('#a8cf58', '#cfdcc0', hz), mid = hexMix2('#5e9030', '#b6c8a8', hz), dk = hexMix2('#21401a', '#a6b8a0', hz);
+    // furrow shadow under the row
+    c.fillStyle = dk; c.beginPath(); for (let x = -M; x <= W + M; x += 10) { const y = yb(x); x === -M ? c.moveTo(x, y - th * 0.2) : c.lineTo(x, y - th * 0.2); } for (let x = W + M; x >= -M; x -= 10) c.lineTo(x, yb(x) + gap * 0.35); c.fill();
+    // the rounded hedge: scalloped top edge
+    c.beginPath(); for (let x = -M; x <= W + M; x += 6) { const y = yb(x) - th + Math.abs(Math.sin(x * 0.05 * (1.6 - u) + k)) * th * 0.12; x === -M ? c.moveTo(x, y) : c.lineTo(x, y); }
+    for (let x = W + M; x >= -M; x -= 10) c.lineTo(x, yb(x)); c.closePath(); const yc = yb(640); c.fillStyle = vg(yc - th, yc, [[0, top], [0.45, mid], [1, dk]]); c.fill();
+    // leaf texture: bright new tips along the top
+    const nd = Math.min(260, 40 + th * 8); for (let d = 0; d < nd; d++) { const x = r() * (W + 2 * M) - M, y = yb(x) - th * (0.55 + r() * 0.4); oval(x, y, 1 + th * 0.06 * r() + 0.5, 0.8 + th * 0.035, 0, r() < 0.6 ? rgba(hexMix2('#d6ec7a', '#e0e8d0', hz), 0.8) : rgba(dk, 0.5)); }
+    off += gap; }
+}
 V('T16', '新竹縣 · 峨眉', '客家茶園', 'Hakka tea hills', '24.69°N 121.01°E', ['客家的茶山，一排一排綠到天邊。', 'Hakka tea hills — row after row, green all the way to the sky.'], [1.03, 1.07, 30, -30, 0, 0], function (lt) {
-  L('sky', 0, () => { sky([[0, '#9cc0d8'], [1, '#eef0e4']]); stratus(400, 250, 900, 60, 'rgba(255,255,255,0.6)'); });
-  L('far', 0.08, () => mountain({ base: 330, amp: 70, f: 0.004, seed: 461, top: '#8aa6a0', bot: '#a6b8ae', haze: 'rgba(230,236,228,0.6)' }), { blur: 1.2 });
-  L('tea', 0.5, () => { const f = x => 380 + Math.sin(x * 0.004) * 40 + fbm1(x * 0.006 + 3) * 30; mountain({ fn: f, top: '#6f9a4a', bot: '#5a8a3a', seed: 462 });
-    for (let k = 0; k < 18; k++) { c.strokeStyle = k % 2 ? '#4f7f2e' : '#88b65a'; c.lineWidth = 7 + k * 0.8; c.beginPath(); for (let x = -M; x <= W + M; x += 20) { const y = f(x) + 12 + k * (14 + k * 1.1) + Math.sin(x * 0.006 + k * 0.3) * (10 + k); x === -M ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke(); }
-    minnanHouse(980, 400, 140, 40, 0.7); });
-  D(0.5, () => { const q = { x: 240 + lt * 28, y: 600, s: 1.05 }; q.pose = { ...walkPose3(walkCyc3(lt * 28, 1.05)), ...ex('content', 0.8) }; drawCat3(q); });
+  L('sky', 0, () => { sky([[0, '#4f8fcf'], [0.6, '#a9cbe4'], [1, '#e6eee8']]); cumulus(300, 210, 360, 60, 463, '#ffffff', '#c8d4e0', 0.3); cumulus(920, 180, 420, 70, 464, '#ffffff', '#c6d2de', 0.3); stratus(640, 300, 1200, 40, 'rgba(255,255,255,0.45)'); }, { blur: 1.5 });
+  L('far', 0.06, () => { mountain({ base: 330, amp: 90, f: 0.0035, seed: 461, top: '#7d9cb4', bot: '#a8bccb', haze: 'rgba(225,234,240,0.55)' });
+    mountain({ base: 360, amp: 60, f: 0.005, seed: 465, top: '#5f8a7c', bot: '#8eab9e', haze: 'rgba(220,232,230,0.4)' });
+    c.fillStyle = vg(330, 400, [[0, 'rgba(240,244,240,0)'], [0.6, 'rgba(240,244,240,0.75)'], [1, 'rgba(240,244,240,0)']]); c.fillRect(-M, 330, W + 2 * M, 70); }, { blur: 1.2 });
+  // the next hill: contour rows of tea, trees and a red-brick farmhouse
+  L('hill', 0.25, () => { const f = x => 392 - 36 * Math.exp(-Math.pow((x - 900) / 300, 2)) + fbm1(x * 0.008 + 7) * 8;
+    mountain({ fn: f, floor: 560, bottom: 560, top: '#7da64e', bot: '#6a9640', seed: 466 }); teaRows(f, 12, 6, 6, 1.07, 467, 0.45, 0.25);
+    const r = rng(468); for (let k = 0; k < 26; k++) { const x = r() * (W + 2 * M) - M, y = f(x) + 2 + r() * 6, s = 8 + r() * 12; oval(x, y - s, s * 0.8, s, 0, '#4f7a3a'); oval(x - s * 0.2, y - s * 1.2, s * 0.5, s * 0.6, 0, 'rgba(170,200,120,0.6)'); }
+    for (let k = 0; k < 6; k++) { const x = 120 + k * 210 + r() * 60, y = f(x) + 30 + r() * 40; line(x, y, x, y - 40, '#7a7a5a', 1.6); for (let j = 0; j < 6; j++) { c.save(); c.translate(x, y - 40); c.rotate(-1.4 + j * 0.55); oval(10, 0, 11, 2.5, 0, '#5a8a3a'); c.restore(); } }
+    minnanHouse(1010, f(1010) + 34, 120, 34, 0.55); });
+  // the near slope: big rounded rows sweeping across, a dirt path along the front
+  L('tea', 0.55, () => { const f = x => 430 + Math.sin(x * 0.003 + 0.6) * 22 + fbm1(x * 0.005 + 3) * 14;
+    mountain({ fn: f, floor: H, bottom: H, top: '#5f8f34', bot: '#3f6a24', seed: 462 }); teaRows(f, 14, 8, 9, 1.17, 469, 0.15, 0, 600, 0.1);
+    c.fillStyle = vg(596, H, [[0, '#8a7458'], [1, '#6c5a44']]); c.beginPath(); c.moveTo(-M, 604); for (let x = -M; x <= W + M; x += 20) c.lineTo(x, 600 + Math.sin(x * 0.01) * 3); c.lineTo(W + M, H); c.lineTo(-M, H); c.fill();
+    const r = rng(470); for (let k = 0; k < 160; k++) disc(r() * (W + 2 * M) - M, 606 + r() * 22, 0.8 + r() * 1.8, r() < 0.5 ? 'rgba(60,46,30,0.4)' : 'rgba(200,180,140,0.35)'); });
+  D(0.55, () => { godrays(250, BAR - 30, 600, 6, '255,250,220', 0.04, 471, 0.8, Math.PI / 2 - 0.3); });
+  D(0.6, () => { const q = { x: 240 + lt * 28, y: 612, s: 1.05 }; q.pose = { ...walkPose3(walkCyc3(lt * 28, 1.05)), ...ex('content', 0.8) }; drawCat3(q); });
 });
 /* T17 南寮 17 公里海岸 風箏 */
 V('T17', '新竹市', '南寮 · 十七公里海岸', 'Nanliao kites', '24.85°N 120.92°E', ['新竹的風，讓風箏飛得好高。', 'Hsinchu’s famous wind sends the kites soaring.'], [1.02, 1.06, 0, 0, 0, 0], function (lt) {
