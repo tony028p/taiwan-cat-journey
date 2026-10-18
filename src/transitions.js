@@ -248,14 +248,58 @@ V('T6', '屏東 → 高雄', '高屏溪斜張橋', 'Kao-Ping Hsi Bridge', '22.64
   D(0.9, () => { const r = rng(364); for (let k = 0; k < 46; k++) { const x = r() * (W + 2 * M) - M, h = 40 + r() * 50, sw = Math.sin(T * 1.4 + x * 0.01) * 8; c.strokeStyle = 'rgba(40,46,70,0.95)'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x, 640); c.quadraticCurveTo(x + sw * 0.3, 640 - h * 0.6, x + sw, 640 - h); c.stroke(); oval(x + sw + 3, 640 - h + 6, 3.5, 11, 0.4 + sw * 0.03, 'rgba(190,200,235,0.55)'); }
     const q = { x: 280 + lt * 30, y: 598, s: 1.0, haze: '16,24,66,0.55', rim: '170,205,255' }; q.pose = { ...walkPose3(walkCyc3(lt * 30, 1)), ...ex('content', 0.7), hr: -0.12 }; drawCat3(q); });
 });
-/* T7 渡輪 */
+/* T7 渡輪 — per photos of the Taiwan-Hwa (臺華輪): on the open side deck — white superstructure with portholes, a life
+   ring and the blue-and-red livery stripe, an orange lifeboat hanging from its davits overhead, the white multi-rail
+   railing, painted steel deck with a round bench — and outside, the white wake churning back toward Kaohsiung's
+   skyline (85 Sky Tower) sinking into the haze. The ship rolls gently. */
+function t7Skyline(hz) {
+  c.fillStyle = 'rgba(120,140,160,0.55)'; const r = rng(374);
+  for (let x = 40; x < 520; x += 6 + r() * 12) { const h = 3 + r() * 14 * (1 - Math.abs(x - 260) / 300); c.fillRect(x, hz - h, 5 + r() * 8, h); }
+  // 85 Sky Tower: two shafts that join high up, with the spire on top
+  c.fillStyle = 'rgba(118,138,160,0.55)'; c.fillRect(246, hz - 52, 6, 52); c.fillRect(262, hz - 52, 6, 52); c.fillRect(246, hz - 70, 22, 20); c.fillRect(252, hz - 86, 10, 18); c.fillRect(256, hz - 96, 2, 12);
+  // harbour cranes
+  c.strokeStyle = 'rgba(120,140,160,0.6)'; c.lineWidth = 1.2; for (const x of [380, 410, 440]) { c.beginPath(); c.moveTo(x, hz); c.lineTo(x, hz - 18); c.lineTo(x - 14, hz - 18); c.moveTo(x, hz - 18); c.lineTo(x + 6, hz - 22); c.stroke(); }
+}
 V('T7', '臺灣海峽', '高雄 → 馬公 渡輪', 'Ferry to Penghu', '23.00°N 120.00°E', ['第一次搭船，風好大。', 'First time on a ferry. So windy!'], [1.02, 1.05, 0, 0, 0, 4], function (lt) {
-  const roll = Math.sin(lt * 1.2) * 0.012;
-  L('sky', 0, () => { sky([[0, '#4d8acb'], [1, '#d6e6ef']]); cumulus(400, 200, 400, 60, 371, '#ffffff', '#cbd6e2', 0.3); }, { blur: 2 });
-  D(0.1, () => { c.save(); c.translate(640, 400); c.rotate(roll); c.translate(-640, -400); c.fillStyle = vg(360, H, [[0, '#1d5e95'], [1, '#2a7fb0']]); c.fillRect(-M - 100, 360, W + 2 * M + 200, 500); c.fillStyle = '#6d7f8a'; c.beginPath(); c.ellipse(1000, 362, 120, 7, 0, Math.PI, 0); c.fill(); c.beginPath(); c.ellipse(1180, 362, 70, 5, 0, Math.PI, 0); c.fill(); shimmer(362, 600, 220, '255,255,255', 372, { a: 0.45, sp: 3 }); c.restore();
-    for (let k = 0; k < 5; k++) { const u = mod(lt * 0.5 + k / 5, 1); c.strokeStyle = `rgba(255,255,255,${0.5 * (1 - u)})`; c.lineWidth = 2; c.beginPath(); c.moveTo(-M, 470 + u * 120); c.quadraticCurveTo(300, 460 + u * 130, 700, 480 + u * 110); c.stroke(); } flock(3, 700, 220, -30, 0.9, 'rgba(255,255,255,0.95)', 373, lt); });
-  L('deck', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#d7d2c4'], [1, '#9b9484']]); c.fillRect(-M, 570, W + 2 * M, 200); for (let k = 0; k < 30; k++) line(-M + k * 50, 570, -M + k * 60, H, 'rgba(120,110,95,0.5)', 1);
-    c.strokeStyle = '#f4f4f2'; line(-M, 520, W + M, 520, '#f4f4f2', 5); line(-M, 545, W + M, 545, '#f4f4f2', 3); for (let x = -M; x < W + M; x += 60) line(x, 520, x, 572, '#f4f4f2', 4); });
+  const roll = Math.sin(lt * 1.2) * 0.012, hz = 372;
+  L('sky', 0, () => { sky([[0, '#3f7fc6'], [0.55, '#9cc4e4'], [1, '#e2eef4']]); cumulus(380, 200, 420, 64, 371, '#ffffff', '#c6d3e1', 0.3); cumulus(900, 250, 300, 40, 375, '#ffffff', '#ccd8e4', 0.3); }, { blur: 1.5 });
+  D(0.1, () => { c.save(); c.translate(640, 420); c.rotate(roll); c.translate(-640, -420);
+    c.fillStyle = vg(hz, H, [[0, '#2f6fa6'], [0.3, '#1f5f98'], [1, '#2a86b4']]); c.fillRect(-M - 100, hz, W + 2 * M + 200, 500);
+    c.fillStyle = 'rgba(230,240,248,0.5)'; c.fillRect(-M - 100, hz - 1, W + 2 * M + 200, 2); t7Skyline(hz);
+    shimmer(hz + 3, 600, 200, '255,255,255', 372, { a: 0.4, sp: 3 });
+    // the wake: a wide band of churned turquoise and white foam streaming back from the hull, narrowing into the distance
+    const wy = x => lerp(hz + 8, 540, clamp((x + 60) / 1300)), ww = x => lerp(3, 46, clamp((x + 60) / 1300));
+    c.fillStyle = 'rgba(110,200,210,0.35)'; c.beginPath(); for (let x = -M; x <= W + M; x += 20) c.lineTo(x, wy(x) - ww(x) * 1.4); for (let x = W + M; x >= -M; x -= 20) c.lineTo(x, wy(x) + ww(x) * 0.6); c.fill();
+    const r = rng(376); for (let k = 0; k < 190; k++) { const u = mod(r() - lt * (0.08 + r() * 0.05), 1), x = lerp(-M, W + M, Math.pow(u, 0.8)), g = (r() + r() + r()) / 3 - 0.5, y = wy(x) - ww(x) * 0.4 + g * ww(x) * 2.4, l = 6 + ww(x) * (0.4 + r());
+      c.strokeStyle = `rgba(255,255,255,${0.5 + r() * 0.4})`; c.lineWidth = 1 + ww(x) * 0.06; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x - l * 0.5, y - 2, x - l, y + 1); c.stroke(); }
+    // diverging wave of the wake
+    for (let k = 0; k < 3; k++) { const ph = mod(lt * 0.4 + k / 3, 1); c.strokeStyle = `rgba(255,255,255,${0.35 * Math.sin(ph * Math.PI)})`; c.lineWidth = 1.5; c.beginPath(); c.moveTo(W + M, 470 - k * 14 - ph * 10); c.quadraticCurveTo(700, 440 - k * 8 - ph * 6, 80, hz + 14 + k * 3); c.stroke(); }
+    c.restore(); flock(3, 700, 220, -30, 0.9, 'rgba(255,255,255,0.95)', 373, lt); });
+  // the ship: superstructure on the right, lifeboat overhead, railing and deck
+  L('deck', 0.95, () => {
+    // deck overhead: the upper deck's edge and an orange lifeboat in its davits
+    c.fillStyle = vg(92, 132, [[0, '#d8dcdf'], [1, '#f4f5f4']]); c.beginPath(); c.moveTo(560, 92); c.lineTo(W + M, 92); c.lineTo(W + M, 150); c.lineTo(980, 132); c.lineTo(560, 112); c.fill();
+    line(560, 112, 980, 132, '#9aa2a8', 2);
+    for (const x of [700, 930]) { line(x, 112, x - 20, 150, '#e8eaea', 6); line(x - 20, 150, x - 20, 168, '#9aa2a8', 2); }
+    c.fillStyle = '#ef7a2a'; c.beginPath(); c.moveTo(640, 166); c.quadraticCurveTo(650, 204, 700, 208); c.lineTo(930, 208); c.quadraticCurveTo(980, 204, 990, 166); c.closePath(); c.fill();
+    c.fillStyle = '#f59a50'; c.fillRect(640, 160, 350, 10); c.fillStyle = '#ffffff'; c.fillRect(640, 158, 350, 4); c.fillStyle = 'rgba(120,50,10,0.35)'; c.fillRect(660, 196, 300, 4);
+    // superstructure wall with portholes, door, life ring and the livery stripe
+    c.fillStyle = hg(1010, W + M, [[0, '#e9ecec'], [1, '#ffffff']]); c.fillRect(1010, 140, W + M - 1010, 460); line(1010, 140, 1010, 600, '#c4c9cc', 3);
+    for (const [x, y] of [[1060, 220], [1140, 220], [1220, 220]]) { disc(x, y, 13, '#9aa3aa'); disc(x, y, 10, '#36505f'); disc(x - 3, y - 3, 3, 'rgba(255,255,255,0.6)'); }
+    c.fillStyle = '#c7ccd0'; c.beginPath(); c.roundRect(1110, 300, 74, 220, 14); c.fill(); c.fillStyle = '#aab1b6'; c.beginPath(); c.roundRect(1118, 308, 58, 204, 10); c.fill(); disc(1168, 420, 4, '#555c62');
+    disc(1060, 360, 24, '#ef6a2a'); disc(1060, 360, 13, '#e9ecec'); c.fillStyle = '#ffffff'; for (let a = 0; a < 4; a++) { c.save(); c.translate(1060, 360); c.rotate(a * Math.PI / 2 + 0.4); c.fillRect(13, -5, 11, 10); c.restore(); }
+    c.fillStyle = '#1f4fa0'; c.fillRect(1010, 540, W + M - 1010, 14); c.fillStyle = '#d6332b'; c.fillRect(1010, 557, W + M - 1010, 5);
+    // painted steel deck
+    c.fillStyle = vg(570, H, [[0, '#5b6f80'], [1, '#3a4a5a']]); c.fillRect(-M, 572, W + 2 * M, 200); for (let k = 0; k < 30; k++) line(-M + k * 50, 572, -M + k * 64 - 140, H + 30, 'rgba(30,40,50,0.35)', 1);
+    c.fillStyle = 'rgba(255,255,255,0.08)'; c.fillRect(-M, 572, W + 2 * M, 6);
+    // deck edge with the livery stripe, then the white railing
+    c.fillStyle = '#e9ecec'; c.fillRect(-M, 560, 1010 + M, 12); c.fillStyle = '#1f4fa0'; c.fillRect(-M, 564, 1010 + M, 4);
+    for (const [y, w] of [[512, 6], [528, 3], [543, 3], [557, 3]]) line(-M, y, 1010, y, '#f6f7f6', w);
+    for (let x = -M + 20; x < 1010; x += 58) { line(x, 510, x, 562, '#f6f7f6', 4); line(x + 2, 512, x + 2, 562, 'rgba(120,130,140,0.4)', 1); }
+    // round bench (orange ring with a wooden seat)
+    c.fillStyle = '#d6562e'; c.beginPath(); c.ellipse(170, 600, 90, 18, 0, 0, TAU); c.fill(); c.fillStyle = '#566a7b'; c.beginPath(); c.ellipse(170, 600, 78, 13, 0, 0, TAU); c.fill();
+    c.fillStyle = '#b57a46'; c.fillRect(112, 582, 116, 9); c.fillStyle = '#d29a62'; c.fillRect(112, 582, 116, 2); c.fillStyle = '#8a5a32'; c.fillRect(118, 591, 6, 11); c.fillRect(216, 591, 6, 11);
+  });
   D(0.95, () => drawCat3({ x: 420, y: 588, s: 1.1, pose: sit3(lt, { ...ex('annoyed'), earDown: 1, hr: -0.1 + Math.sin(lt * 9) * 0.02, ts: 4, turn: turnAt(lt, [[1.4, 3.0, 0.85]]) }), emote: emoAt(lt, [[0.9, 2.6, 'drop']]) }));
 });
 /* T8 澎湖跨海大橋 — shallow turquoise lagoon over reef patches, the long low bridge running away to Xiyu on the horizon,
