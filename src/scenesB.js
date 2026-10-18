@@ -250,24 +250,81 @@ SCENES.push({ county: '新竹縣', place: '新埔柿餅園', en: 'Persimmon Farm
     D(0.95, () => { const x = 300 + lt * 30; actCat({ x, y: 612, s: 1.0, pose: 'walk', ph: walkPh(lt * 30, 1.0), rim: '255,220,170', look: 0.05, blink: blinkAt(lt, 15), shadowA: 0.3 }); });
   } });
 
-/* 18 — 新竹市 東門城 */
+/* East Gate helpers (per photos): a warm-lit ashlar gate block with a round-arched passage, crowned by a two-storey
+   pavilion — red columns, glowing interior, two tiers of dark tiled roof with strongly upswept eaves and swallowtail ridge. */
+function egRoof(x, y, w, h, ov, col) {
+  const tip = h * 0.42, L0 = x - w / 2 - ov, R0 = x + w / 2 + ov;
+  c.fillStyle = 'rgba(255,170,90,0.85)'; c.beginPath(); c.moveTo(L0 + 6, y - tip + 4); c.quadraticCurveTo(x - w / 2 + ov * 0.2, y + 6, x, y + 7); c.quadraticCurveTo(x + w / 2 - ov * 0.2, y + 6, R0 - 6, y - tip + 4); c.lineTo(R0 - 6, y - tip + 8); c.quadraticCurveTo(x + w / 2, y + 12, x, y + 13); c.quadraticCurveTo(x - w / 2, y + 12, L0 + 6, y - tip + 8); c.fill(); // lit soffit
+  const body = () => { c.beginPath(); c.moveTo(L0, y - tip); c.quadraticCurveTo(x - w / 2 + ov * 0.2, y + 2, x, y + 2); c.quadraticCurveTo(x + w / 2 - ov * 0.2, y + 2, R0, y - tip);
+    c.quadraticCurveTo(x + w * 0.4, y - h * 0.55, x + w * 0.3, y - h); c.lineTo(x - w * 0.3, y - h); c.quadraticCurveTo(x - w * 0.4, y - h * 0.55, L0, y - tip); c.closePath(); };
+  body(); c.fillStyle = vg(y - h, y, [[0, col || '#3a2622'], [1, '#1e1414']]); c.fill();
+  c.save(); body(); c.clip(); for (let xx = L0; xx < R0; xx += 5) line(xx, y - h, x + (xx - x) * 1.12, y + 4, 'rgba(255,190,140,0.10)', 1.2);
+  c.fillStyle = 'rgba(255,170,100,0.14)'; c.fillRect(L0, y - h * 0.3, R0 - L0, h * 0.3); c.restore();
+  c.strokeStyle = '#e7a35a'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(L0, y - tip); c.quadraticCurveTo(x - w / 2 + ov * 0.2, y + 2, x, y + 2); c.quadraticCurveTo(x + w / 2 - ov * 0.2, y + 2, R0, y - tip); c.stroke();
+  // ridge with swallowtail ends
+  c.strokeStyle = col || '#3a2622'; c.lineCap = 'round'; c.lineWidth = 5; c.beginPath(); c.moveTo(x - w * 0.3, y - h); c.lineTo(x + w * 0.3, y - h); c.stroke();
+  c.lineWidth = 5; [-1, 1].forEach(k => { c.beginPath(); c.moveTo(x + k * w * 0.27, y - h); c.quadraticCurveTo(x + k * w * 0.34, y - h - 1, x + k * w * 0.37, y - h - Math.min(14, h * 0.28)); c.stroke(); });
+  line(x - w * 0.3, y - h - 2.5, x + w * 0.3, y - h - 2.5, 'rgba(255,190,120,0.5)', 1); c.lineCap = 'butt';
+}
+function egFloor(x, y, w, h, n) { // one pavilion storey: glowing interior, red columns, a railing
+  c.fillStyle = vg(y - h, y, [[0, '#ffcf86'], [1, '#e7883e']]); c.fillRect(x - w / 2, y - h, w, h);
+  c.fillStyle = 'rgba(120,40,20,0.35)'; for (let k = 0; k < n * 3; k++) c.fillRect(x - w / 2 + 4 + k * (w - 8) / (n * 3), y - h + 6, 1.4, h - 12);
+  for (let k = 0; k <= n; k++) { const cx = x - w / 2 + k * w / n; c.fillStyle = vg(y - h, y, [[0, '#9a2a1e'], [1, '#c2412a']]); c.fillRect(cx - 3.5, y - h, 7, h); }
+  c.fillStyle = '#7a2418'; c.fillRect(x - w / 2 - 6, y - 9, w + 12, 3); for (let xx = x - w / 2 - 4; xx < x + w / 2 + 6; xx += 7) c.fillRect(xx, y - 9, 1.6, 9); c.fillRect(x - w / 2 - 6, y - 1, w + 12, 3);
+}
+function eastGate(x, y) {
+  // ashlar gate block with a slight batter, lit gold from the floodlights at its foot
+  const bw = 300, bt = 276, bh = 124, top = y - bh;
+  c.beginPath(); c.moveTo(x - bw / 2, y); c.lineTo(x - bt / 2, top); c.lineTo(x + bt / 2, top); c.lineTo(x + bw / 2, y); c.closePath();
+  c.fillStyle = vg(top, y, [[0, '#a8804a'], [0.55, '#e0b46c'], [1, '#ffd892']]); c.fill();
+  c.save(); c.clip(); const r = rng(1881);
+  for (let yy = top + 2, k = 0; yy < y; yy += 11, k++) { line(x - bw / 2, yy, x + bw / 2, yy, 'rgba(90,55,25,0.35)', 1); for (let xx = x - bw / 2 + (k % 2) * 14 + r() * 4; xx < x + bw / 2; xx += 26 + r() * 6) line(xx, yy, xx, yy + 11, 'rgba(90,55,25,0.3)', 1); }
+  for (let k = 0; k < 160; k++) { c.fillStyle = r() < 0.5 ? 'rgba(255,240,200,0.08)' : 'rgba(80,50,20,0.1)'; c.fillRect(x - bw / 2 + r() * bw, top + r() * bh, 6 + r() * 14, 4 + r() * 6); }
+  c.fillStyle = hg(x - bw / 2, x + bw / 2, [[0, 'rgba(40,20,10,0.35)'], [0.25, 'rgba(0,0,0,0)'], [0.8, 'rgba(0,0,0,0)'], [1, 'rgba(40,20,10,0.4)']]); c.fillRect(x - bw / 2, top, bw, bh); c.restore();
+  // parapet band, stone plaque, the arched passage glowing inside
+  c.fillStyle = '#b48a52'; c.fillRect(x - bt / 2 - 4, top - 8, bt + 8, 9); line(x - bt / 2 - 4, top - 8, x + bt / 2 + 4, top - 8, 'rgba(255,220,160,0.6)', 1);
+  c.fillStyle = '#2a1a12'; c.beginPath(); c.moveTo(x - 38, y); c.lineTo(x - 38, y - 52); c.arc(x, y - 52, 38, Math.PI, 0); c.lineTo(x + 38, y); c.fill();
+  c.fillStyle = vg(y - 90, y, [[0, 'rgba(255,170,80,0.2)'], [1, 'rgba(255,200,120,0.7)']]); c.beginPath(); c.moveTo(x - 30, y); c.lineTo(x - 30, y - 52); c.arc(x, y - 52, 30, Math.PI, 0); c.lineTo(x + 30, y); c.fill();
+  c.strokeStyle = 'rgba(120,80,40,0.8)'; c.lineWidth = 3; c.beginPath(); c.arc(x, y - 52, 41, Math.PI, 0); c.stroke();
+  c.fillStyle = '#6e5232'; c.fillRect(x - 22, y - 108, 44, 14); c.fillStyle = '#f0d8a0'; c.font = `700 10px ${FONTS}`; c.textAlign = 'center'; c.fillText('迎曦門', x, y - 97.5);
+  // the pavilion: lower storey + roof, upper storey + roof
+  egFloor(x, top - 8, 214, 44, 5); egRoof(x, top - 52, 236, 34, 30);
+  egFloor(x, top - 64, 140, 30, 3); egRoof(x, top - 94, 168, 46, 26);
+}
+
+/* 18 — 新竹市 東門城 — per photos: the gate at night in its roundabout, floodlit gold, long-exposure traffic trails sweeping round it,
+   city buildings and neon behind, trees with uplights on the island */
 SCENES.push({ county: '新竹市', place: '迎曦東門城', en: 'East Gate of Hsinchu', ll: '24.80°N 120.97°E', cam: [1.03, 1.1, 0, 0, 0, 10],
   sub: ['新竹市的東門城，兩百年來守著每個夜晚。', 'Hsinchu’s East Gate has watched over the city’s nights for two centuries.'],
+  sun: () => [640, 330, 0.25],
   draw(lt) {
-    L('sky', 0, () => { sky([[0, '#16234a'], [0.5, '#3a4f86'], [0.72, '#8a7aa2'], [1, '#d59a8a']]); stars(30, 211, 200, 0.5); });
-    L('city', 0.1, () => skyline(430, 212, '#2a3054', '#3c4268', { hmin: 30, hvar: 120, win: 0.08 }), { blur: 0.8 });
-    L('gate', 0.4, () => { const x = 640, y = 470;
-      c.fillStyle = hg(x - 170, x + 170, [[0, '#8f8a82'], [0.6, '#6d6862'], [1, '#4c4844']]); c.fillRect(x - 170, y - 110, 340, 110); for (let yy = y - 110; yy < y; yy += 14) line(x - 170, yy, x + 170, yy, 'rgba(30,30,30,0.4)', 1); for (let yy = y - 110, k = 0; yy < y; yy += 14, k++) for (let xx = x - 170 + (k % 2) * 20; xx < x + 170; xx += 40) line(xx, yy, xx, yy + 14, 'rgba(30,30,30,0.35)', 1);
-      c.fillStyle = '#1a1612'; c.beginPath(); c.moveTo(x - 36, y); c.lineTo(x - 36, y - 60); c.arc(x, y - 60, 36, Math.PI, 0); c.lineTo(x + 36, y); c.fill(); glow(x, y - 30, 60, '255,190,110', 0.35);
-      c.fillStyle = '#8c2c22'; for (let k = -3; k <= 3; k++) c.fillRect(x + k * 34 - 4, y - 190, 8, 80); c.fillStyle = '#f0d7a8'; c.fillRect(x - 110, y - 190, 220, 80); c.fillStyle = 'rgba(255,190,110,0.6)'; c.fillRect(x - 100, y - 180, 200, 60); for (let k = -3; k <= 3; k++) { c.fillStyle = '#8c2c22'; c.fillRect(x + k * 34 - 4, y - 190, 8, 80); }
-      c.fillStyle = '#2a2224'; c.beginPath(); c.moveTo(x - 160, y - 186); c.quadraticCurveTo(x - 120, y - 194, x - 100, y - 240); c.lineTo(x + 100, y - 240); c.quadraticCurveTo(x + 120, y - 194, x + 160, y - 186); c.lineTo(x + 150, y - 196); c.lineTo(x - 150, y - 196); c.closePath(); c.fill();
-      c.strokeStyle = '#2a2224'; c.lineWidth = 5; c.beginPath(); c.moveTo(x - 120, y - 252); c.quadraticCurveTo(x - 100, y - 238, x, y - 240); c.quadraticCurveTo(x + 100, y - 238, x + 120, y - 252); c.stroke();
-      c.fillStyle = '#e8d7b0'; c.font = `700 16px ${FONTS}`; c.textAlign = 'center'; c.fillText('迎曦', x, y - 82); });
-    D(0.4, () => { glow(640, 330, 260, '255,180,100', 0.18); for (let k = -1; k <= 1; k += 2) glow(640 + k * 150, 470, 60, '255,200,130', 0.35); });
-    L('plaza', 0.6, () => { c.fillStyle = vg(470, H, [[0, '#2b2a36'], [1, '#141420']]); c.fillRect(-M, 470, W + 2 * M, H); c.fillStyle = vg(500, 560, [[0, '#2a3a52'], [1, '#1a2438']]); c.fillRect(-M, 508, W + 2 * M, 50); });
-    D(0.6, () => { shimmer(510, 556, 80, '255,190,120', 213, { xc: 640, spread: 400, a: 0.6, op: 'lighter' });
-      for (let k = 0; k < 10; k++) { const u = mod(lt * 0.5 + k / 10, 1), y = 486 + (k % 2) * 8; const x = k % 2 ? lerp(-100, W + 100, u) : lerp(W + 100, -100, u); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = vg(0, 1, [[0, '#fff'], [1, '#fff']]); c.fillStyle = k % 2 ? 'rgba(255,80,70,0.6)' : 'rgba(255,240,210,0.6)'; c.fillRect(x - 60, y, 120, 2); c.restore(); }
-      [[180, 470], [1100, 470]].forEach(([x, y]) => { line(x, y, x, y - 90, '#1b1b22', 3); glow(x, y - 92, 40, '255,210,150', 0.6); }); });
+    const RX = [600, 660, 720, 780], RY = [44, 52, 60, 68], CY = 496;
+    L('sky', 0, () => { sky([[0, '#05070f'], [0.55, '#111a33'], [0.85, '#2a2a44'], [1, '#4a3a40']]); glow(640, 470, 700, '255,160,90', 0.12); stars(24, 211, 200, 0.35); });
+    L('city', 0.1, () => { skyline(470, 212, '#141a2c', '#20263c', { hmin: 50, hvar: 170, win: 0.12 });
+      c.fillStyle = '#1a2034'; c.fillRect(905, 150, 70, 330); c.fillStyle = '#222a40'; c.fillRect(975, 170, 26, 310); const r = rng(1882);
+      for (let yy = 160; yy < 470; yy += 7) for (let xx = 910; xx < 970; xx += 6) if (r() < 0.3) { c.fillStyle = `rgba(255,${210 + r() * 30 | 0},150,${0.35 + r() * 0.4})`; c.fillRect(xx, yy, 3, 3); } }, { blur: 0.8 });
+    L('near', 0.22, () => { const r = rng(1883); [[-M, 150, 300], [150, 120, 250], [890, 170, 270], [1060, 240, 230], [1200, 160, 300]].forEach(([x, w, h], i) => {
+        c.fillStyle = mix('#2a2a38', '#3a3446', r()); c.fillRect(x, 470 - h, w, h + 30);
+        for (let yy = 470 - h + 10; yy < 462; yy += 14) for (let xx = x + 6; xx < x + w - 10; xx += 16) if (r() < 0.55) { c.fillStyle = `rgba(255,${200 + r() * 40 | 0},${120 + r() * 60 | 0},${0.45 + r() * 0.45})`; c.fillRect(xx, yy, 9, 7); }
+        const nc = ['255,70,80', '80,200,255', '255,200,60', '120,255,170', '255,90,200'][i]; c.fillStyle = `rgba(${nc},0.9)`; const sy = 470 - h * (0.4 + r() * 0.3); c.fillRect(x + w * 0.2, sy, w * 0.5, 16);
+        c.save(); c.globalCompositeOperation = 'lighter'; glow(x + w * 0.45, sy + 8, 60, nc, 0.35); c.restore(); }); });
+    // trails on the far side of the roundabout, seen either side of the island
+    L('road', 0.3, () => { c.fillStyle = vg(CY - 70, H, [[0, '#1c1a22'], [1, '#121118']]); c.fillRect(-M, CY - 70, W + 2 * M, H);
+      c.save(); c.globalCompositeOperation = 'lighter'; for (let i = 0; i < 4; i++) { const col = i < 2 ? '255,236,200' : '255,60,50';
+        for (let j = 0; j < 3; j++) { c.strokeStyle = `rgba(${col},${0.35 - j * 0.1})`; c.lineWidth = 1.2 + j * 2.5; c.beginPath(); c.ellipse(640, CY, RX[i], RY[i], 0, Math.PI, TAU); c.stroke(); } } c.restore(); });
+    L('island', 0.4, () => { // raised island: retaining wall, steps, trees with uplights
+      c.fillStyle = vg(470, 500, [[0, '#6a5a48'], [1, '#2e2820']]); c.beginPath(); c.ellipse(640, 486, 380, 26, 0, 0, TAU); c.fill(); c.fillStyle = '#3a4a2e'; c.beginPath(); c.ellipse(640, 474, 372, 16, 0, 0, TAU); c.fill();
+      c.fillStyle = '#8a7660'; for (let k = 0; k < 4; k++) c.fillRect(600 - k * 6, 470 + k * 6, 80 + k * 12, 6);
+      const r = rng(1884); [[330, 70], [410, 90], [870, 90], [950, 70], [280, 50], [1000, 50]].forEach(([tx, th]) => { line(tx, 474, tx, 474 - th * 0.5, '#2a2018', 4);
+        for (let k = 0; k < 26; k++) { const a = r() * TAU, rr = r() * th * 0.42; oval(tx + Math.cos(a) * rr, 474 - th * 0.62 + Math.sin(a) * rr * 0.75, 10 + r() * 10, 8 + r() * 8, 0, mix('#2e4a2a', '#9aa848', r() * (0.4 + 0.6 * Math.max(0, Math.sin(a))))); } });
+      eastGate(640, 472); });
+    D(0.4, () => { c.save(); c.globalCompositeOperation = 'lighter'; glow(640, 420, 240, '255,190,110', 0.22); glow(640, 300, 150, '255,170,90', 0.18); [-150, 150].forEach(k => glow(640 + k, 470, 50, '255,210,140', 0.5)); c.restore(); });
+    // near side of the roundabout: static long-exposure streaks plus moving head/tail lights
+    D(0.6, () => { c.save(); c.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 4; i++) { const col = i < 2 ? '255,236,200' : '255,60,50';
+        for (let j = 0; j < 3; j++) { c.strokeStyle = `rgba(${col},${0.5 - j * 0.14})`; c.lineWidth = 1.4 + j * 3; c.beginPath(); c.ellipse(640, CY + 6, RX[i] + 10, RY[i] + 6, 0, 0.02, Math.PI - 0.02); c.stroke(); }
+        for (let k = 0; k < 5; k++) { const th = mod((i < 2 ? -1 : 1) * lt * 0.18 + k / 5 + i * 0.13, 1) * Math.PI, px = 640 + Math.cos(th) * (RX[i] + 10), py = CY + 6 + Math.sin(th) * (RY[i] + 6); glow(px, py, 16, col, 0.7); } }
+      c.restore(); [[150, 560], [1130, 560]].forEach(([x, y]) => { line(x, y, x, y - 130, '#18161e', 3); line(x, y - 130, x + 20, y - 134, '#18161e', 3); glow(x + 22, y - 132, 46, '255,210,150', 0.6); }); });
     L('wall', 0.95, () => { c.fillStyle = vg(576, H, [[0, '#4a4650'], [1, '#22202a']]); c.fillRect(-M, 580, W + 2 * M, 200); for (let x = -M; x < W + M; x += 46) line(x, 580, x, H, 'rgba(0,0,0,0.4)', 1); line(-M, 580, W + M, 580, 'rgba(255,200,140,0.35)', 1.5); });
     D(0.95, () => actCat({ x: 900, y: 582, s: 1.05, pose: 'sit', face: -1, rim: '255,190,130', look: -0.18, blink: blinkAt(lt, 16), shadowA: 0.25 }));
   } });
