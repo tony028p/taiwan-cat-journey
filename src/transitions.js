@@ -509,8 +509,10 @@ V('T18', '桃園市 · 新屋', '永安漁港彩虹橋', 'Rainbow Bridge, Yong�
         c.strokeStyle = `hsla(${h},100%,60%,1)`; c.lineWidth = 3.5; c.beginPath(); c.moveTo(a[0], a[1] + 2); c.lineTo(b[0], b[1] + 2); c.stroke();
         c.strokeStyle = `hsla(${h},100%,58%,0.2)`; c.lineWidth = 18; c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b[0], b[1]); c.stroke(); }
       // reflections: long vertical streaks below the mirrored arch, wobbling with the water
-      for (let i = 0; i < N; i++) { const u = i / N, [x, y] = yaArch(u, back), ry = 2 * YA.wl - y, h = hue(u + (back ? 0.08 : 0)), wob = Math.sin(T * 2 + i * 1.7) * 3;
-        c.strokeStyle = `hsla(${h},100%,58%,${0.4 - (ry - YA.wl) / 500})`; c.lineWidth = 3; c.beginPath(); c.moveTo(x + wob, ry - 10); c.lineTo(x - wob, ry + 10); c.stroke(); }
+      // a soft mirrored arch, stretched downward and broken by ripples, as the long exposures show
+      for (let i = 0; i < N; i++) { const u = i / N, [x, y] = yaArch(u, back), [x2] = yaArch((i + 1) / N, back), ry = 2 * YA.wl - y, h = hue(u + (back ? 0.08 : 0)), a0 = Math.max(0, 0.42 - (ry - YA.wl) / 420) * (back ? 0.6 : 1);
+        for (let k = 0; k < 7; k++) { const yy = ry - 6 + k * 6, wob = Math.sin(T * 1.6 + k * 1.3 + x * 0.02) * (1.5 + k * 0.6);
+          c.fillStyle = `hsla(${h},100%,60%,${a0 * (1 - k / 7)})`; c.fillRect(Math.min(x, x2) + wob - 1, yy, Math.abs(x2 - x) + 2, 3.5); } }
       c.restore(); });
     for (let x = YA.x0 - 30; x < YA.x1 + 40; x += 40) glow(x, YA.dk + 4, 8, '255,230,190', 0.6);
     shimmer(YA.wl + 6, H, 120, '255,210,170', 483, { a: 0.3, op: 'lighter' }); });
