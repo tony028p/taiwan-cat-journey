@@ -461,13 +461,44 @@ V('T18', '桃園市 · 新屋', '永安漁港彩虹橋', 'Rainbow Bridge, Yong�
   D(0.9, () => { glow(1012, 140, 90, '255,220,170', 0.35); glow(1012, 140, 16, '255,240,210', 0.9); glow(994, 596, 60, '255,210,150', 0.18);
     const q = { x: 300 + lt * 40, y: 606, s: 1.0, haze: '30,40,80,0.42', rim: '255,190,160', emote: emoAt(lt, [[1.6, 3.2, 'spark']]) }; q.pose = { ...walkPose3(walkCyc3(lt * 40, 1.0), { hr: -0.12 }), ...ex('delighted', 0.8), turn: turnAt(lt, [[1.4, 3.2, 0.3]]) }; drawCat3(q); });
 });
-/* T19 飛往金門 */
+/* T19 飛往金門 — per photos: through a rounded airliner window, the swept wing reaches out to a raised winglet over a field
+   of fair-weather cumulus above the strait; deep blue sky paling to haze at the horizon, cloud shadows on the sea */
+const KW = { x: 430, y: 128, w: 470, h: 452, r: 110 };
+function kmWinPath() { c.beginPath(); c.roundRect(KW.x, KW.y, KW.w, KW.h, KW.r); }
 V('T19', '臺灣海峽上空', '飛往金門', 'Flying to Kinmen', '24.50°N 119.50°E', ['飛越臺灣海峽，去金門。', 'Up over the Taiwan Strait, bound for Kinmen.'], [1.0, 1.02, 0, 0, 0, 0], function (lt) {
-  D(0, () => { sky([[0, '#5a8ccc'], [1, '#cfe2ee']]); c.fillStyle = vg(300, H, [[0, '#2f6fa8'], [1, '#2a5f90']]); c.fillRect(-M, 380, W + 2 * M, 400);
-    const r = rng(491); for (let k = 0; k < 30; k++) { const x = mod(r() * 1800 - lt * 60 * (0.5 + r()), 1800) - 200, y = 300 + r() * 280; cumulus(x, y, 120 + r() * 160, 30 + r() * 30, 492 + k, '#ffffff', '#c9d6e2', 0.2); }
-    c.fillStyle = '#c9ccd2'; poly([[600, 560], [1200, 470], [1250, 485], [700, 600]], '#cfd2d8'); poly([[1150, 478], [1180, 440], [1196, 444], [1186, 482]], '#b2b6bd');
-    c.save(); c.fillStyle = '#e9e6e0'; c.beginPath(); c.rect(-M, 0, W + 2 * M, H); c.ellipse(640, 360, 210, 270, 0, 0, TAU); c.fill('evenodd'); c.strokeStyle = '#cfcac0'; c.lineWidth = 26; c.beginPath(); c.ellipse(640, 360, 220, 280, 0, 0, TAU); c.stroke(); c.restore(); });
-  D(1, () => drawCat3({ x: 470, y: 640, s: 1.4, pose: sit3(lt, { ...ex('delighted'), hr: 0.1, ear: -0.1, turn: turnAt(lt, [[1.8, 3.6, 0.7]]) }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
+  D(0, () => { const hz = 300; c.save(); kmWinPath(); c.clip();
+    c.fillStyle = vg(KW.y, hz, [[0, '#1f5fb4'], [0.7, '#7fb2e2'], [1, '#e2ecf2']]); c.fillRect(KW.x, KW.y, KW.w, hz - KW.y);
+    c.fillStyle = vg(hz, KW.y + KW.h, [[0, '#9ab8cc'], [0.08, '#4a86b2'], [1, '#1f5a8a']]); c.fillRect(KW.x, hz, KW.w, KW.y + KW.h - hz);
+    // the cloud field in perspective: small and dense near the horizon, big puffs below, drifting back past the wing
+    const r = rng(491);
+    for (let k = 0; k < 140; k++) { const d = Math.pow(r(), 1.6), y = hz + 4 + d * 300, sc = 0.08 + d * 1.1, x = KW.x - 120 + mod(r() * 900 - lt * 90 * sc, 900), w = (60 + r() * 80) * sc, h = (14 + r() * 14) * sc;
+      oval(x + w * 0.25, y + h * 1.4 + 6 * sc, w * 0.55, h * 0.45, 0, 'rgba(20,50,80,0.25)'); }
+    for (let k = 0; k < 140; k++) { const r2 = rng(600 + k), d = Math.pow(r2(), 1.6), y = hz + 4 + d * 300, sc = 0.08 + d * 1.1, x = KW.x - 120 + mod(r2() * 900 - lt * 90 * sc, 900), w = (60 + r2() * 80) * sc, h = (14 + r2() * 14) * sc;
+      cumulus(x, y, w, h, 700 + k, '#ffffff', mix('#b8c8d8', '#dce6ee', 1 - d), 0.25); }
+    c.fillStyle = vg(hz - 14, hz + 30, [[0, 'rgba(236,242,246,0)'], [0.45, 'rgba(236,242,246,0.85)'], [1, 'rgba(236,242,246,0)']]); c.fillRect(KW.x, hz - 14, KW.w, 44);
+    // the wing: root below the window on the left, swept back to a raised winglet on the right
+    const fl = Math.sin(T * 1.3) * 2;
+    const TX = KW.x + KW.w - 70, LE = [[KW.x - 20, 486], [TX + 20, 352 + fl]], TE = [[KW.x - 20, 600], [TX - 22, 380 + fl]];
+    c.beginPath(); c.moveTo(LE[0][0], LE[0][1]); c.quadraticCurveTo(700, 400, LE[1][0], LE[1][1]); c.lineTo(TE[1][0], TE[1][1]); c.quadraticCurveTo(700, 470, TE[0][0], TE[0][1]); c.closePath();
+    c.fillStyle = vg(330, 600, [[0, '#e6e9ee'], [0.5, '#c6ccd4'], [1, '#9aa2ac']]); c.fill();
+    c.save(); c.clip();
+    c.strokeStyle = 'rgba(70,80,96,0.35)'; c.lineWidth = 1; for (let k = 1; k < 5; k++) { const u = k / 5; c.beginPath(); c.moveTo(lerp(LE[0][0], TE[0][0], u), lerp(LE[0][1], TE[0][1], u)); c.quadraticCurveTo(700, lerp(400, 470, u), lerp(LE[1][0], TE[1][0], u), lerp(LE[1][1], TE[1][1], u)); c.stroke(); }
+    c.fillStyle = 'rgba(120,128,140,0.5)'; c.beginPath(); c.moveTo(KW.x - 20, 570); c.quadraticCurveTo(700, 455, TX - 26, 376 + fl); c.lineTo(TX - 22, 380 + fl); c.quadraticCurveTo(700, 470, KW.x - 20, 600); c.fill();
+    for (let k = 0; k < 6; k++) { const u = 0.15 + k * 0.13, x = lerp(KW.x - 20, TX - 30, u), y = lerp(585, 380, u) + Math.sin(u * Math.PI) * -10; line(x, y - 24 * (1 - u), x + 8, y - 30 * (1 - u) - 4, 'rgba(70,80,96,0.4)', 1); }
+    c.fillStyle = 'rgba(255,255,255,0.45)'; c.beginPath(); c.moveTo(LE[0][0], LE[0][1]); c.quadraticCurveTo(700, 400, LE[1][0], LE[1][1]); c.lineTo(LE[1][0], LE[1][1] + 4); c.quadraticCurveTo(700, 405, LE[0][0], LE[0][1] + 6); c.fill();
+    c.restore();
+    // winglet and nav light
+    c.fillStyle = vg(270, 380, [[0, '#f0f2f4'], [1, '#b8bec8']]); c.beginPath(); c.moveTo(TX - 22, 380 + fl); c.lineTo(TX + 20, 352 + fl); c.quadraticCurveTo(TX + 34, 330 + fl, TX + 44, 284 + fl); c.lineTo(TX + 30, 286 + fl); c.quadraticCurveTo(TX + 18, 330 + fl, TX - 22, 380 + fl); c.closePath(); c.fill();
+    if (mod(T, 1.2) < 0.12) glow(TX + 40, 290 + fl, 18, '120,255,140', 0.9);
+    // sun glare on the window
+    glow(KW.x + 80, KW.y + 40, 120, '255,252,235', 0.25); c.restore();
+    // cabin wall, deep bezel and the half-raised blind
+    c.save(); c.fillStyle = vg(0, H, [[0, '#ebe8e2'], [1, '#d2cdc4']]); c.beginPath(); c.rect(-M, 0, W + 2 * M, H); c.roundRect(KW.x - 34, KW.y - 34, KW.w + 68, KW.h + 68, KW.r + 30); c.fill('evenodd');
+    c.fillStyle = vg(KW.y - 34, KW.y + KW.h + 34, [[0, '#d8d3ca'], [1, '#bfb8ac']]); c.beginPath(); c.roundRect(KW.x - 34, KW.y - 34, KW.w + 68, KW.h + 68, KW.r + 30); c.roundRect(KW.x, KW.y, KW.w, KW.h, KW.r); c.fill('evenodd');
+    c.strokeStyle = 'rgba(0,0,0,0.12)'; c.lineWidth = 3; kmWinPath(); c.stroke(); c.strokeStyle = 'rgba(255,255,255,0.5)'; c.lineWidth = 2; c.beginPath(); c.roundRect(KW.x - 33, KW.y - 33, KW.w + 66, KW.h + 66, KW.r + 30); c.stroke();
+    c.save(); kmWinPath(); c.clip(); c.fillStyle = vg(KW.y, KW.y + 50, [[0, '#e4e0d8'], [1, '#d4cfc6']]); c.fillRect(KW.x, KW.y, KW.w, 46); c.fillStyle = '#b8b2a8'; c.fillRect(KW.x, KW.y + 44, KW.w, 4); c.restore();
+    c.restore(); });
+  D(1, () => drawCat3({ x: 400, y: 650, s: 1.4, pose: sit3(lt, { ...ex('delighted'), hr: 0.1, ear: -0.1, turn: turnAt(lt, [[1.8, 3.6, 0.7]]) }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
 });
 /* T20 夜航 */
 V('T20', '臺灣海峽', '夜航往馬祖', 'Night boat to Matsu', '25.60°N 120.00°E', ['夜裡的船，往更北邊的島。', 'A night boat to the islands further north.'], [1.02, 1.05, 0, 0, 0, 0], function (lt) {
