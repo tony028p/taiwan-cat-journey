@@ -345,8 +345,11 @@ SCENES.push({ county: '宜蘭縣', place: '外澳海灘 · 龜山島', sun: lt =
       c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(820, sy, 26, '#fff1c8'); glow(820, sy, 60, '255,240,200', 0.8); c.restore(); });
     // the horizon cloud bank, dark blue below, rims lit gold
     L('bank', 0.05, () => { c.fillStyle = vg(392, hz, [[0, 'rgba(58,68,104,0)'], [0.35, '#3e4870'], [1, '#353f62']]); c.fillRect(-M, 392, W + 2 * M, hz - 392);
-      [[120, 404, 420, 70, 33], [560, 400, 360, 60, 34], [960, 408, 520, 80, 35], [1260, 402, 360, 62, 36]].forEach(([x, y, w, h, sd]) => cumulus(x, y, w, h, sd, 'rgba(255,200,130,0.6)', '#38426a', 0.0));
-      c.fillStyle = vg(380, hz, [[0, 'rgba(70,80,120,0)'], [1, 'rgba(70,80,120,0.6)']]); c.fillRect(-M, 380, W + 2 * M, hz - 380); }, { blur: 1 });
+      // a low stratocumulus bank: long flat cloud rolls, dark undersides, tops rimmed gold by the sun below the horizon
+      const rb = rng(37); for (let k = 0; k < 90; k++) { const x = rb() * (W + 2 * M + 200) - M - 100, y = 384 + rb() * 20, w = 50 + rb() * 120, h = 5 + rb() * 8;
+        c.fillStyle = 'rgba(255,196,128,0.4)'; c.beginPath(); c.ellipse(x, y - 1.6, w * 0.5, h, 0, Math.PI, TAU); c.fill();
+        c.fillStyle = mix('#3a4470', '#2e3758', rb()); c.beginPath(); c.ellipse(x, y + 0.6, w * 0.49, h * 0.92, 0, 0, TAU); c.fill(); }
+      c.fillStyle = vg(380, hz, [[0, 'rgba(70,80,120,0)'], [1, 'rgba(70,80,120,0.6)']]); c.fillRect(-M, 380, W + 2 * M, hz - 380); }, { blur: 1.8 });
     L('island', 0.12, () => { const pts = [[400, hz + 1], [418, 410], [446, 380], [480, 342], [506, 326], [524, 323], [546, 334], [596, 358], [656, 374], [706, 386], [730, 389], [746, 382], [760, 390], [780, hz + 1]]; smoothClosed(pts); c.fillStyle = vg(320, hz, [[0, '#3c4868'], [1, '#2c3552']]); c.fill();
       c.save(); smoothClosed(pts); c.clip(); c.fillStyle = hg(520, 790, [[0, 'rgba(255,200,140,0)'], [1, 'rgba(255,200,140,0.18)']]); c.fillRect(400, 300, 400, 130); const r = rng(37); for (let k = 0; k < 220; k++) disc(400 + r() * 380, 330 + r() * 90, 1 + r() * 1.5, 'rgba(20,30,50,0.08)'); c.restore(); }, { blur: 0.6 });
     L('sea', 0.2, () => { c.fillStyle = vg(hz, H, [[0, '#7c86a0'], [0.12, '#4d6890'], [0.5, '#2c4468'], [1, '#162238']]); c.fillRect(-M, hz, W + 2 * M, H);
@@ -651,8 +654,11 @@ SCENES.push({ county: '嘉義縣', place: '阿里山 · 雲海日出', sun: lt =
         c.beginPath(); c.moveTo(-M - 100, y + amp * 3); for (let x = -M - 100; x <= W + M + 100; x += 6) c.lineTo(x, top(x)); c.lineTo(W + M + 100, y + amp * 3); c.closePath();
         const g = c.createLinearGradient(0, y - amp, 0, y + amp * 2.2); g.addColorStop(0, lit); g.addColorStop(0.3, mix(lit, sh, 0.5)); g.addColorStop(1, sh); c.fillStyle = g; c.fill();
         c.save(); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = hg(sx - 500, sx + 500, [[0, 'rgba(255,170,90,0)'], [0.5, `rgba(255,170,90,${0.14 * (1 - u * 0.5)})`], [1, 'rgba(255,170,90,0)']]); c.fillRect(-M, y - amp, W + 2 * M, amp * 2); c.restore();
-        for (let k = 0; k < 2 + b; k++) { const x = r() * (W + 2 * M + 200) - M - 100, w = sz * (1 + r() * 1.2); cumulus(x, top(x) + amp * 0.8, w, w * 0.16, sd * 50 + i * 7 + k, lit, mix(lit, sh, 0.6), (x < sx ? 1 : -1) * 0.7); } } },
-      { blur: 1.3 - b * 0.3, dx: lt * (2 + b * 3) - 20 });
+        // rolling billows: overlapping flattened domes, lit gold on top and violet underneath (soft, not round puffs)
+        for (let k = 0; k < 16 + b * 6; k++) { const x = r() * (W + 2 * M + 200) - M - 100, w = sz * (0.5 + r() * 0.8), yy = top(x) + amp * 0.9, hh = w * (0.12 + r() * 0.06);
+          const g2 = c.createLinearGradient(0, yy - hh, 0, yy + hh * 0.6); g2.addColorStop(0, lit); g2.addColorStop(0.45, mix(lit, sh, 0.35)); g2.addColorStop(1, toA(sh, 0)); c.fillStyle = g2;
+          c.beginPath(); c.ellipse(x, yy, w * 0.5, hh, 0, Math.PI, TAU); c.ellipse(x, yy, w * 0.5, hh * 0.5, 0, 0, Math.PI); c.fill(); } } },
+      { blur: 2 - b * 0.5, dx: lt * (2 + b * 3) - 20 });
     band(0, cs + 2, cs + 28, 11, 90, '#f8cf92', '#8a6a8c', 113);
     band(1, cs + 30, cs + 66, 7, 150, '#f6cc94', '#7c5e82', 114);
     D(0.2, () => { c.save(); c.globalCompositeOperation = 'lighter'; c.save(); c.translate(sx, cs + 30); c.scale(1, 0.25); glow(0, 0, 300, '255,200,120', 0.35); c.restore(); c.restore(); });
