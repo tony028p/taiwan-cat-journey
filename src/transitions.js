@@ -353,14 +353,53 @@ V('T9', '嘉義縣 · 水上', '北回歸線標誌', 'Tropic of Cancer Monument'
     [[300, y], [380, y], [860, y], [1060, y], [1140, y]].forEach(([px, py], k) => { line(px, py, px + 4, py - 90 - k * 6, '#6a5a44', 4); for (let a = 0; a < 7; a++) { const an = -Math.PI / 2 + (a - 3) * 0.5; c.strokeStyle = '#3f7a3a'; c.lineWidth = 4; c.beginPath(); c.moveTo(px + 4, py - 90 - k * 6); c.quadraticCurveTo(px + 4 + Math.cos(an) * 30, py - 90 - k * 6 + Math.sin(an) * 18, px + 4 + Math.cos(an) * 46, py - 90 - k * 6 + Math.sin(an) * 10 + 14); c.stroke(); } }); });
   D(0.4, () => { const t = Math.min(lt, 2.2), q = { x: 380 + t * 34, y: 520, s: 1.0 }; q.pose = lt < 2.2 ? walkPose3(walkCyc3(t * 34, 1)) : lp(walkPose3(walkCyc3(2.2 * 34, 1)), { ...STAND3, hr: -0.75, head: [52, -74] }, sm((lt - 2.2) / 0.5)); Object.assign(q.pose, exSeq(lt, [[0, 'neutral'], [2.2, 'curious']])); q.emote = emoAt(lt, [[2.4, 3.6, '?']]); drawCat3(q); });
 });
-/* T10 阿里山林鐵 */
-V('T10', '嘉義縣 · 竹崎', '阿里山林鐵 · 獨立山', 'Alishan Forest Railway', '23.48°N 120.60°E', ['林鐵繞著獨立山轉了三圈，才慢慢下山。', 'The forest railway spirals three times round Dulishan on its way down.'], [1.0, 1.02, 0, 0, 0, 0], function (lt) {
-  D(0, () => trainWindow(lt, () => { sky([[0, '#9cc0d8'], [1, '#e6eee8']]); const off = lt * 140;
-    mountain({ base: 300, amp: 90, f: 0.004, seed: 401, top: '#6f8f86', bot: '#86a196', haze: 'rgba(220,230,230,0.5)' });
-    const r = rng(402); for (let k = 0; k < 70; k++) { const x = mod(r() * 1600 - off, 1600) - 160, y = 320 + r() * 260, h = 60 + r() * 120; poly([[x - h * 0.2, y], [x, y - h], [x + h * 0.2, y]], mix('#1f3f2e', '#3d6b4a', r())); }
-    c.fillStyle = 'rgba(255,255,255,0.35)'; c.fillRect(-M, 380, W + 2 * M, 60);
-    for (let k = 0; k < 40; k++) { const x = mod(r() * 1600 - off * 2.2, 1600) - 160; c.fillStyle = mix('#173022', '#2d4f38', r()); c.fillRect(x, 300, 7, 260); } }, '#7a3a2c', '#4e2a20'));
-  D(1, () => drawCat3({ x: 520, y: 512, s: 1.25, pose: sit3(lt, { ...ex('content'), hr: 0.08 + Math.sin(lt * 1.5) * 0.06 }), emote: emoAt(lt, [[1.2, 2.8, 'note']]), shadow: false }));
+/* T10 阿里山林鐵 — per photos: Dulishan, a steep forested cone the line climbs in three spiral loops. From the open rear
+   balcony of the last coach (red with a cream band, iron railing, wooden floor) the cat looks across at the loop above,
+   where the front of its own little red train is already winding round the hill; misty ridges of the Alishan range
+   behind, Japanese cedars sliding past. */
+const T10C = [770, 572], T10HW = 330, T10HH = 350;
+const t10Hill = x => T10C[1] - T10HH * Math.exp(-Math.pow((x - T10C[0]) / T10HW, 2) * 1.6) - fbm1(x * 0.02 + 4) * 14 - 30 * Math.exp(-Math.pow((x - 1010) / 90, 2));
+// front half of a contour ledge at height y0 (rising a little to the left as it winds round)
+function t10Ledge(y0, th) { const hw = Math.sqrt(Math.max(0, -Math.log((T10C[1] - y0) / T10HH) / 1.6)) * T10HW * 0.97, ry = 16 + (y0 - 300) * 0.08;
+  const x = T10C[0] + Math.cos(th) * hw, y = y0 + Math.sin(th) * ry - (th / Math.PI) * 26; return [x, y]; }
+function t10Track(y0) { c.strokeStyle = '#6a5e4c'; c.lineWidth = 7; c.beginPath(); for (let th = 0.02; th <= Math.PI - 0.02; th += 0.04) { const p = t10Ledge(y0, th); th < 0.03 ? c.moveTo(p[0], p[1]) : c.lineTo(p[0], p[1]); } c.stroke();
+  c.strokeStyle = 'rgba(60,50,40,0.6)'; c.lineWidth = 4; c.beginPath(); for (let th = 0.02; th <= Math.PI - 0.02; th += 0.04) { const p = t10Ledge(y0, th); th < 0.03 ? c.moveTo(p[0], p[1] + 6) : c.lineTo(p[0], p[1] + 6); } c.stroke();
+  c.strokeStyle = 'rgba(200,190,170,0.7)'; c.lineWidth = 1; c.beginPath(); for (let th = 0.02; th <= Math.PI - 0.02; th += 0.04) { const p = t10Ledge(y0, th); th < 0.03 ? c.moveTo(p[0], p[1] - 3) : c.lineTo(p[0], p[1] - 3); } c.stroke(); }
+function t10Train(y0, th0) { // loco leads (smallest th), coaches follow
+  const cars = [[40, 1], [48, 0], [48, 0], [48, 0], [48, 0]]; let th = th0;
+  const parts = []; for (const [len, loco] of cars) { const p0 = t10Ledge(y0, th); let th1 = th; for (let k = 0; k < 200; k++) { th1 -= 0.004; const p1 = t10Ledge(y0, th1); if (Math.hypot(p1[0] - p0[0], p1[1] - p0[1]) >= len) break; } parts.push([th, th1, loco]); th = th1 - 0.02; }
+  for (const [ta, tb, loco] of parts) { if (ta < 0.03 || tb > Math.PI - 0.03) continue; const a = t10Ledge(y0, ta), b = t10Ledge(y0, tb), ang = Math.atan2(a[1] - b[1], a[0] - b[0]), len = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    c.save(); c.translate(b[0], b[1] - 2); c.rotate(ang); c.scale(1, 1.45);
+    if (loco) { c.fillStyle = '#b22a26'; c.fillRect(0, -11, len, 9); c.fillRect(len * 0.55, -15, len * 0.4, 6); c.fillStyle = '#f0e2be'; c.fillRect(0, -6, len, 1.6); c.fillStyle = '#2a2f36'; c.fillRect(len * 0.62, -14, len * 0.25, 3); }
+    else { c.fillStyle = '#b8262a'; c.beginPath(); c.roundRect(0, -14, len, 12, 2); c.fill(); c.fillStyle = '#f0e2be'; c.fillRect(0, -7, len, 2); c.fillStyle = '#2f3138'; for (let w = 3; w < len - 4; w += 5) c.fillRect(w, -12, 3, 4); c.fillStyle = '#7a1a1a'; c.fillRect(0, -15, len, 2); }
+    c.fillStyle = '#222'; c.fillRect(2, -2, len - 4, 2); c.restore(); }
+}
+V('T10', '嘉義縣 · 竹崎', '阿里山林鐵 · 獨立山', 'Alishan Forest Railway', '23.48°N 120.60°E', ['林鐵繞著獨立山轉了三圈，才慢慢下山。', 'The forest railway spirals three times round Dulishan on its way down.'], [1.0, 1.03, 0, 10, 0, 0], function (lt) {
+  L('sky', 0, () => { sky([[0, '#86b6d8'], [0.5, '#c4dbe6'], [1, '#e8eee6']]); cumulus(300, 170, 380, 50, 403, '#ffffff', '#d2dce2', 0.3); glow(1000, 160, 400, '255,250,220', 0.25); }, { blur: 1.5 });
+  L('r1', 0.03, () => { mountain({ base: 300, amp: 70, f: 0.004, seed: 401, top: '#8aa6b4', bot: '#a6bcc2', haze: 'rgba(225,235,238,0.5)' }); c.fillStyle = vg(300, 380, [[0, 'rgba(240,244,244,0)'], [1, 'rgba(240,244,244,0.9)']]); c.fillRect(-M, 300, W + 2 * M, 120); }, { blur: 1.2 });
+  L('r2', 0.07, () => { mountain({ base: 380, amp: 80, f: 0.005, seed: 404, top: '#5e8678', bot: '#7a9a8c', tex: 'forest', dark: '#4a6e60', mid: '#5e8678', light: '#8fb0a0', depth: 90, n: 900, r: 4, haze: 'rgba(225,235,235,0.45)' }); c.fillStyle = vg(380, 470, [[0, 'rgba(240,244,244,0)'], [1, 'rgba(240,244,244,0.85)']]); c.fillRect(-M, 380, W + 2 * M, 120); }, { blur: 0.6 });
+  // Dulishan with its spiral ledges
+  L('hill', 0.15, () => { mountain({ fn: t10Hill, floor: H, top: '#3f7a3e', bot: '#2c5a30', tex: 'forest', dark: '#1a3c22', mid: '#3a7038', light: '#a6d07e', depth: 380, n: 4200, r: 7, seed: 405 });
+    c.fillStyle = vg(200, H, [[0, 'rgba(220,235,235,0.15)'], [1, 'rgba(220,235,235,0)']]); c.fillRect(-M, 200, W + 2 * M, H);
+    for (const y0 of [330, 430, 528]) t10Track(y0); });
+  D(0.15, () => { t10Train(430, 1.55 + lt * 0.12);
+    // trees in front of the ledges so the line threads through the forest
+    const r = rng(406); for (let k = 0; k < 120; k++) { const y0 = [330, 430, 528][k % 3], th = 0.1 + r() * 2.9, p = t10Ledge(y0, th), rr = 3 + r() * 4; oval(p[0] + (r() - 0.5) * 6, p[1] + 9 + r() * 10, rr, rr * 1.1, 0, mix('#1f4428', '#4e8a46', r(), 0.95)); oval(p[0] + 2, p[1] + 5 + r() * 8, rr * 0.6, rr * 0.6, 0, mix('#4e8a46', '#9cc878', r(), 0.9)); }
+    c.fillStyle = vg(500, 620, [[0, 'rgba(240,244,244,0)'], [0.6, 'rgba(240,244,244,0.3)'], [1, 'rgba(240,244,244,0)']]); c.fillRect(-M, 500, W + 2 * M, 120); });
+  // cedar trunks sliding past the balcony (crowns above the frame)
+  D(0.6, () => { for (let k = 0; k < 2; k++) { const x = mod(1400 - lt * 170 + k * 760, 1520) - 120, w = 26 + k * 8; c.fillStyle = hg(x - w / 2, x + w / 2, [[0, '#2a1e16'], [0.35, '#6a5038'], [1, '#2a1e16']]); c.fillRect(x - w / 2, 92, w, 540);
+    for (let j = 0; j < 9; j++) line(x - w / 2 + 3, 140 + j * 52, x - w / 2 + 6, 170 + j * 52, 'rgba(20,14,10,0.5)', 1.5);
+    const r = rng(407 + k); for (let j = 0; j < 26; j++) oval(x + (r() - 0.5) * 160, 92 + r() * 70, 18 + r() * 20, 10 + r() * 10, r(), mix('#16301e', '#2e5a36', r())); } });
+  // the rear balcony of the last coach
+  L('bal', 0.95, () => {
+    c.fillStyle = vg(92, 140, [[0, '#5a1414'], [1, '#8a2420']]); c.beginPath(); c.moveTo(-M, 92); c.lineTo(600, 92); c.lineTo(600, 118); c.quadraticCurveTo(300, 136, -M, 132); c.fill(); line(-M, 132, 600, 118, '#3a0e0e', 3);
+    c.fillStyle = '#a82424'; c.fillRect(-M, 120, 150 + M, 520); c.fillStyle = '#f0e2be'; c.fillRect(-M, 400, 150 + M, 14); c.fillStyle = '#7a1a1a'; c.fillRect(140, 120, 10, 520);
+    c.fillStyle = 'rgba(0,0,0,0.12)'; c.fillRect(-M, 414, 150 + M, 6); c.fillStyle = '#c9a26a'; c.fillRect(118, 440, 8, 60);
+    c.fillStyle = '#1e1a18'; c.fillRect(560, 118, 8, 490);
+    c.fillStyle = vg(596, H, [[0, '#8a6440'], [1, '#5e4228']]); c.fillRect(-M, 596, 640 + M, 60); for (let x = -M; x < 580; x += 34) line(x, 596, x - 10, H, 'rgba(50,34,20,0.5)', 1.5); line(-M, 596, 580, 596, '#3a2a1a', 3);
+    for (const y of [540, 568]) line(150, y, 564, y, '#1e1a18', 4); for (let x = 162; x < 560; x += 16) line(x, 540, x, 596, '#2a2522', 2);
+  });
+  D(0.95, () => drawCat3({ x: 330, y: 604, s: 1.2, pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [1.0, 'curious'], [2.2, 'happy']]), hr: -0.18 + Math.sin(lt * 1.5) * 0.04 }), emote: emoAt(lt, [[1.2, 2.8, 'note']]), shadow: false }));
 });
 /* T11 高鐵 */
 V('T11', '嘉義 → 雲林', '台灣高鐵', 'Taiwan High Speed Rail', '23.74°N 120.42°E', ['高鐵一眨眼就不見了。', 'The bullet train is gone in the blink of an eye.'], [1.02, 1.05, 0, 0, 0, 0], function (lt) {
