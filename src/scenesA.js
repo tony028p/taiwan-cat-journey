@@ -332,19 +332,40 @@ SCENES.push({ county: '基隆市', place: '正濱漁港', en: 'Zhengbin Fishing 
     D(0.95, () => actCat({ x: 300, y: 594, s: 1.15, pose: 'sit', rim: '255,245,225', look: -0.04, blink: blinkAt(lt, 3) }));
   } });
 
-/* 3 — 宜蘭縣 龜山島 sunrise */
+/* 3 — 宜蘭縣 龜山島 sunrise — per photos: blue dawn sky going gold at the horizon, a bank of cumulus lit from below on the
+   horizon with rays fanning up from the hidden sun, Turtle Island hazed blue-grey, black reef rocks framing the shore,
+   long-exposure surf washing up the sand. */
 SCENES.push({ county: '宜蘭縣', place: '外澳海灘 · 龜山島', sun: lt => [820, 432 - lt * 9, 1], en: 'Turtle Island from Wai’ao', ll: '24.88°N 121.84°E', cam: [1.02, 1.08, -10, 10, 0, 0],
   sub: ['宜蘭的海上，龜山島正等著日出。', 'Off Yilan, Turtle Island waits for the sunrise.'],
   draw(lt) {
     const hz = 420, sy = 432 - lt * 9;
-    L('sky', 0, () => { sky([[0, '#1d2a4d'], [0.35, '#5a5c8a'], [0.52, '#d98f7f'], [0.6, '#f5b077'], [1, '#ffd9a3']]); stratus(400, 300, 900, 50, 'rgba(255,170,140,0.45)'); stratus(1000, 250, 700, 40, 'rgba(255,190,160,0.35)'); stratus(700, 360, 900, 22, 'rgba(255,215,170,0.5)'); });
-    D(0, () => { glow(820, sy, 380, '255,190,120', 0.55); c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(820, sy, 26, '#fff1c8'); glow(820, sy, 60, '255,240,200', 0.8); c.restore(); });
-    L('island', 0.12, () => { const pts = [[380, hz + 1], [398, 410], [428, 370], [466, 322], [498, 300], [520, 296], [546, 310], [598, 340], [658, 362], [708, 378], [734, 382], [750, 375], [766, 384], [790, hz + 1]]; smoothClosed(pts); c.fillStyle = vg(300, hz, [[0, '#3c3550'], [1, '#2a2638']]); c.fill(); });
-    L('sea', 0.2, () => { c.fillStyle = vg(hz, H, [[0, '#a37a86'], [0.3, '#5d5574'], [1, '#262a42']]); c.fillRect(-M, hz, W + 2 * M, H); });
-    D(0.2, () => { shimmer(hz + 2, 600, 220, '255,210,150', 41, { xc: 820, spread: 260, a: 0.8, len: 30, w: 1.4, op: 'lighter' }); shimmer(hz + 2, 600, 160, '255,190,170', 42, { a: 0.25, len: 30 }); });
-    L('beach', 0.9, () => { c.fillStyle = vg(560, H, [[0, '#3a3140'], [1, '#17131c']]); c.fillRect(-M, 566, W + 2 * M, 200); });
-    D(0.9, () => { const sw = Math.sin(lt * 0.9) * 10; c.fillStyle = 'rgba(120,100,120,0.55)'; c.fillRect(-M, 556 + sw * 0.3, W + 2 * M, 14); shimmer(560, 600, 80, '255,200,160', 43, { xc: 820, spread: 300, a: 0.5 });
-      c.strokeStyle = 'rgba(255,235,215,0.75)'; c.lineWidth = 2; c.beginPath(); for (let x = -M; x <= W + M; x += 12) { const y = 560 + sw + Math.sin(x * 0.03 + lt * 2) * 2; x === -M ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke();
+    L('sky', 0, () => { sky([[0, '#152752'], [0.25, '#2f5a98'], [0.43, '#6f8fbc'], [0.52, '#d9b98a'], [0.58, '#f6c867'], [1, '#ffe2a2']]);
+      stratus(300, 180, 900, 60, 'rgba(40,60,110,0.45)'); stratus(1050, 150, 800, 50, 'rgba(40,60,110,0.4)'); stratus(420, 300, 900, 40, 'rgba(255,190,150,0.35)'); stratus(1000, 270, 700, 30, 'rgba(255,200,160,0.3)'); });
+    D(0, () => { godrays(820, sy + 6, 520, 22, '255,225,160', 0.11 * (1 - sm((lt - 4) / 3) * 0.4), 31, 2.2, -Math.PI / 2); glow(820, sy, 380, '255,190,110', 0.5);
+      c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(820, sy, 26, '#fff1c8'); glow(820, sy, 60, '255,240,200', 0.8); c.restore(); });
+    // the horizon cloud bank, dark blue below, rims lit gold
+    L('bank', 0.05, () => { c.fillStyle = vg(392, hz, [[0, 'rgba(58,68,104,0)'], [0.35, '#3e4870'], [1, '#353f62']]); c.fillRect(-M, 392, W + 2 * M, hz - 392);
+      [[120, 404, 420, 70, 33], [560, 400, 360, 60, 34], [960, 408, 520, 80, 35], [1260, 402, 360, 62, 36]].forEach(([x, y, w, h, sd]) => cumulus(x, y, w, h, sd, 'rgba(255,200,130,0.6)', '#38426a', 0.0));
+      c.fillStyle = vg(380, hz, [[0, 'rgba(70,80,120,0)'], [1, 'rgba(70,80,120,0.6)']]); c.fillRect(-M, 380, W + 2 * M, hz - 380); }, { blur: 1 });
+    L('island', 0.12, () => { const pts = [[400, hz + 1], [418, 410], [446, 380], [480, 342], [506, 326], [524, 323], [546, 334], [596, 358], [656, 374], [706, 386], [730, 389], [746, 382], [760, 390], [780, hz + 1]]; smoothClosed(pts); c.fillStyle = vg(320, hz, [[0, '#3c4868'], [1, '#2c3552']]); c.fill();
+      c.save(); smoothClosed(pts); c.clip(); c.fillStyle = hg(520, 790, [[0, 'rgba(255,200,140,0)'], [1, 'rgba(255,200,140,0.18)']]); c.fillRect(400, 300, 400, 130); const r = rng(37); for (let k = 0; k < 220; k++) disc(400 + r() * 380, 330 + r() * 90, 1 + r() * 1.5, 'rgba(20,30,50,0.08)'); c.restore(); }, { blur: 0.6 });
+    L('sea', 0.2, () => { c.fillStyle = vg(hz, H, [[0, '#7c86a0'], [0.12, '#4d6890'], [0.5, '#2c4468'], [1, '#162238']]); c.fillRect(-M, hz, W + 2 * M, H);
+      // distant reef just off the beach
+      [[905, 446, 60, 14, 381], [990, 450, 40, 9, 382], [1080, 444, 80, 18, 383], [620, 452, 34, 8, 384]].forEach(([x, y, w, h, sd]) => boulder(x, y, w, h, sd, { col: '#2a2c3a', dk: '#141620', lit: 'rgba(255,200,140,0.12)', cracks: 1, sink: 2 })); });
+    D(0.2, () => { shimmer(hz + 2, 600, 240, '255,214,150', 41, { xc: 820, spread: 260, a: 0.85, len: 30, w: 1.4, op: 'lighter' }); shimmer(hz + 2, 600, 140, '190,210,255', 42, { a: 0.2, len: 34 }); });
+    L('beach', 0.9, () => { c.fillStyle = vg(560, H, [[0, '#4a4250'], [0.4, '#2e2834'], [1, '#17131c']]); c.fillRect(-M, 566, W + 2 * M, 200);
+      const r = rng(45); for (let k = 0; k < 900; k++) disc(r() * (W + 2 * M) - M, 570 + Math.pow(r(), 1.4) * 70, 0.5 + r() * 0.9, r() < 0.5 ? 'rgba(255,210,170,0.07)' : 'rgba(0,0,0,0.16)');
+      // black reef rocks framing the shore
+      boulder(40, 574, 330, 150, 46, { col: '#2a2830', dk: '#0c0b10', lit: 'rgba(255,190,130,0.12)', rim: 'rgba(255,190,130,0.45)', n: 12, sink: 60, round: 0.7 });
+      boulder(196, 586, 110, 46, 47, { col: '#24232b', dk: '#0c0b10', lit: 'rgba(255,190,130,0.1)', rim: 'rgba(255,190,130,0.35)', n: 6, sink: 40 });
+      boulder(1270, 560, 210, 120, 48, { col: '#26252e', dk: '#0c0b10', lit: 'rgba(255,190,130,0.1)', rim: 'rgba(255,190,130,0.4)', n: 9, sink: 80, round: 0.8 }); });
+    D(0.9, () => { const sw = Math.sin(lt * 0.9) * 10; c.save(); c.globalCompositeOperation = 'lighter';
+      // long-exposure wash: soft white sheets sliding up the sand with streaks
+      for (let k = 0; k < 3; k++) { const u = mod(lt * 0.22 + k / 3, 1), y = 552 + u * 24, a = Math.sin(u * Math.PI);
+        c.fillStyle = vg(y - 10, y + 6, [[0, 'rgba(200,215,240,0)'], [1, `rgba(220,230,250,${0.22 * a})`]]); c.fillRect(-M, y - 10, W + 2 * M, 16);
+        const r = rng(49 + k); for (let j = 0; j < 40; j++) { const x = r() * (W + 2 * M) - M, l = 30 + r() * 70; c.strokeStyle = `rgba(235,240,255,${0.3 * a * r()})`; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y + r() * 4); c.lineTo(x + l, y + r() * 4 - 2); c.stroke(); } }
+      c.restore(); shimmer(560, 600, 80, '255,210,160', 43, { xc: 820, spread: 300, a: 0.5 });
+      c.strokeStyle = 'rgba(255,240,225,0.8)'; c.lineWidth = 2; c.beginPath(); for (let x = -M; x <= W + M; x += 12) { const y = 560 + sw + Math.sin(x * 0.03 + lt * 2) * 2; x === -M ? c.moveTo(x, y) : c.lineTo(x, y); } c.stroke();
       flock(5, 260, 260, 18, 0.7, 'rgba(30,25,40,0.85)', 44, lt);
       actCat({ x: 330, y: 604, s: 1.1, pose: 'sit', sil: true, rim: '255,175,120', look: -0.08, blink: blinkAt(lt, 4) }); });
   } });
