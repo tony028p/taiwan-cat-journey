@@ -89,20 +89,63 @@ function puff(x, y, u, s = 1, col = '242,240,234') {
     c.fillStyle = `rgba(${col},${a})`; c.beginPath(); c.arc(x + dx * s, y + dy * s, (6 + 18 * v) * s * (0.7 + r() * 0.5), 0, TAU); c.fill(); }
 }
 
-function bicycle(x, y, s, col = '#3f8f8a') {
-  c.save(); c.translate(x, y); c.scale(s, s); c.lineCap = 'round'; c.lineJoin = 'round';
-  [[-26, -13], [26, -13]].forEach(([wx, wy]) => { c.strokeStyle = '#2b2b2e'; c.lineWidth = 2.6; c.beginPath(); c.arc(wx, wy, 13, 0, TAU); c.stroke(); c.strokeStyle = 'rgba(80,80,85,0.6)'; c.lineWidth = 0.6; for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; line(wx, wy, wx + Math.cos(a) * 12, wy + Math.sin(a) * 12, 'rgba(90,90,95,0.6)', 0.6); } disc(wx, wy, 1.6, '#555555'); });
-  c.strokeStyle = col; c.lineWidth = 2.8; c.beginPath(); c.moveTo(-26, -13); c.lineTo(-6, -13); c.lineTo(-12, -34); c.lineTo(-26, -13); c.moveTo(-6, -13); c.lineTo(18, -34); c.lineTo(-12, -34); c.moveTo(26, -13); c.lineTo(18, -34); c.lineTo(16, -42); c.stroke();
-  c.lineWidth = 2.2; c.strokeStyle = '#2b2b2e'; line(10, -44, 24, -44, '#2b2b2e', 2.2); oval(-13, -37, 7, 2.2, 0, '#3a2a24');
+/* side-view bicycle, ground at y. o.rot spins the wheels, o.crank (angle) draws the crank and pedals, o.ride raises the bars
+   to a city-bike riding position. Without o it draws the parked bike exactly as before. */
+function bicycle(x, y, s, col = '#3f8f8a', o = {}) {
+  c.save(); c.translate(x, y); c.scale(s, s); c.lineCap = 'round'; c.lineJoin = 'round'; const rot = o.rot || 0;
+  [[-26, -13], [26, -13]].forEach(([wx, wy]) => { c.strokeStyle = '#2b2b2e'; c.lineWidth = 2.6; c.beginPath(); c.arc(wx, wy, 13, 0, TAU); c.stroke(); c.strokeStyle = 'rgba(80,80,85,0.6)'; c.lineWidth = 0.6; for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + rot; line(wx, wy, wx + Math.cos(a) * 12, wy + Math.sin(a) * 12, 'rgba(90,90,95,0.6)', 0.6); } disc(wx, wy, 1.6, '#555555'); });
+  c.strokeStyle = col; c.lineWidth = 2.8; c.beginPath(); c.moveTo(-26, -13); c.lineTo(-6, -13); c.lineTo(-12, -34); c.lineTo(-26, -13); c.moveTo(-6, -13); c.lineTo(18, -34); c.lineTo(-12, -34); c.moveTo(26, -13); c.lineTo(18, -34);
+  if (o.ride) { c.lineTo(23, -45); c.stroke(); line(22, -46, 30, -47, '#2b2b2e', 2.2); oval(-13, -37, 7, 2.2, 0, '#3a2a24'); }
+  else { c.lineTo(16, -42); c.stroke(); c.lineWidth = 2.2; c.strokeStyle = '#2b2b2e'; line(10, -44, 24, -44, '#2b2b2e', 2.2); oval(-13, -37, 7, 2.2, 0, '#3a2a24'); }
+  if (o.crank !== undefined) { [o.crank + Math.PI, o.crank].forEach((a, i) => { const px = -6 + Math.cos(a) * 7, py = -13 + Math.sin(a) * 7; line(-6, -13, px, py, i ? '#3a3a3e' : '#2a2a2e', 1.8); line(px - 3, py, px + 3, py, '#1e1e22', 2); }); disc(-6, -13, 2.4, '#4a4a50'); }
   c.restore();
 }
 function basket(x, y, s) { c.save(); c.translate(x, y); c.scale(s, s); poly([[-11, -16], [11, -16], [9, 0], [-9, 0]], '#b8894e'); c.strokeStyle = 'rgba(90,60,30,0.6)'; c.lineWidth = 0.8; for (let k = 1; k < 4; k++) line(-11 + k * 0.5, -16 + k * 4, 11 - k * 0.5, -16 + k * 4, 'rgba(90,60,30,0.6)', 0.8); c.restore(); }
-function paraglider(x, y, s, lt) {
+function paraglider(x, y, s, lt, noLines) {
   c.save(); c.translate(x, y); c.scale(s, s); c.rotate(Math.sin(lt * 0.8) * 0.05);
   c.fillStyle = '#d9573a'; c.beginPath(); c.ellipse(0, 0, 46, 13, 0, Math.PI, 0); c.ellipse(0, 0, 46, 6, 0, 0, Math.PI, true); c.fill();
   c.fillStyle = '#f2c14e'; c.beginPath(); c.ellipse(0, 0, 18, 12.4, 0, Math.PI, 0); c.ellipse(0, 0, 18, 5, 0, 0, Math.PI, true); c.fill();
-  c.strokeStyle = 'rgba(40,30,40,0.6)'; c.lineWidth = 0.6; [-42, -22, 0, 22, 42].forEach(px => line(px, 2, 0, 46, 'rgba(40,30,40,0.6)', 0.6));
+  if (!noLines) { c.strokeStyle = 'rgba(40,30,40,0.6)'; c.lineWidth = 0.6; [-42, -22, 0, 22, 42].forEach(px => line(px, 2, 0, 46, 'rgba(40,30,40,0.6)', 0.6)); }
   c.restore();
+}
+/* surfer: wide, low stance along the board (front paws forward, hind paws far back), knees bent, tail out for balance,
+   riding just ahead of the breaking lip; the board tilts with the wave face and throws a little spray. dir = -1 rides left. */
+function surfCat(x, y, s, lt, o = {}) {
+  const dir = o.dir || -1, ph = lt * 2.2, sway = Math.sin(ph), tilt = 0.06 * Math.sin(ph * 0.7) - 0.05 * dir;
+  // the wave: a swell rising behind the rider, white lip breaking a little behind
+  c.save(); c.translate(x, y); c.scale(-dir, 1);
+  c.fillStyle = o.face || 'rgba(40,40,60,0.35)'; c.beginPath(); c.moveTo(-90 * s, 3 * s); c.quadraticCurveTo(20 * s, 0, 80 * s, -26 * s); c.quadraticCurveTo(160 * s, -36 * s, 300 * s, 3 * s); c.quadraticCurveTo(100 * s, 8 * s, -90 * s, 3 * s); c.fill();
+  c.strokeStyle = o.foam || 'rgba(255,240,225,0.8)'; c.lineWidth = 2.4 * s; c.beginPath(); c.moveTo(76 * s, -26 * s); c.quadraticCurveTo(150 * s, -36 * s, 280 * s, 0); c.stroke();
+  for (let k = 0; k < 7; k++) { const u = mod(lt * 1.3 + k / 7, 1); disc((80 + k * 24) * s + u * 10 * s, (-28 - u * 10 + k * 2) * s, (1.6 - u) * 1.6 * s, `rgba(255,245,230,${0.7 * (1 - u)})`); }
+  // spray off the tail of the board
+  for (let k = 0; k < 6; k++) { const u = mod(lt * 2 + k / 6, 1); disc((62 + u * 22) * s, (-4 - Math.sin(u * Math.PI) * 14 - k) * s, (1.4 - u) * 1.4 * s, `rgba(255,245,230,${0.8 * (1 - u)})`); }
+  c.restore();
+  c.save(); c.translate(x, y); c.rotate(tilt * -dir); oval(-4 * s * -dir, 1 * s, 66 * s, 4.2 * s, 0, o.board || '#2c2433'); c.strokeStyle = o.boardRim || 'rgba(255,215,170,0.85)'; c.lineWidth = 1.4; c.beginPath(); c.ellipse(-4 * s * -dir, 1 * s, 66 * s, 4.2 * s, 0, Math.PI * 1.05, Math.PI * 1.95); c.stroke(); c.restore();
+  const crouch = 0.5 + 0.15 * sway;
+  drawCat3({ x: x + 2 * s, y: y - 1 * s, s, sil: o.sil, rim: o.rim, coat: o.coat, face: dir, shadow: false, noBlink: true, haze: o.haze,
+    pose: { ...STAND3, ...ex('focused'), hip: [-34, lerp(-36, -26, crouch)], sh: [28, lerp(-34, -24, crouch) + sway * 2], head: [56, lerp(-50, -40, crouch)], hr: -0.18, arch: 3,
+      fn: [42, 0, 0.6], ff: [36, 0, 0.6], hn: [-46, 0, 1.6], hf: [-52, 0, 1.6], tail: [-2.8 + sway * 0.12, 0.06, 0.06, 2, 0] } });
+}
+/* paraglider pilot: seated in the harness under the wing, hind legs forward, front paws up on the brake toggles */
+function paraPilot(x, y, s, lt, o = {}) {
+  const br = Math.sin(lt * 1.3) * 3, wx = o.wx ?? x, wy = o.wy ?? y - 200 * s, ws = o.ws ?? s * 2.6;
+  c.save(); [-42, -22, 0, 22, 42].forEach(px => line(wx + px * ws, wy + 2 * ws, x + (px < 0 ? -4 : 4) * s, y - 54 * s, o.lines || 'rgba(40,30,40,0.6)', 0.6));
+  line(x - 2 * s, y - 46 * s, x + 6 * s, y - 34 * s, '#3a3036', 1.2 * s); c.restore();
+  drawCat3({ x, y, s, sil: o.sil, rim: o.rim, coat: o.coat, face: o.face || 1, shadow: false, noBlink: true,
+    pose: { ...STAND3, ...ex('happy'), hip: [-12, -14], sh: [8, -64], arch: -2, head: [24, -84], hr: -0.25, fn: [14, -88 + br, -1], ff: [10, -86 - br, -1], hn: [26, 8, 0.4], hf: [20, 10, 0.4], tail: [-4.4, 0.05, 0.05, 1.5, 0] } });
+  // harness seat: a pod round the haunch and back
+  c.save(); c.translate(x, y); c.scale(o.face || 1, 1); c.fillStyle = o.harness || '#3a3a46'; c.beginPath(); c.moveTo(-24 * s, -40 * s); c.quadraticCurveTo(-30 * s, -2 * s, -6 * s, 4 * s); c.quadraticCurveTo(18 * s, 6 * s, 26 * s, -4 * s); c.lineTo(22 * s, -10 * s); c.quadraticCurveTo(0, -6 * s, -14 * s, -14 * s); c.lineTo(-16 * s, -42 * s); c.closePath(); c.fill(); c.restore();
+}
+/* sea kayaker: sitting low in the cockpit, both front paws on the shaft, paddling left and right in turn — the lower blade
+   bites the water beside the hull and throws a little splash; ph is the stroke phase */
+function kayakPaddler(q, ph, col) {
+  q.s *= 0.6; const s = q.s, f = q.face || 1, a = Math.sin(ph), th = 0.8 * a, cx = 40 - 8 * Math.cos(ph), cy = -30, L = 50, ux = Math.cos(th), uy = Math.sin(th);
+  const grip = d => [cx + ux * d, cy + uy * d, -1];
+  q.pose = { ...STAND3, ...ex('happy'), hip: [-8, 4], sh: [16, -50], arch: -1, head: [34, -72], hr: -0.15, fn: grip(13), ff: grip(-13), hn: [30, 6, 0.5], hf: [24, 6, 0.5], tail: [-2.9, 0, 0.05, 2, 0] };
+  return () => { const P = (px, py) => [q.x + f * s * px * SPX, q.y + s * py * SPY], e1 = P(cx + ux * L, cy + uy * L), e2 = P(cx - ux * L, cy - uy * L);
+    line(e1[0], e1[1], e2[0], e2[1], '#3a3a3a', 1.6 * s);
+    [[e1, 1], [e2, -1]].forEach(([e, sg]) => { c.save(); c.translate(e[0], e[1]); c.rotate(th * f + Math.PI / 2); oval(0, 0, 3.4 * s, 9 * s, 0, col || '#d9573a'); c.restore();
+      if (e[1] > q.y - 4 * s) for (let k = 0; k < 5; k++) { const u = mod(ph * 0.8 + k / 5, 1); disc(e[0] + (k - 2) * 3 * s, q.y - 4 * s - Math.sin(u * Math.PI) * 10 * s, (1.3 - u) * 1.3 * s, `rgba(255,255,255,${0.7 * (1 - u)})`); } }); };
 }
 /* thought bubble with the friends met along the way (ending) */
 function dreamBubble(x, y, s, u) {
@@ -165,10 +208,9 @@ function actCat(o) {
       const cx = lt < 2.2 ? lerp(640, 398, sm(lt / 2.2)) : lt < 2.85 ? 398 : 398 + (lt - 2.85) * 170, cy = 607 + (lt > 3.3 ? (lt - 3.3) * 14 : 0);
       q.after = () => { if (lt < 4.2) { c.save(); c.beginPath(); c.rect(cx - 40, 0, 80, 607); c.clip(); crab(cx, cy, 1.5, lt, { face: -1, col: '#a8483a', wave: lt > 2.2 && lt < 2.85 ? 0.5 + 0.5 * Math.sin(lt * 14) : 0 }); c.restore(); } };
       q.before = () => { if (mirrored()) return;   // Wai'ao is a surf beach with paragliders over the headland: two local cats are at it
-        const sx = 1210 - lt * 75, sy = 492 + Math.sin(lt * 2.2) * 3;
-        c.strokeStyle = 'rgba(255,235,215,0.75)'; c.lineWidth = 2; c.beginPath(); c.moveTo(sx + 10, sy + 2); c.quadraticCurveTo(sx + 60, sy - 6, sx + 120, sy + 4); c.stroke();
-        oval(sx, sy + 1, 26, 3.6, -0.04, '#2c2433'); drawCat3({ x: sx + 2, y: sy - 1, s: 0.42, sil: true, rim: '255,175,120', face: -1, shadow: false, noBlink: true, pose: { ...lp(STAND3, CROUCH3, 0.45), hr: -0.1, tail: [-2.6, 0.05, 0.1, 3, 0] } });
-        const gx = 470 + lt * 34, gy = 180 + Math.sin(lt * 0.9) * 6; paraglider(gx, gy, 0.8, lt); drawCat3({ x: gx + 2, y: gy + 52, s: 0.3, sil: true, rim: '255,175,120', shadow: false, noBlink: true, pose: sit3(lt, { hr: 0.2 }) }); };
+        const sx = 1210 - lt * 75, sy = 492 + Math.sin(lt * 2.2) * 2;
+        surfCat(sx, sy, 0.42, lt, { sil: true, rim: '255,175,120', dir: -1, face: 'rgba(60,44,70,0.45)', foam: 'rgba(255,225,200,0.9)' });
+        const gx = 470 + lt * 34, gy = 180 + Math.sin(lt * 0.9) * 6; paraglider(gx, gy, 0.8, lt, true); paraPilot(gx + 2, gy + 62, 0.28, lt, { sil: true, rim: '255,175,120', lines: 'rgba(40,30,40,0.5)', wx: gx, wy: gy, ws: 0.8 }); };
       emo(q, lt, [[1.1, 2.2, '?'], [2.85, 3.6, '!']]);
       const tap = bumpT(lt, 2.45, 2.85), g = lt > 3.7 && lt < 5.0, a = g ? 0.5 + 0.5 * Math.sin((lt - 3.7) * 6) : 0;
       if (lt < 3.6) q.pose = sit3(lt, { ...exSeq(lt, [[0, 'neutral'], [1.0, 'curious'], [2.85, 'surprised']]), hr: lerp(-0.05, 0.42, sm((lt - 0.9) / 0.5)) * (1 - sm((lt - 3.0) / 0.5)), paw: tap > 0.02 ? [lerp(16, 33, tap), lerp(-6, -12, tap), 1] : null, look: [0.6, 0.5] });
@@ -209,7 +251,7 @@ function actCat(o) {
     case 6: { // Eluanbi: a grey cat is already sitting on the cape watching the sun go down. Ours walks up, the lighthouse beam
       // sweeps over (!), it sits down beside the stranger and the two watch the sunset together.
       const f = x2 => 470 - 120 * sm((x2 - 520) / 500) - fbm1(x2 * 0.01 + 3) * 16, fx = 708;
-      const fq = { x: fx, y: Math.min(f(fx), 560) + 2, s: s * 0.92, face: -1, sil: true, rim: '255,170,110', bseed: 6, shadow: false,
+      const fq = { x: fx, y: Math.min(f(fx), 560) + 2, s: s * 0.92, face: -1, coat: 'grey', rim: '255,180,120', bseed: 6, shadow: false,
         pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [2.2, 'curious'], [4.4, 'happy'], [5.4, 'content']]), hr: lt > 2.2 && lt < 4.4 ? 0.12 : -0.15, ts: 1.0 }) };
       emo(fq, lt, [[2.2, 3.0, '?'], [4.5, 5.8, 'heart']]);
       emo(q, lt, [[3.05, 3.9, '!', 0.9]]);
@@ -443,7 +485,7 @@ function bgCat(o) {
   const mood = MOODS[o.mood || o.build || 'content'] || MOODS.content;
   const q = { x: o.x, y: o.y, s, coat: o.coat, build: o.build, face: f, haze: o.haze, blur: o.blur, shadowA: o.shadowA ?? 0.2, bseed: sd + 0.5, rim: o.rim, sil: o.sil, shadow: o.shadow };
   const sitAt = (px, py) => [q.x + f * s * bd.bx * px, q.y + s * bd.by * py];        // sitting-silhouette coords -> world
-  const ph = t + hash(sd) * 7; let after = null;
+  const ph = t + hash(sd) * 7; let after = null, clipY = null;
   switch (o.act) {
     case 'walk': case 'hike': { const v = o.v ?? 22, d = v * t; q.x = o.x + f * d; q.pose = { ...walkPose3(walkCyc3(Math.abs(d), s, o.trot), { trot: o.trot }), ...mood };
       if (o.act === 'hike') after = () => { const p = q.pose, b = [q.x + f * s * (p.hip[0] + p.sh[0]) / 2 * SPX, q.y + s * ((p.hip[1] + p.sh[1]) / 2 - 12) * SPY]; packProp(b[0], b[1], s * 1.1, o.col); }; break; }
@@ -463,17 +505,25 @@ function bgCat(o) {
       after = () => { const a = [q.x + f * s * 40, q.y - s * 46]; rakeProp(a[0], a[1], s * f, 0.1 + sw * 0.08); }; break; }
     case 'ice': { const lick = Math.max(0, Math.sin(ph * 3)); q.pose = sit3(0, { ...mood, paw: [22, -60], tongue: lick > 0.6 ? 0.5 : 0 }); after = () => { const w = sitAt(24, -66); iceProp(w[0], w[1], s * 1.1, o.col); }; break; }
     case 'look': q.pose = sit3(0, { ...mood, turn: turnAt(mod(ph, 7), [[2, 4.5, 1]]) }); break;
-    case 'bike': { const v = o.v ?? 60; q.x = o.x + f * v * t; const bx0 = q.x; q.x -= f * 8 * s; q.y = o.y - 30 * s; q.s = s * 0.8; q.shadow = false; q.pose = sit3(0, { ...ex('happy'), ts: 2 });
-      c.save(); c.translate(bx0, o.y); c.scale(f, 1); bicycle(0, 0, s, o.col); c.restore(); break; }
-    case 'kayak': { const bob = Math.sin(ph * 1.8) * 1.5, v = o.v ?? 10; q.x = o.x + f * v * t; q.y = o.y + bob + 4 * s; q.shadow = false; q.pose = sit3(0, { ...ex('happy') });
+    case 'bike': { // rides like a person on a city bike: seated, back half-upright, front paws on the bars, hind paws pushing the pedals round
+      const v = o.v ?? 60, d = Math.abs(v) * t; q.x = o.x + f * v * t; q.shadow = false; const k = 0.62; q.s = s * k;
+      const wr = d / (13 * s), cr = wr * 0.55 + hash(sd) * 6;                         // wheel angle from distance travelled (no skidding), crank turns slower
+      const P = (bx, by) => [bx / k / SPX, by / k / SPY];                                // bike coords -> pose units
+      const cc = P(-6, -13), R = 7 / k, bob = Math.sin(cr * 2) * 0.8, bar = P(28, -47), st = P(-13, -37);
+      const ped = a => [cc[0] + Math.cos(a) * R / SPX, cc[1] + Math.sin(a) * R / SPY, 0.5];
+      q.pose = { ...STAND3, ...ex(o.mood === 'aloof' ? 'content' : 'happy'), hip: [st[0] - 1, st[1] - 2 + bob * 0.3], sh: [st[0] + 52, st[1] - 33 + bob], arch: 3, head: [st[0] + 74, st[1] - 51 + bob], hr: -0.12,
+        fn: [bar[0] + 2, bar[1], -1], ff: [bar[0] - 1, bar[1] + 1, -1], hn: ped(cr), hf: ped(cr + Math.PI), tail: [-2.55, 0.18, 0.08, 2, 0], sb: 1, hb: 1 };
+      c.save(); c.translate(q.x, o.y); c.scale(f, 1); bicycle(0, 0, s, o.col, { rot: wr, crank: cr, ride: 1 }); c.restore(); break; }
+    case 'kayak': { const bob = Math.sin(ph * 1.8) * 1.5, v = o.v ?? 10; q.x = o.x + f * v * t; q.y = o.y + bob + 4 * s; q.shadow = false; const ks = q.s, paddle = kayakPaddler(q, ph * 2.6, o.pcol); clipY = q.y - 6 * ks;
       after = () => { for (let w = 1; w <= 4; w++) { const wx = q.x - f * (40 + w * 26) * s, a = 0.4 * (1 - w / 5); c.strokeStyle = `rgba(255,255,255,${a})`; c.lineWidth = 1.2; c.beginPath(); c.moveTo(wx - 12 * s * w * 0.4, q.y + 2 * s + w * 2 * s); c.lineTo(wx + 12 * s, q.y + s); c.lineTo(wx - 12 * s * w * 0.4, q.y - 0 * s - w * 0.5 * s); c.stroke(); }
-        c.save(); c.translate(q.x + f * 4 * s, q.y - 4 * s); c.scale(f, 1); c.fillStyle = o.col || '#e8b23a'; c.beginPath(); c.moveTo(-46 * s, -2 * s); c.quadraticCurveTo(0, 16 * s, 46 * s, -2 * s); c.quadraticCurveTo(0, 2 * s, -46 * s, -2 * s); c.fill(); c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(-4 * s, 0, 14 * s, 3 * s, 0, 0, Math.PI * 2); c.fill();
-        const pa = Math.sin(ph * 3) * 0.7; c.rotate(pa); line(-30 * s, 10 * s, 30 * s, -16 * s, '#3a3a3a', 1.6 * s); c.restore(); }; break; }
+        c.save(); c.translate(q.x + f * 4 * s, q.y - 4 * s); c.scale(f, 1); c.fillStyle = o.col || '#e8b23a'; c.beginPath(); c.moveTo(-46 * s, -2 * s); c.quadraticCurveTo(0, 16 * s, 46 * s, -2 * s); c.quadraticCurveTo(0, 2 * s, -46 * s, -2 * s); c.fill();
+        c.fillStyle = 'rgba(0,0,0,0.35)'; c.beginPath(); c.ellipse(-2 * s, 0, 13 * s, 3 * s, 0, 0, Math.PI * 2); c.fill(); c.restore(); paddle(); }; break; }
     default: q.pose = sit3(0, { ...mood, ts: 0.9 + hash(sd + 1) * 0.8 });                 // 'sit'
   }
   if (o.emote) q.emote = o.emote;
   if (o.blur) { c.save(); c.filter = `blur(${o.blur * S}px)`; }
-  drawCat3({ ...q, blur: 0 }); if (after) after();
+  if (clipY !== null) { c.save(); c.beginPath(); c.rect(-M - 2000, -2000, W + 4000 + 2 * M, clipY + 2000); c.clip(); }
+  drawCat3({ ...q, blur: 0 }); if (clipY !== null) c.restore(); if (after) after();
   if (o.blur) c.restore();
 }
 
@@ -488,17 +538,16 @@ const CROWD = {
   L4: [{ d: 0.5, x: 610, y: 596, s: 0.5, act: 'kayak', coat: 'cream', v: 9, haze: HZ.day, seed: 4 }, { d: 0.5, x: 720, y: 606, s: 0.48, act: 'kayak', coat: 'black', v: 9, col: '#d9573a', haze: HZ.day, seed: 5 }],
   L7: [{ d: 0.5, x: 520, y: 478, s: 0.34, act: 'walk', v: 14, coat: 'grey', haze: HZ.day, seed: 10 }, { d: 0.5, x: 470, y: 480, s: 0.28, act: 'walk', v: 14, coat: 'cream', build: 'kitten', haze: HZ.day, seed: 11 }],
   L9: [{ d: 0.5, x: 720, y: 470, s: 0.42, act: 'rake', coat: 'brown', haze: HZ.warm, seed: 12 }],
-  L12: [{ after: 'bridge', d: 0.4, x: 300, y: 392, s: 0.24, act: 'walk', v: 16, coat: 'black', haze: HZ.far, seed: 19 }, { after: 'bridge', d: 0.4, x: 420, y: 392, s: 0.24, act: 'bike', v: 40, coat: 'white', haze: HZ.far, seed: 20 }],
   L13: [{ after: 'house', d: 0.35, x: 1010, y: 470, s: 0.3, act: 'walk', v: -10, face: -1, coat: 'cream', haze: HZ.day, seed: 77 }],
   L16: [{ d: 0.5, x: 760, y: 556, s: 0.3, act: 'hike', v: 10, coat: 'grey', haze: HZ.day, seed: 78 }, { d: 0.5, x: 728, y: 558, s: 0.28, act: 'hike', v: 10, coat: 'bicolor', col: '#d9573a', haze: HZ.day, seed: 79 }],
-  L18: [{ d: 0.6, x: 760, y: 470, s: 0.32, act: 'walk', v: 12, coat: 'cream', haze: HZ.night, seed: 28 }, { d: 0.6, x: 800, y: 470, s: 0.3, act: 'walk', v: 12, coat: 'siamese', haze: HZ.night, seed: 29 }],
+  L18: [{ d: 0.6, x: 760, y: 472, s: 0.26, act: 'walk', v: 12, coat: 'cream', haze: HZ.night, seed: 28 }, { d: 0.6, x: 794, y: 472, s: 0.25, act: 'walk', v: 12, coat: 'siamese', haze: HZ.night, seed: 29 }],
   L20: [{ d: 0.6, x: 870, y: 403, s: 0.4, act: 'loaf', coat: 'black', build: 'aloof', haze: HZ.day, seed: 32 }],
-  T2: [{ d: 0.3, x: 880, y: 330, s: 0.16, act: 'hike', v: 8, coat: 'grey', haze: HZ.far, seed: 36 }, { d: 0.3, x: 905, y: 326, s: 0.15, act: 'hike', v: 8, coat: 'cream', col: '#d9573a', haze: HZ.far, seed: 37 }],
+  T2: [{ d: 0.25, x: 812, y: 394, s: 0.12, act: 'hike', v: 5, coat: 'grey', haze: HZ.far, seed: 36 }, { d: 0.25, x: 830, y: 395, s: 0.115, act: 'hike', v: 5, coat: 'cream', col: '#d9573a', haze: HZ.far, seed: 37 }],
   // Huadong valley: cyclists on the far bike path
   T4: [{ d: 0.55, x: 760, y: 526, s: 0.36, act: 'bike', v: -26, face: -1, coat: 'black', haze: HZ.day, seed: 39 }, { d: 0.55, x: 840, y: 526, s: 0.36, act: 'bike', v: -26, face: -1, coat: 'cream', col: '#d9573a', haze: HZ.day, seed: 40 }],
   T8: [{ after: 'far', d: 0.3, x: 900, y: 466, s: 0.16, act: 'bike', v: -30, face: -1, coat: 'black', haze: HZ.far, seed: 84 }],
-  // Jiji: cyclists on the same road as the hero, so at the hero's scale, riding away in the distance
-  T13: [{ d: 0.9, x: 860, y: 600, s: 1.0, act: 'bike', v: 60, coat: 'cream', col: '#d9573a', seed: 53 }],
+  // Jiji: a cyclist far down the tunnel road (small because far, on the road where it bends away, hazed)
+  T13: [{ after: 'far', d: 0.3, x: 728, y: 446, s: 0.2, act: 'bike', v: 6, coat: 'cream', col: '#d9573a', haze: HZ.day, seed: 53 }],
   T16: [{ d: 0.7, x: 700, y: 540, s: 0.45, act: 'pick', coat: 'calico', haze: HZ.day, seed: 60 }, { d: 0.6, x: 880, y: 480, s: 0.36, act: 'pick', coat: 'grey', haze: HZ.day, seed: 61 }, { d: 0.5, x: 1040, y: 440, s: 0.3, act: 'pick', coat: 'cream', haze: HZ.far, seed: 62 }],
   // Nanliao: kite fliers far down the beach
   T17: [{ d: 0.6, x: 820, y: 462, s: 0.3, act: 'kite', coat: 'grey', ky: 250, kx: 900, col: '#3fa0d8', haze: HZ.day, seed: 63 }, { d: 0.6, x: 1010, y: 466, s: 0.26, act: 'kite', coat: 'bicolor', build: 'kitten', kx: 1080, ky: 300, col: '#f2c14e', haze: HZ.day, seed: 64 }],
