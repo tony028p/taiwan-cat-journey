@@ -500,13 +500,46 @@ V('T19', '臺灣海峽上空', '飛往金門', 'Flying to Kinmen', '24.50°N 119
     c.restore(); });
   D(1, () => drawCat3({ x: 400, y: 650, s: 1.4, pose: sit3(lt, { ...ex('delighted'), hr: 0.1, ear: -0.1, turn: turnAt(lt, [[1.8, 3.6, 0.7]]) }), emote: emoAt(lt, [[0.8, 2.4, 'spark']]), shadow: false }));
 });
-/* T20 夜航 */
+/* T20 夜航 — per photos: the overnight ferry to Matsu leaves Keelung after dark. From the outer deck (green-painted deck,
+   white superstructure with lit portholes, white railing with a life ring, warm deck lamps) the harbour lights — hillside
+   city, a tower block, cranes with red beacons, the pink-lit waterfront — slide away behind, their reflections streaking
+   the black water; foam runs along the hull below, the moon over the open strait ahead */
 V('T20', '臺灣海峽', '夜航往馬祖', 'Night boat to Matsu', '25.60°N 120.00°E', ['夜裡的船，往更北邊的島。', 'A night boat to the islands further north.'], [1.02, 1.05, 0, 0, 0, 0], function (lt) {
-  L('sky', 0, () => { sky([[0, '#05070f'], [1, '#162038']]); stars(400, 501, 420, 0.9); });
-  D(0, () => { disc(980, 140, 24, '#f6f0d6'); glow(980, 140, 120, '255,250,220', 0.25); });
-  D(0.15, () => { c.fillStyle = vg(400, H, [[0, '#0c1424'], [1, '#05080f']]); c.fillRect(-M, 400, W + 2 * M, H); shimmer(402, 600, 80, '255,245,210', 502, { xc: 980, spread: 160, a: 0.6, op: 'lighter' }); });
-  L('deck', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#3a3a44'], [1, '#1a1a22']]); c.fillRect(-M, 570, W + 2 * M, 200); line(-M, 520, W + M, 520, '#8a8a96', 4); for (let x = -M; x < W + M; x += 60) line(x, 520, x, 572, '#8a8a96', 3); glow(160, 500, 60, '255,210,150', 0.6); });
-  D(0.95, () => drawCat3({ x: 560, y: 586, s: 1.1, sil: true, rim: '255,240,200', pose: sit3(lt, { ...ex('sleepy'), eye: lt > 1.4 ? 0 : 0.3, hr: -0.1 + sm((lt - 1.2) / 0.6) * 0.2, ts: 1.2 }), emote: emoAt(lt, [[1.5, 3.8, 'z']]), shadow: false }));
+  const hz = 430;
+  L('sky', 0, () => { sky([[0, '#04060e'], [0.55, '#0e1830'], [0.62, '#2a2a40'], [1, '#2a2a40']]); stars(380, 501, 380, 0.9); glow(420, hz, 380, '255,150,110', 0.16); });
+  D(0, () => { disc(1010, 150, 22, '#f6f0d6'); glow(1010, 150, 120, '255,250,220', 0.25); });
+  // Keelung receding: hillside lights, a tower block, the cranes and the pink waterfront, sliding slowly away to the left
+  D(0.12, () => { const ox = -lt * 14, r = rng(503); c.save(); c.translate(ox, 0);
+    mountain({ fn: x => hz - 40 - 40 * Math.exp(-Math.pow((x - 380) / 260, 2)) - fbm1(x * 0.01) * 14, floor: hz + 2, bottom: hz + 2, top: '#0b0f1c', bot: '#121828', seed: 504 });
+    for (let k = 0; k < 420; k++) { const x = 60 + r() * 700, top = hz - 40 - 40 * Math.exp(-Math.pow((x - 380) / 260, 2)), y = top + 6 + r() * (hz - top - 6); disc(x, y, 0.7 + r() * 1.1, `rgba(255,${190 + r() * 60 | 0},${120 + r() * 80 | 0},${0.5 + r() * 0.5})`); }
+    c.fillStyle = '#141a2c'; c.fillRect(470, hz - 120, 26, 120); for (let j = 0; j < 14; j++) for (let k = 0; k < 3; k++) if (r() < 0.7) { c.fillStyle = 'rgba(255,230,170,0.85)'; c.fillRect(473 + k * 8, hz - 114 + j * 8, 4, 4); } glow(483, hz - 124, 10, '255,60,60', 0.9);
+    [[620, 60], [680, 70], [740, 56]].forEach(([x, h]) => { c.strokeStyle = '#1c2236'; c.lineWidth = 3; c.beginPath(); c.moveTo(x - 10, hz); c.lineTo(x, hz - h); c.lineTo(x + 10, hz); c.moveTo(x - 30, hz - h); c.lineTo(x + 40, hz - h); c.stroke(); glow(x + 40, hz - h, 6, '255,60,60', Math.sin(T * 3 + x) > 0 ? 0.9 : 0.3); glow(x, hz - h + 10, 18, '255,220,160', 0.6); });
+    c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = 'rgba(255,90,200,0.85)'; c.fillRect(250, hz - 10, 200, 5); glow(350, hz - 8, 90, '255,80,200', 0.35);
+    for (let k = 0; k < 90; k++) { const x = 80 + r() * 700, pink = x > 250 && x < 450 && r() < 0.6, y = hz + 4 + r() * 4; c.strokeStyle = pink ? 'rgba(255,90,210,0.5)' : `rgba(255,200,140,${0.2 + r() * 0.3})`; c.lineWidth = 2 + r() * 2; c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.sin(T * 2 + k) * 2, y + 12 + r() * 40); c.stroke(); }
+    c.restore(); c.restore(); });
+  L('sea', 0.15, () => { c.fillStyle = vg(hz, H, [[0, '#0c1424'], [1, '#03050a']]); c.fillRect(-M, hz, W + 2 * M, H); });
+  D(0.15, () => { shimmer(hz + 2, 560, 90, '255,245,210', 502, { xc: 1010, spread: 140, a: 0.55, op: 'lighter' });
+    // foam rushing along the hull below the railing
+    c.save(); c.globalCompositeOperation = 'lighter'; const r = rng(505); for (let k = 0; k < 60; k++) { const y = 520 + r() * 50, sp = 260 + r() * 200, x = mod(r() * 1600 - lt * sp, 1600) - 160, l = 40 + r() * 120;
+      c.strokeStyle = `rgba(220,235,255,${0.12 + 0.25 * (y - 520) / 50})`; c.lineWidth = 1 + r() * 2; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + l / 2, y - 3, x + l, y + 1); c.stroke(); } c.restore(); });
+  // the ship: superstructure on the left, railing, life ring, deck lamps, green deck
+  L('deck', 0.95, () => {
+    c.fillStyle = vg(560, H, [[0, '#46705a'], [1, '#22382c']]); c.fillRect(-M, 562, W + 2 * M, H); c.strokeStyle = 'rgba(0,0,0,0.18)'; c.lineWidth = 1; for (let x = -M; x < W + M; x += 80) { c.beginPath(); c.moveTo(x, 562); c.lineTo(x - 60, H); c.stroke(); }
+    c.fillStyle = '#d8dce2'; c.fillRect(300, 556, W + M - 300, 8);
+    c.fillStyle = vg(BAR, 600, [[0, '#262a34'], [0.6, '#4a4e5a'], [1, '#3a3e48']]); c.beginPath(); c.moveTo(-M, BAR - 10); c.lineTo(290, BAR - 10); c.lineTo(290, 566); c.lineTo(-M, 566); c.fill();
+    c.fillStyle = 'rgba(0,0,0,0.25)'; c.fillRect(284, BAR - 10, 6, 576 - BAR);
+    [[60, 300], [180, 300], [60, 420], [180, 420]].forEach(([x, y]) => { c.fillStyle = '#5a606c'; c.beginPath(); c.arc(x, y, 24, 0, TAU); c.fill(); c.fillStyle = vg(y - 20, y + 20, [[0, '#ffe2a8'], [1, '#e6a860']]); c.beginPath(); c.arc(x, y, 19, 0, TAU); c.fill(); });
+    c.fillStyle = '#3a3f4a'; c.fillRect(110, 470, 80, 96); c.fillStyle = '#2c3038'; c.fillRect(116, 478, 68, 84); c.fillStyle = 'rgba(255,220,160,0.7)'; c.fillRect(130, 490, 40, 22);
+    // railing
+    c.strokeStyle = '#e6e8ec'; c.lineWidth = 6; c.beginPath(); c.moveTo(290, 470); c.lineTo(W + M, 470); c.stroke(); c.lineWidth = 2.5; c.beginPath(); c.moveTo(290, 505); c.lineTo(W + M, 505); c.moveTo(290, 535); c.lineTo(W + M, 535); c.stroke();
+    for (let x = 330; x < W + M; x += 90) line(x, 470, x, 560, '#d6d9de', 4);
+    // life ring tied to the rail
+    c.strokeStyle = '#e8622c'; c.lineWidth = 12; c.beginPath(); c.arc(860, 512, 26, 0, TAU); c.stroke(); c.strokeStyle = '#ffffff'; c.lineWidth = 12; [0, 1, 2, 3].forEach(k => { c.beginPath(); c.arc(860, 512, 26, k * Math.PI / 2 - 0.22, k * Math.PI / 2 + 0.22); c.stroke(); });
+    // deck lamp on the bulkhead
+    c.fillStyle = '#4a4f5a'; c.fillRect(270, 380, 22, 14); });
+  D(0.95, () => { glow(282, 396, 160, '255,210,150', 0.45); glow(200, 440, 220, '255,200,140', 0.12); glow(282, 396, 14, '255,240,210', 0.95); [60, 180].forEach(x => [300, 420].forEach(y => glow(x, y, 40, '255,210,140', 0.3)));
+    c.save(); c.translate(0, 590); c.scale(1, 0.12); glow(330, 0, 300, '255,200,140', 0.22); c.restore();
+    drawCat3({ x: 560, y: 598, s: 1.1, haze: '30,36,70,0.38', rim: '255,210,160', pose: sit3(lt, { ...ex('sleepy'), eye: lt > 1.4 ? 0 : 0.3, hr: -0.1 + sm((lt - 1.2) / 0.6) * 0.2, ts: 1.2 }), emote: emoAt(lt, [[1.5, 3.8, 'z']]), shadow: false }); });
 });
 /* T21 降落松山 */
 V('T21', '臺北市上空', '降落松山機場', 'Landing in Taipei', '25.07°N 121.55°E', ['看到 101 了，快到家了。', 'There’s Taipei 101. Almost home.'], [1.0, 1.02, 0, 0, 0, 0], function (lt) {
