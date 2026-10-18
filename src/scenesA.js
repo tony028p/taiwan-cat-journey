@@ -463,19 +463,47 @@ SCENES.push({ county: '臺南市', place: '井仔腳瓦盤鹽田', sun: lt => [6
   } });
 
 /* 10 — 嘉義縣 阿里山 */
-SCENES.push({ county: '嘉義縣', place: '阿里山 · 雲海日出', sun: lt => [360, 300 - lt * 6, 1], en: 'Alishan Sunrise & Sea of Clouds', ll: '23.51°N 120.80°E', cam: [1.02, 1.08, -20, 20, 0, 0],
+SCENES.push({ county: '嘉義縣', place: '阿里山 · 雲海日出', sun: lt => [760, 336 - lt * 6, 0.55], en: 'Alishan Sunrise & Sea of Clouds', ll: '23.51°N 120.80°E', cam: [1.02, 1.08, -20, 20, 0, 0],
   sub: ['嘉義的阿里山，雲海在腳下翻湧。', 'On Alishan, a sea of clouds rolls beneath its paws.'],
   draw(lt) {
-    const sx = 360, sy = 300 - lt * 6;
-    L('sky', 0, () => { sky([[0, '#4e6a9c'], [0.38, '#c79aa0'], [0.5, '#f5c18f'], [1, '#fff0cf']]); });
-    D(0, () => { glow(sx, sy, 460, '255,200,130', 0.6); disc(sx, sy, 24, '#fff4d2'); glow(sx, sy, 60, '255,240,200', 0.8); godrays(sx, sy, 700, 26, '255,220,170', 0.08, 111, 2.6, Math.PI * 0.55); });
-    L('peaks', 0.06, () => mountain({ base: 330, amp: 140, f: 0.0035, seed: 112, peak: 1.4, top: '#5f668d', bot: '#9a8fa6', haze: 'rgba(240,200,190,0.5)', rim: 'rgba(255,210,170,0.7)' }), { blur: 0.8 });
-    for (let b = 0; b < 4; b++) L('cl' + b, 0.15 + b * 0.08, () => { const r = rng(113 + b); for (let k = 0; k < 14; k++) cumulus(r() * (W + 2 * M) - M, 380 + b * 30 + r() * 20, 220 + r() * 160, 50, 120 + b * 20 + k, b < 2 ? '#fff6ea' : '#fff2e4', b < 2 ? '#d6c7cf' : '#c9b9c6', -0.3); c.fillStyle = b < 2 ? '#ddd0d6' : '#cdbdc9'; c.fillRect(-M, 384 + b * 30, W + 2 * M, H); }, { blur: 3.2 - b * 0.4, dx: lt * (3 + b * 3) - 30 });
-    L('ridge', 0.5, () => { const f = mountain({ base: 520, amp: 60, f: 0.004, seed: 130, top: '#2c3b37', bot: '#1d2826' }); const r = rng(131); for (let k = 0; k < 90; k++) { const x = r() * (W + 2 * M) - M, y = f(x) + 6, h = 20 + r() * 40; poly([[x - h * 0.22, y], [x, y - h], [x + h * 0.22, y]], '#1e2a27'); }
+    // per photos: the sun breaks over a golden sea of clouds; far ranges float on it in layers of blue; nearer dark peaks poke
+    // through; cypress silhouettes and the viewing deck in front
+    const sx = 760, sy = 336 - lt * 6, cs = 380;
+    L('sky', 0, () => { sky([[0, '#2c4f8c'], [0.22, '#5d79a8'], [0.36, '#d99a6c'], [0.44, '#ffb554'], [0.52, '#ffd98a'], [1, '#fff0c4']]);
+      stratus(300, 220, 900, 36, 'rgba(255,170,110,0.45)'); stratus(1000, 180, 700, 26, 'rgba(255,190,130,0.4)'); stratus(620, 130, 1100, 30, 'rgba(255,220,190,0.22)'); });
+    D(0, () => { glow(sx, sy, 480, '255,170,90', 0.32); glow(sx, sy, 90, '255,230,170', 0.55); disc(sx, sy, 17, '#fff6dc');
+      godrays(sx, sy, 420, 26, '255,225,160', 0.05, 111, TAU, 0); c.save(); c.globalCompositeOperation = 'lighter'; c.strokeStyle = 'rgba(255,245,215,0.5)'; c.lineWidth = 1.2;
+      for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + 0.2, l = k % 2 ? 46 : 80; c.beginPath(); c.moveTo(sx + Math.cos(a) * 24, sy + Math.sin(a) * 24); c.lineTo(sx + Math.cos(a) * l, sy + Math.sin(a) * l); c.stroke(); } c.restore(); });
+    // far ranges floating on the cloud sea, layered blue with a gold rim on the side facing the sun
+    L('peaks', 0.05, () => { mountain({ base: cs - 6, amp: 34, f: 0.004, seed: 112, top: '#6a7aa6', bot: '#9aa0bc', rim: 'rgba(255,215,160,0.8)', floor: cs + 4, shape: (x, n) => n * (0.3 + 0.7 * Math.abs(Math.sin(x * 0.003))) });
+      mountain({ base: cs + 2, amp: 46, f: 0.006, seed: 116, top: '#4d5b86', bot: '#7a7f9e', rim: 'rgba(255,200,140,0.7)', floor: cs + 10, shape: (x, n) => x < 520 ? n * (1 - x / 520) : (x > 940 ? n * sm((x - 940) / 200) : 0) }); }, { blur: 0.6 });
+    // the cloud sea: billows lit gold from the sun, shading violet; smaller and flatter with distance; a bright path under the sun
+    const band = (b, y0, y1, n, sz, lit, sh, sd) => L('cl' + b, 0.12 + b * 0.1, () => { const r = rng(sd), rows = n;
+      c.fillStyle = sh; c.fillRect(-M, y0 + 4, W + 2 * M, H);
+      for (let i = 0; i < rows; i++) { const u = i / (rows - 1), y = lerp(y0, y1, u), amp = sz * (0.1 + 0.14 * u), wl = sz * (0.35 + r() * 0.35), ph = r() * 9, ph2 = r() * 9;
+        const top = x => y - amp * (0.55 * Math.abs(Math.sin(x / wl + ph)) + 0.45 * Math.abs(Math.sin(x / (wl * 0.43) + ph2)));
+        c.beginPath(); c.moveTo(-M - 100, y + amp * 3); for (let x = -M - 100; x <= W + M + 100; x += 6) c.lineTo(x, top(x)); c.lineTo(W + M + 100, y + amp * 3); c.closePath();
+        const g = c.createLinearGradient(0, y - amp, 0, y + amp * 2.2); g.addColorStop(0, lit); g.addColorStop(0.3, mix(lit, sh, 0.5)); g.addColorStop(1, sh); c.fillStyle = g; c.fill();
+        c.save(); c.clip(); c.globalCompositeOperation = 'lighter'; c.fillStyle = hg(sx - 500, sx + 500, [[0, 'rgba(255,170,90,0)'], [0.5, `rgba(255,170,90,${0.14 * (1 - u * 0.5)})`], [1, 'rgba(255,170,90,0)']]); c.fillRect(-M, y - amp, W + 2 * M, amp * 2); c.restore();
+        for (let k = 0; k < 2 + b; k++) { const x = r() * (W + 2 * M + 200) - M - 100, w = sz * (1 + r() * 1.2); cumulus(x, top(x) + amp * 0.8, w, w * 0.16, sd * 50 + i * 7 + k, lit, mix(lit, sh, 0.6), (x < sx ? 1 : -1) * 0.7); } } },
+      { blur: 1.3 - b * 0.3, dx: lt * (2 + b * 3) - 20 });
+    band(0, cs + 2, cs + 28, 11, 90, '#f8cf92', '#8a6a8c', 113);
+    band(1, cs + 30, cs + 66, 7, 150, '#f6cc94', '#7c5e82', 114);
+    D(0.2, () => { c.save(); c.globalCompositeOperation = 'lighter'; c.save(); c.translate(sx, cs + 30); c.scale(1, 0.25); glow(0, 0, 300, '255,200,120', 0.35); c.restore(); c.restore(); });
+    // a dark forested peak breaks through the clouds on the right
+    L('isle', 0.3, () => { mountain({ fn: x => 462 - Math.pow(Math.sin(clamp((x - 940) / 300) * Math.PI), 1.7) * 74 - Math.sin(x * 0.07) * 2 * sm((x - 940) / 60) * (1 - sm((x - 1180) / 60)), bottom: 470, top: '#2e2a3c', bot: '#4a3e54', rim: 'rgba(255,200,140,0.6)', floor: 470 });
+      });
+    band(2, cs + 74, cs + 122, 5, 230, '#f2c896', '#624c72', 115);
+    L('ridge', 0.5, () => { const f = mountain({ base: 520, amp: 50, f: 0.004, seed: 130, top: '#1f2a2a', bot: '#161e1f', rim: 'rgba(255,200,140,0.45)' }); const r = rng(131);
+      for (let k = 0; k < 110; k++) { const x = r() * (W + 2 * M) - M, y = f(x) + 8, h = 22 + r() * 46; c.fillStyle = '#18211f'; c.beginPath(); c.moveTo(x, y - h); for (let j = 0; j <= 5; j++) { const yy = y - h + h * j / 5, ww = h * 0.07 + h * 0.2 * j / 5; c.lineTo(x + ww, yy + h / 10); c.lineTo(x + ww * 0.4, yy + h / 10); } c.lineTo(x, y); for (let j = 5; j >= 0; j--) { const yy = y - h + h * j / 5, ww = h * 0.07 + h * 0.2 * j / 5; c.lineTo(x - ww * 0.4, yy + h / 10); c.lineTo(x - ww, yy + h / 10); } c.closePath(); c.fill();
+        line(x, y - h, x + h * 0.08, y - h * 0.6, 'rgba(255,190,130,0.35)', 1); }
       c.fillStyle = '#2a2226'; c.fillRect(-M, 556, W + 2 * M, 4); });
     D(0.5, () => { const tx = 1100 - lt * 40; for (let k = 0; k < 3; k++) { const x = tx + k * 70; c.fillStyle = '#b83a2e'; c.fillRect(x, 528, 64, 26); c.fillStyle = '#f0dcb4'; c.fillRect(x, 540, 64, 4); c.fillStyle = '#ffd890'; for (let w = 0; w < 4; w++) c.fillRect(x + 6 + w * 15, 532, 9, 6); c.fillStyle = '#3a2a24'; c.fillRect(x - 2, 524, 68, 5); } });
-    L('fg', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#3b2c24'], [1, '#1a130f']]); c.fillRect(-M, 590, W + 2 * M, 200); c.fillStyle = '#4a372b'; c.fillRect(-M, 578, W + 2 * M, 12); for (let k = 0; k < 12; k++) c.fillRect(-60 + k * 130, 578, 9, 60);
-      [[60, 70], [1180, 90]].forEach(([x, w]) => { c.fillStyle = hg(x - w / 2, x + w / 2, [[0, '#4a3324'], [0.4, '#6b4a33'], [1, '#24170f']]); c.fillRect(x - w / 2, 0, w, H); const r = rng(x); for (let k = 0; k < 40; k++) line(x - w / 2 + r() * w, r() * H, x - w / 2 + r() * w, r() * H + 60, 'rgba(20,10,5,0.35)', 2); }); });
+    L('fg', 0.95, () => { c.fillStyle = vg(560, H, [[0, '#3b2c24'], [1, '#1a130f']]); c.fillRect(-M, 590, W + 2 * M, 200); c.fillStyle = '#4a372b'; c.fillRect(-M, 578, W + 2 * M, 12); line(-M, 578, W + M, 578, 'rgba(255,200,140,0.5)', 1.2); for (let k = 0; k < 12; k++) c.fillRect(-60 + k * 130, 578, 9, 60);
+      // old red cypresses framing the view, lit on the sun side
+      [[30, 80, 1], [1235, 110, -1]].forEach(([x, w, sd]) => { c.fillStyle = hg(x - w / 2, x + w / 2, sd > 0 ? [[0, '#24170f'], [0.6, '#4a3324'], [1, '#8a5a36']] : [[0, '#8a5a36'], [0.35, '#4a3324'], [1, '#24170f']]); c.beginPath(); c.moveTo(x - w * 0.42, -10); c.lineTo(x + w * 0.42, -10); c.lineTo(x + w * 0.55, H); c.lineTo(x - w * 0.55, H); c.fill();
+        const r = rng(x); for (let k = 0; k < 50; k++) { const xx = x - w / 2 + r() * w; line(xx, r() * H, xx + (r() - 0.5) * 6, r() * H + 80, 'rgba(20,10,5,0.35)', 1 + r() * 2); } });
+      const r = rng(133); for (let k = 0; k < 160; k++) { const x = r() < 0.5 ? r() * 200 - 40 : 1080 + r() * 240, y = 92 + r() * 120; oval(x, y, 16 + r() * 22, 7 + r() * 8, (r() - 0.5) * 0.6, mix('#16200f', '#2e3a1a', r(), 0.95)); } });
     D(0.95, () => actCat({ x: 520, y: 580, s: 1.05, pose: 'sit', sil: true, rim: '255,195,140', look: -0.1, blink: blinkAt(lt, 9), shadow: false }));
   } });
 
