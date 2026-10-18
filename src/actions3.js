@@ -251,7 +251,7 @@ function actCat(o) {
     case 6: { // Eluanbi: a grey cat is already sitting on the cape watching the sun go down. Ours walks up, the lighthouse beam
       // sweeps over (!), it sits down beside the stranger and the two watch the sunset together.
       const f = x2 => 470 - 120 * sm((x2 - 520) / 500) - fbm1(x2 * 0.01 + 3) * 16, fx = 708;
-      const fq = { x: fx, y: Math.min(f(fx), 560) + 2, s: s * 0.92, face: -1, sil: true, rim: '255,170,110', bseed: 6, shadow: false,
+      const fq = { x: fx, y: Math.min(f(fx), 560) + 2, s: s * 0.92, face: -1, coat: 'grey', rim: '255,180,120', bseed: 6, shadow: false,
         pose: sit3(lt, { ...exSeq(lt, [[0, 'content'], [2.2, 'curious'], [4.4, 'happy'], [5.4, 'content']]), hr: lt > 2.2 && lt < 4.4 ? 0.12 : -0.15, ts: 1.0 }) };
       emo(fq, lt, [[2.2, 3.0, '?'], [4.5, 5.8, 'heart']]);
       emo(q, lt, [[3.05, 3.9, '!', 0.9]]);
