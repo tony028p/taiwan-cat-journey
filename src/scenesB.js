@@ -170,19 +170,44 @@ SCENES.push({ county: '南投縣', place: '日月潭', en: 'Sun Moon Lake', ll: 
     D(0.95, () => actCat({ x: 230, y: 580, s: 1.1, pose: 'sit', rim: '255,225,190', look: -0.04, blink: blinkAt(lt, 13) }));
   } });
 
-/* 15 — 臺中市 高美濕地 */
-SCENES.push({ county: '臺中市', place: '高美濕地', sun: lt => [560, 365 + lt * 4, 0.9], en: 'Gaomei Wetlands', ll: '24.31°N 120.55°E', cam: [1.02, 1.07, 20, -20, 0, 0],
+/* Gaomei sunset clouds: long streaks, dark violet on top, lit orange-red underneath (brighter the nearer the sun) */
+function gmClouds(seed, n, y0, y1, sx) {
+  const r = rng(seed);
+  for (let k = 0; k < n; k++) { const x = -M + r() * (W + 2 * M), y = y0 + Math.pow(r(), 0.8) * (y1 - y0), w = 120 + r() * 320, h = 6 + r() * 14, near = clamp(1 - Math.abs(x - sx) / 700);
+    for (let j = 0; j < 5; j++) { const ox = (r() - 0.5) * w * 0.6, oy = (r() - 0.5) * h; oval(x + ox, y + oy, w * (0.3 + r() * 0.3), h * (0.6 + r() * 0.5), (r() - 0.5) * 0.06, `rgba(${70 + near * 40 | 0},${40 + near * 20 | 0},${80 - near * 20 | 0},${0.45 + r() * 0.3})`); }
+    oval(x + (sx - x) * 0.02, y + h * 0.5, w * 0.45, h * 0.22, 0, `rgba(255,${70 + near * 80 | 0},${50 + near * 30 | 0},${0.22 + near * 0.38})`); }
+}
+/* 15 — 臺中市 高美濕地 — per photos: a row of wind turbines on the far sea wall receding into the distance, the sun setting
+   among them under streaky fire-lit clouds, and the wet tidal flat mirroring it all between dark sand bars */
+SCENES.push({ county: '臺中市', place: '高美濕地', sun: lt => [560, 380 + lt * 3, 0.95], en: 'Gaomei Wetlands', ll: '24.31°N 120.55°E', cam: [1.02, 1.07, 20, -20, 0, 0],
   sub: ['臺中高美濕地，風車慢慢轉著黃昏。', 'At Gaomei Wetlands, the windmills slowly turn the dusk.'],
   draw(lt) {
-    const hz = 400, sx = 560, sy = 365 + lt * 4;
-    const skyP = () => { sky([[0, '#2f3361'], [0.35, '#8e5a85'], [0.5, '#ec8a6a'], [0.56, '#ffb27a'], [1, '#ffd29a']]); stratus(300, 260, 900, 40, 'rgba(255,140,140,0.45)'); stratus(1000, 300, 900, 30, 'rgba(255,170,140,0.5)'); };
+    const hz = 404, sx = 560, sy = 380 + lt * 3;
+    const TB = []; for (let k = 0; k < 15; k++) { const t = k / 14, x = lerp(250, 1290, 1 - Math.pow(1 - t, 1.35)); TB.push([x, hz - 2, lerp(215, 46, Math.pow(t, 0.75)), k]); }
+    const skyP = () => { sky([[0, '#1d2550'], [0.3, '#5a3a6e'], [0.55, '#d0604a'], [0.72, '#ff9a4a'], [0.84, '#ffc06a'], [1, '#ffd890']]); gmClouds(1501, 26, 130, 340, sx); stratus(sx, 380, 900, 60, 'rgba(255,190,110,0.35)'); };
     L('sky', 0, skyP);
-    D(0, () => { glow(sx, sy, 420, '255,160,100', 0.55); c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(sx, sy, 26, '#ffe2a8'); c.restore(); });
-    L('wet', 0.2, () => { c.save(); c.beginPath(); c.rect(-M, hz, W + 2 * M, H); c.clip(); c.translate(0, 2 * hz); c.scale(1, -1); c.drawImage(getLayer('sky', skyP), -M, 0, W + 2 * M, H); c.restore(); c.fillStyle = 'rgba(40,30,50,0.25)'; c.fillRect(-M, hz, W + 2 * M, H);
-      const r = rng(181); for (let k = 0; k < 40; k++) { const y = hz + 4 + Math.pow(r(), 1.5) * 220; oval(r() * W, y, 30 + r() * 140, 1 + (y - hz) * 0.03, 0, 'rgba(50,35,45,0.55)'); } });
-    D(0.2, () => { glow(sx, 2 * hz - sy, 200, '255,170,110', 0.35); shimmer(hz + 2, H, 100, '255,200,150', 182, { xc: sx, spread: 200, a: 0.5, op: 'lighter' });
-      for (let k = 0; k < 12; k++) { const x = 60 + k * 110, h = 150 - Math.abs(k - 5) * 4; turbine(x, hz, h, T * 0.9 + k * 0.7, 'rgba(40,30,45,0.9)'); c.save(); c.translate(0, 2 * hz); c.scale(1, -1); c.globalAlpha = 0.35; turbine(x, hz, h, T * 0.9 + k * 0.7, 'rgba(40,30,45,0.9)'); c.restore(); } });
-    L('walk', 0.8, () => { poly([[-M, 560], [W + M, 540], [W + M, 556], [-M, 578]], '#2b2129'); for (let k = 0; k < 30; k++) { const x = -M + k * 50; line(x, 578 - k * 0.6 + 0, x, 600, 'rgba(35,28,35,0.9)', 3); } });
+    D(0, () => { glow(sx, sy, 460, '255,150,80', 0.55); glow(sx, sy, 120, '255,220,150', 0.6); c.save(); c.beginPath(); c.rect(-M, 0, W + 2 * M, hz); c.clip(); disc(sx, sy, 22, '#fff0c0'); c.restore(); });
+    // far sea wall with the turbines (cached; only the rotors move)
+    L('wall', 0.12, () => { c.fillStyle = '#2a1c26'; c.fillRect(-M, hz - 4, W + 2 * M, 6); for (let x = -M; x < W + M; x += 3) if (hash(x) < 0.3) c.fillRect(x, hz - 4 - hash(x + 1) * 3, 2, 3);
+      TB.forEach(([x, y, h]) => line(x, y, x, y - h, '#2a1c26', Math.max(1.2, h * 0.028))); });
+    D(0.12, () => TB.forEach(([x, y, h, k]) => { disc(x, y - h, h * 0.03, '#2a1c26'); const a = T * 0.9 + k * 0.7;
+      for (let j = 0; j < 3; j++) { c.save(); c.translate(x, y - h); c.rotate(a + j * TAU / 3); poly([[0, -h * 0.015], [h * 0.46, -h * 0.004], [h * 0.46, h * 0.006], [0, h * 0.02]], '#2a1c26'); c.restore(); } }));
+    // the tidal flat: the sky mirrored, darkened sand bars, then the turbines' reflections
+    L('wet', 0.2, () => { c.save(); c.beginPath(); c.rect(-M, hz, W + 2 * M, H); c.clip(); c.translate(0, 2 * hz); c.scale(1, -1); c.drawImage(getLayer('sky', skyP), -M, 0, W + 2 * M, H); c.restore();
+      c.fillStyle = vg(hz, H, [[0, 'rgba(60,30,40,0.05)'], [1, 'rgba(40,20,30,0.35)']]); c.fillRect(-M, hz, W + 2 * M, H);
+      TB.forEach(([x, y, h]) => { c.globalAlpha = 0.55; line(x, 2 * hz - y, x, 2 * hz - y + h, '#3a2228', Math.max(1.2, h * 0.028)); c.globalAlpha = 1; });
+      const r = rng(181); for (let k = 0; k < 46; k++) { const y = hz + 6 + Math.pow(r(), 1.4) * 230, d = (y - hz) / 230, x = -M + r() * (W + 2 * M), w = 40 + r() * 200 * (0.4 + d);
+        c.fillStyle = `rgba(${40 + r() * 20 | 0},${24 + r() * 10 | 0},${30 + r() * 10 | 0},${0.7 + d * 0.25})`; c.beginPath(); c.ellipse(x, y, w, 1.5 + d * 9, 0, 0, TAU); c.fill();
+        oval(x - w * 0.1, y - (1 + d * 6), w * 0.8, 0.8 + d * 1.2, 0, `rgba(255,170,100,${0.18 + 0.2 * clamp(1 - Math.abs(x - sx) / 500)})`); } });
+    D(0.2, () => { glow(sx, 2 * hz - sy, 220, '255,170,100', 0.4); c.save(); c.globalCompositeOperation = 'lighter'; c.fillStyle = hg(sx - 40, sx + 40, [[0, 'rgba(255,200,120,0)'], [0.5, 'rgba(255,210,140,0.5)'], [1, 'rgba(255,200,120,0)']]); c.fillRect(sx - 40, hz + 2, 80, 200); c.restore();
+      shimmer(hz + 2, H, 120, '255,200,150', 182, { xc: sx, spread: 260, a: 0.55, op: 'lighter' });
+      TB.forEach(([x, y, h, k]) => { const a = T * 0.9 + k * 0.7; c.save(); c.globalAlpha = 0.4; c.translate(x, 2 * hz - y + h); c.scale(1, -1);
+        for (let j = 0; j < 3; j++) { c.save(); c.rotate(a + j * TAU / 3); poly([[0, -h * 0.015], [h * 0.46, -h * 0.004], [h * 0.46, h * 0.006], [0, h * 0.02]], '#3a2228'); c.restore(); } c.restore(); }); });
+    // the boardwalk out over the flat
+    L('walk', 0.8, () => { poly([[-M, 560], [W + M, 540], [W + M, 556], [-M, 578]], '#2b1d24'); c.strokeStyle = 'rgba(255,170,110,0.55)'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(-M, 560); c.lineTo(W + M, 540); c.stroke();
+      for (let k = 0; k < 60; k++) { const x = -M + k * 25; line(x, 560 - (x + M) * 20 / (W + 2 * M), x + 1, 576 - (x + M) * 20 / (W + 2 * M), 'rgba(0,0,0,0.25)', 1); }
+      for (let k = 0; k < 30; k++) { const x = -M + k * 50; line(x, 578 - k * 0.6, x, 610, 'rgba(35,24,30,0.95)', 3); }
+      c.globalAlpha = 0.3; for (let k = 0; k < 30; k++) { const x = -M + k * 50; line(x, 612, x, 640, '#2b1d24', 3); } c.globalAlpha = 1; });
     D(0.8, () => { const x = 280 + lt * 28, y = 560 - (x + M) * 20 / (W + 2 * M); actCat({ x, y, s: 0.85, pose: 'walk', ph: walkPh(lt * 28, 0.85), sil: true, rim: '255,165,110', shadow: false });
       c.save(); c.translate(0, 2 * 600); c.scale(1, -1); c.globalAlpha = 0.3; actCat({ x, y, s: 0.85, pose: 'walk', ph: walkPh(lt * 28, 0.85), sil: true, shadow: false }); c.restore(); flock(6, 800, 230, -12, 0.6, 'rgba(30,20,35,0.85)', 183, lt); });
   } });
