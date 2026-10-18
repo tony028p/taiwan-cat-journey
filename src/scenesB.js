@@ -186,23 +186,50 @@ SCENES.push({ county: '彰化縣', place: '彰化扇形車庫', sun: () => [1100
     D(1, () => { godrays(1180, 40, 900, 9, '255,244,220', 0.07, 168, 0.5, Math.PI * 0.72); c.save(); c.filter = `blur(${7 * S}px)`; c.fillStyle = 'rgba(40,34,28,0.75)'; c.fillRect(-M, 640, W + 2 * M, 16); c.restore(); });
   } });
 
+/* white Sun Moon Lake tour boat (bow to the right when d > 0), waterline at y, with its reflection */
+function smlBoat(x, y, sz, d, trim, seed) {
+  const r = rng(seed), body = () => { poly([[-34, 0], [30, 0], [42, -9], [-36, -10]], '#f4f4f0'); c.fillStyle = trim; c.fillRect(-36, -5, 76, 2.4);
+    c.fillStyle = '#e6e8ea'; c.fillRect(-26, -19, 46, 10); c.fillStyle = '#3b4c5c'; for (let k = 0; k < 6; k++) c.fillRect(-23 + k * 7, -17, 5, 5); c.fillStyle = '#f8f8f6'; c.fillRect(-20, -26, 30, 7); c.fillStyle = '#36424e'; c.fillRect(-16, -24.5, 20, 3);
+    if (r() < 0.6) { c.fillStyle = trim; c.fillRect(-18, -29, 26, 3); } line(14, -26, 14, -36, '#555555', 1); };
+  c.save(); c.translate(x, y); c.scale(sz * d, sz); body(); c.restore();
+  c.save(); c.translate(x, y + 1); c.scale(sz * d, -sz * 0.8); c.globalAlpha = 0.35; body(); c.restore();
+}
 /* 14 — 南投縣 日月潭 */
-SCENES.push({ county: '南投縣', place: '日月潭', en: 'Sun Moon Lake', ll: '23.86°N 120.91°E', cam: [1.02, 1.08, -20, 20, 0, 0],
+SCENES.push({ county: '南投縣', place: '日月潭', en: 'Sun Moon Lake', ll: '23.86°N 120.91°E', sun: () => [980, 110, 0.35], cam: [1.02, 1.08, -20, 20, 0, 0],
   sub: ['南投日月潭，湖面靜得像一面鏡子。', 'Sun Moon Lake in Nantou, still as a mirror.'],
   draw(lt) {
+    // per photos: a clear day; layers of blue peaks behind deep-green forested hills that slope into the lake, Lalu island,
+    // Ci'en pagoda on its ridge, a marina of floating piers with white tour boats, a sightseeing boat crossing; leaves overhead
     const hz = 410;
-    const land = () => { sky([[0, '#8fa9c4'], [0.5, '#e6d6c8'], [0.6, '#f6dcbc'], [1, '#f6dcbc']]); glow(900, 380, 380, '255,215,170', 0.45);
-      mountain({ base: 370, amp: 120, f: 0.0035, seed: 171, top: '#8d9cb0', bot: '#b8b6bd', haze: 'rgba(240,220,210,0.55)' });
-      mountain({ base: 400, amp: 80, f: 0.0045, seed: 172, top: '#5d7a74', bot: '#7e938e', tex: 'forest', dark: '#4a6660', mid: '#5f7e74', light: '#93ab98', depth: 90, n: 1600, r: 2.5, haze: 'rgba(230,220,215,0.4)', floor: hz + 1 });
-      const px = 1030, py = 300 + 0; for (let k = 0; k < 9; k++) { const w = 8 - k * 0.6, y = 322 - k * 7; c.fillStyle = '#efe4cf'; c.fillRect(px - w * 0.6, y - 6, w * 1.2, 6); poly([[px - w, y - 5], [px + w, y - 5], [px + w * 0.6, y - 8], [px - w * 0.6, y - 8]], '#8c3f34'); } line(px, 258, px, 250, '#333', 1);
-      oval(420, hz + 2, 40, 6, 0, '#4d6b5c'); for (let k = 0; k < 12; k++) oval(400 + k * 4, hz - 6 - Math.sin(k) * 4, 7, 9, 0, '#3f5f4e'); };
-    L('land', 0.15, land, { blur: 0.6 });
-    L('lake', 0.15, () => { c.fillStyle = vg(hz, H, [[0, '#c9c4c4'], [1, '#71858c']]); c.fillRect(-M, hz, W + 2 * M, H); });
-    R('land', 0.15, hz + 1, 0.6, land, 2.5);
-    L('mist', 0.25, () => { for (let k = 0; k < 8; k++) stratus(k * 190, 400 + (k % 2) * 10, 420, 30, 'rgba(255,245,235,0.6)'); }, { blur: 6, dx: lt * 8 - 30 });
-    D(0.2, () => { shimmer(hz + 2, H, 160, '255,245,230', 173, { a: 0.35, len: 30 }); shimmer(hz + 2, 520, 60, '255,220,170', 174, { xc: 900, spread: 200, a: 0.5, op: 'lighter' });
-      const bx = 700 + lt * 18; c.save(); c.translate(bx, 470); poly([[-30, 0], [30, 0], [36, -6], [-36, -5]], '#3a2e2a'); c.fillStyle = '#e9e1d0'; c.fillRect(-12, -16, 22, 10); c.restore(); for (let w = 0; w < 4; w++) { const u = mod(lt * 0.4 + w / 4, 1); c.strokeStyle = `rgba(255,255,255,${(1 - u) * 0.4})`; c.lineWidth = 1; c.beginPath(); c.ellipse(bx - 40 - u * 80, 472, 20 + u * 50, 2 + u * 3, 0, 0, Math.PI); c.stroke(); } });
-    L('dock', 0.95, () => { poly([[-M, H], [-M, 572], [380, 566], [460, H]]); c.fillStyle = vg(566, H, [[0, '#6b5444'], [1, '#2e221b']]); c.fill(); for (let k = 0; k < 12; k++) line(-M + k * 46, 572 - k * 0.5, -M + k * 52, H, 'rgba(30,20,15,0.6)', 1.5); c.fillStyle = '#3a2c24'; c.fillRect(360, 540, 14, 120); c.fillRect(-20, 530, 14, 60); });
+    const land = () => { sky([[0, '#2f74c0'], [0.55, '#86b6de'], [1, '#d8e8ee']]); cumulus(560, 210, 380, 60, 175, '#ffffff', '#c2d4e4', 0.4); cumulus(900, 170, 260, 46, 176, '#ffffff', '#c6d6e6', 0.4); stratus(300, 300, 800, 40, 'rgba(255,255,255,0.4)');
+      mountain({ base: 352, amp: 110, f: 0.0042, seed: 171, peak: 1.3, top: '#5f7fae', bot: '#9cb4cc', haze: 'rgba(210,225,235,0.55)', rim: 'rgba(255,255,255,0.35)', floor: hz + 1 });
+      mountain({ base: 380, amp: 70, f: 0.0052, seed: 178, top: '#4b7a8a', bot: '#6e98a4', haze: 'rgba(200,220,228,0.45)', floor: hz + 1 });
+      mountain({ base: 404, amp: 64, f: 0.0048, seed: 172, top: '#2e6a48', bot: '#3d7a52', tex: 'forest', dark: '#215438', mid: '#347048', light: '#73a46c', depth: 90, n: 2200, r: 3, floor: hz + 1, shape: (x, n) => n * (0.35 + 0.65 * sm(Math.abs(x - 560) / 400)) });
+      const px = 1030; for (let k = 0; k < 9; k++) { const w = 7 - k * 0.5, y = 336 - k * 6; c.fillStyle = '#efe4cf'; c.fillRect(px - w * 0.6, y - 5, w * 1.2, 5); poly([[px - w, y - 4], [px + w, y - 4], [px + w * 0.6, y - 7], [px - w * 0.6, y - 7]], '#8c3f34'); } line(px, 282, px, 274, '#333333', 1);
+    };
+    L('land', 0.15, land, { blur: 0.4 });
+    L('lake', 0.15, () => { c.fillStyle = vg(hz, H, [[0, '#4f93b4'], [0.4, '#2f7896'], [1, '#1d5a72']]); c.fillRect(-M, hz, W + 2 * M, H); });
+    R('land', 0.15, hz + 1, 0.55, land, 2);
+    // Lalu island, out in the lake: a low round knoll of trees with a little white pavilion
+    L('lalu', 0.2, () => { const x = 470, y = 438, r = rng(181), dome = (sy, col) => { c.beginPath(); c.ellipse(x, y, 58, 15 * sy, 0, Math.PI, TAU); c.fillStyle = col; c.fill(); };
+      c.save(); c.translate(0, 2 * y); c.scale(1, -0.7); c.translate(0, -y * 0.0); c.globalAlpha = 0.35; c.translate(0, y / 0.7 - y); dome(1, '#24503a'); c.restore();
+      dome(1, '#2a5a3c'); for (let k = 0; k < 40; k++) { const u = r() * 2 - 1, h = Math.sqrt(1 - u * u) * 15 * r(); oval(x + u * 52, y - h - 2, 5 + r() * 4, 4 + r() * 3, 0, mix('#2a5a38', '#7aa868', r(), 0.95)); }
+      c.fillStyle = '#6a6a58'; c.fillRect(x - 60, y - 1, 120, 2.5); c.fillStyle = '#eeeae0'; c.fillRect(x - 5, y - 24, 10, 6); poly([[x - 8, y - 24], [x + 8, y - 24], [x, y - 30]], '#c84a34'); });
+    D(0.2, () => { shimmer(hz + 2, H, 180, '230,245,255', 173, { a: 0.4, len: 28 }); shimmer(hz + 2, 500, 70, '255,250,220', 174, { xc: 980, spread: 240, a: 0.5, op: 'lighter' });
+      const bx = 620 + lt * 16; smlBoat(bx, 452, 0.55, 1, '#c8342a', 177); for (let w = 0; w < 4; w++) { const u = mod(lt * 0.4 + w / 4, 1); c.strokeStyle = `rgba(255,255,255,${(1 - u) * 0.45})`; c.lineWidth = 1; c.beginPath(); c.ellipse(bx - 26 - u * 60, 453, 12 + u * 40, 1.5 + u * 2.5, 0, 0, Math.PI); c.stroke(); } });
+    // the marina: floating piers on pontoons with boats moored along them
+    L('marina', 0.4, () => { const py = 500;
+      [[600, 486, 0.62, -1, '#2a5fa8'], [690, 488, 0.64, -1, '#c8342a'], [790, 486, 0.66, 1, '#e0a020'], [895, 488, 0.68, -1, '#2a5fa8'], [1000, 487, 0.7, 1, '#c8342a'], [1110, 488, 0.72, -1, '#2a8a6a'], [1215, 487, 0.74, 1, '#c8342a']].forEach(([x, y, sz, d, tr], i) => smlBoat(x, y, sz, d, tr, 180 + i));
+      c.fillStyle = '#5a5048'; c.fillRect(520, py - 4, W + M - 520, 6); c.fillStyle = '#b9ab92'; c.fillRect(520, py - 6, W + M - 520, 3); for (let x = 530; x < W + M; x += 9) line(x, py - 6, x + 1, py - 3, 'rgba(80,60,40,0.5)', 0.8);
+      // finger piers reaching toward us (between the front-row berths)
+      for (let x = 560; x < W + M; x += 130) { poly([[x, py - 3], [x + 8, py - 3], [x + 16, py + 34], [x + 2, py + 34]], '#b9ab92'); poly([[x + 2, py + 34], [x + 16, py + 34], [x + 16, py + 37], [x + 2, py + 37]], '#4a4038'); }
+      c.fillStyle = 'rgba(30,50,60,0.35)'; c.fillRect(520, py + 2, W + M - 520, 4);
+      [[625, 530, 0.86, 1, '#2a5fa8'], [755, 532, 0.9, -1, '#c8342a'], [1015, 532, 0.94, 1, '#e0a020'], [1145, 534, 0.98, -1, '#2a5fa8']].forEach(([x, y, sz, d, tr], i) => smlBoat(x, y, sz, d, tr, 190 + i)); });
+    L('dock', 0.95, () => { poly([[-M, H], [-M, 572], [380, 566], [460, H]]); c.fillStyle = vg(566, H, [[0, '#8a6c52'], [1, '#3a2a20']]); c.fill(); for (let k = 0; k < 12; k++) line(-M + k * 46, 572 - k * 0.5, -M + k * 52, H, 'rgba(30,20,15,0.55)', 1.5); line(-M, 572, 380, 566, 'rgba(255,240,210,0.5)', 1.2);
+      c.fillStyle = '#4a3a2e'; c.fillRect(360, 540, 14, 120); c.fillRect(-20, 530, 14, 60); c.fillStyle = 'rgba(255,240,210,0.3)'; c.fillRect(360, 540, 4, 120); });
+    // leaves overhanging the top-right corner
+    L('leaf', 1, () => { const r = rng(179); c.strokeStyle = '#3a3020'; c.lineWidth = 6; c.beginPath(); c.moveTo(W + M, 96); c.quadraticCurveTo(1150, 120, 1060, 190); c.stroke(); c.lineWidth = 3; c.beginPath(); c.moveTo(1150, 130); c.quadraticCurveTo(1130, 190, 1150, 250); c.stroke();
+      for (let k = 0; k < 110; k++) { const t = r(), x = lerp(W + M, 1060, t) + (r() - 0.5) * 90, y = 92 + t * 110 + (r() - 0.5) * 90; c.save(); c.translate(x, y); c.rotate(r() * TAU); oval(0, 0, 11 + r() * 8, 4 + r() * 3, 0, mix('#2f6a2a', '#9cc860', r(), 0.95)); c.restore(); } });
     D(0.95, () => actCat({ x: 230, y: 580, s: 1.1, pose: 'sit', rim: '255,225,190', look: -0.04, blink: blinkAt(lt, 13) }));
   } });
 
