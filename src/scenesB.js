@@ -259,19 +259,55 @@ SCENES.push({ county: '苗栗縣', place: '龍騰斷橋', sun: () => [180, 120, 
       for (let k = 0; k < 26; k++) { const x = 1040 + r() * 260, y = 70 + r() * 70; oval(x, y, 14 + r() * 10, 10 + r() * 6, r() * 3, k % 3 ? 'rgba(255,253,246,0.95)' : 'rgba(70,110,50,0.85)'); } c.restore(); });
   } });
 
-/* 17 — 新竹縣 新埔柿餅 */
+/* Xinpu persimmon-farm helpers (per photos): round wire sieves on trestles packed with rings of bright orange persimmon cakes,
+   tall rack carts of stacked sieves, and an old red-brick Hakka farmhouse with a dark tile roof behind the drying yard */
+function xpSieve(x, y, s, seed) { // y = ground under the trestle
+  const rx = 50 * s, ry = 15 * s, ty = y - 30 * s, r = rng(seed);
+  oval(x, y + 2 * s, rx * 0.9, ry * 0.6, 0, 'rgba(70,50,30,0.22)');
+  c.strokeStyle = '#4a4440'; c.lineWidth = Math.max(1, 1.6 * s); [[-0.7, 1], [0.7, 1], [-0.5, 0.6], [0.5, 0.6]].forEach(([u, v]) => line(x + u * rx, ty + ry * 0.2, x + u * rx * 0.95, y - (1 - v) * 6 * s, '#4a4440', Math.max(1, 1.5 * s)));
+  oval(x, ty + 1.5 * s, rx, ry, 0, '#3a3430'); oval(x, ty, rx, ry, 0, '#8a7a66');
+  c.save(); c.beginPath(); c.ellipse(x, ty, rx * 0.97, ry * 0.94, 0, 0, TAU); c.clip();
+  c.strokeStyle = 'rgba(60,50,40,0.35)'; c.lineWidth = 0.6; for (let k = -rx; k < rx; k += 4 * s) line(x + k, ty - ry, x + k, ty + ry, c.strokeStyle, 0.6);
+  for (let ring = 0; ring < 4; ring++) { const rr = 0.86 - ring * 0.25, n = Math.max(1, Math.round(20 * rr + 1));
+    for (let k = 0; k < n; k++) { const a = k / n * TAU + ring * 0.4, px = x + Math.cos(a) * rx * rr, py = ty + Math.sin(a) * ry * rr, z = 4.6 * s * (0.9 + r() * 0.2);
+      oval(px, py + 0.8 * s, z, z * 0.42, 0, '#a8420e'); oval(px, py, z, z * 0.4, 0, mix('#f07a12', '#ff9e30', r())); oval(px - z * 0.3, py - z * 0.12, z * 0.42, z * 0.14, 0, 'rgba(255,225,160,0.75)'); } }
+  c.restore(); c.strokeStyle = '#2e2a28'; c.lineWidth = Math.max(1, 1.4 * s); c.beginPath(); c.ellipse(x, ty, rx, ry, 0, 0, TAU); c.stroke();
+}
+function xpCart(x, y, w, h, seed) { // a tall wheeled rack of stacked sieves, seen from the side
+  const r = rng(seed), n = Math.round(h / 13);
+  oval(x + w / 2, y + 2, w * 0.6, 4, 0, 'rgba(60,45,30,0.25)');
+  for (let k = 0; k < n; k++) { const yy = y - 8 - k * (h - 10) / n; oval(x + w / 2, yy + 1.5, w / 2, 3.2, 0, '#5a4a3a');
+    for (let j = 0; j < 12; j++) { const px = x + 4 + (j + 0.5) * (w - 8) / 12; oval(px, yy - 1, (w - 8) / 26, 2.4, 0, mix('#e86e10', '#ff9a2a', r())); } }
+  [x, x + w].forEach(px => line(px, y, px, y - h, '#3a4250', 2.2)); line(x, y - h, x + w, y - h, '#3a4250', 2);
+  [x + 3, x + w - 3].forEach(px => disc(px, y + 1, 3, '#1e1e22'));
+}
+function xpHouse(x, y, w, h) { // long red-brick Hakka house, dark tile roof
+  c.fillStyle = vg(y - h, y, [[0, '#b0503a'], [1, '#8a3a2a']]); c.fillRect(x, y - h, w, h);
+  for (let yy = y - h; yy < y; yy += 3) line(x, yy, x + w, yy, 'rgba(70,25,15,0.25)', 0.6);
+  c.fillStyle = '#c9c0b0'; c.fillRect(x, y - 8, w, 8);
+  for (let k = 0; k < Math.floor(w / 60); k++) { const wx = x + 22 + k * 60; c.fillStyle = '#2e2420'; c.fillRect(wx, y - h * 0.62, 18, h * 0.32); c.fillStyle = '#6a4a32'; for (let j = 0; j < 4; j++) c.fillRect(wx + 2 + j * 4.5, y - h * 0.62, 1.4, h * 0.32); }
+  c.fillStyle = '#3a2a22'; c.fillRect(x + w * 0.46, y - h * 0.7, w * 0.08, h * 0.7 - 8); c.fillStyle = '#c23a2a'; c.fillRect(x + w * 0.455, y - h * 0.76, w * 0.09, 6);
+  const rt = y - h - 20; c.fillStyle = vg(rt, y - h + 3, [[0, '#4a3a34'], [1, '#2e2420']]); c.beginPath(); c.moveTo(x - 8, y - h + 3); c.lineTo(x + 6, rt); c.lineTo(x + w - 6, rt); c.lineTo(x + w + 8, y - h + 3); c.closePath(); c.fill();
+  c.save(); c.clip(); for (let xx = x - 8; xx < x + w + 8; xx += 3) line(xx, rt, xx, y - h + 3, 'rgba(0,0,0,0.18)', 1); c.restore();
+  c.strokeStyle = '#2a1e1a'; c.lineWidth = 3; c.beginPath(); c.moveTo(x + 2, rt - 3); c.quadraticCurveTo(x + w / 2, rt + 2, x + w - 2, rt - 3); c.stroke();
+}
+/* 17 — 新竹縣 新埔柿餅 — per photos: a drying yard of sieves on trestles, rack carts, a red-brick farmhouse and green hills under a
+   blue autumn sky; the 九降風 blows leaves across */
 SCENES.push({ county: '新竹縣', place: '新埔柿餅園', en: 'Persimmon Farms of Xinpu', ll: '24.83°N 121.07°E', cam: [1.02, 1.08, 20, -20, 0, 0],
   sub: ['新竹的九降風，把柿子吹成了金黃色。', 'Hsinchu’s autumn wind dries the persimmons to gold.'],
+  sun: () => [980, 160, 0.5],
   draw(lt) {
-    L('sky', 0, () => { sky([[0, '#6f9dc8'], [1, '#f1dfb8']]); cumulus(900, 210, 360, 80, 201, '#fff7e8', '#d8c7b2', -0.3); }, { blur: 2 });
-    L('hill', 0.08, () => mountain({ base: 360, amp: 60, f: 0.004, seed: 202, top: '#6d8a6a', bot: '#8a9c7c', tex: 'forest', dark: '#4f6b4c', mid: '#6b8862', light: '#a7bd8a', depth: 60, n: 1200, r: 3 }), { blur: 0.8 });
-    L('farm', 0.25, () => { minnanHouse(160, 400, 320, 70, 1); minnanHouse(560, 396, 220, 60, 0.9); c.fillStyle = vg(400, H, [[0, '#b9a37a'], [1, '#8a7452']]); c.fillRect(-M, 400, W + 2 * M, H); });
-    L('racks', 0.6, () => { for (let row = 0; row < 4; row++) { const y = 430 + row * 40 + row * row * 6, s = 0.6 + row * 0.3, n = 12 - row * 2; for (let k = 0; k < n; k++) { const x = -60 + k * (W + 120) / n + (row % 2) * 40, rx = 52 * s, ry = 16 * s;
-        c.fillStyle = '#7a6040'; c.beginPath(); c.ellipse(x, y + 4 * s, rx * 1.02, ry * 1.1, 0, 0, TAU); c.fill(); c.fillStyle = '#c9a66a'; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, TAU); c.fill();
-        c.save(); c.beginPath(); c.ellipse(x, y, rx * 0.94, ry * 0.9, 0, 0, TAU); c.clip(); const r = rng(row * 50 + k); for (let a = 0; a < 26; a++) { const px = x + (r() - 0.5) * rx * 1.9, py = y + (r() - 0.5) * ry * 1.8; oval(px, py, 6 * s, 2.6 * s, 0, mix('#e0741c', '#f29a3a', r())); oval(px - 1.5 * s, py - 0.6 * s, 2.5 * s, 1 * s, 0, 'rgba(255,220,150,0.6)'); } c.restore(); } } });
+    L('sky', 0, () => { sky([[0, '#3f7cc0'], [0.6, '#8ab8e0'], [1, '#e8eef0']]); cumulus(900, 200, 380, 80, 201, '#ffffff', '#c8d2dc', -0.3); cumulus(300, 250, 260, 50, 204, '#ffffff', '#ccd6de', 0.3); }, { blur: 1.5 });
+    L('hill', 0.08, () => mountain({ base: 390, amp: 70, f: 0.004, seed: 202, top: '#4a7a46', bot: '#5e8a52', tex: 'forest', dark: '#2f5a32', mid: '#4f7c44', light: '#8cb46a', depth: 70, n: 1600, r: 3.4 }), { blur: 0.6 });
+    L('farm', 0.22, () => { xpHouse(140, 420, 470, 50); xpHouse(700, 416, 300, 44); c.fillStyle = vg(418, H, [[0, '#b8b0a2'], [1, '#9a9282']]); c.fillRect(-M, 418, W + 2 * M, H);
+      const r = rng(205); for (let k = 0; k < 300; k++) { c.fillStyle = r() < 0.5 ? 'rgba(255,255,255,0.06)' : 'rgba(60,50,40,0.06)'; c.fillRect(-M + r() * (W + 2 * M), 420 + r() * 300, 20 + r() * 40, 2 + r() * 3); }
+      xpCart(1030, 448, 70, 120, 206); xpCart(1110, 452, 74, 128, 207); xpCart(1196, 456, 78, 136, 208); xpCart(40, 452, 70, 120, 209); });
+    // rows of sieves on trestles receding across the yard
+    L('racks', 0.6, () => { const ROWS = [[442, 0.44, 20], [458, 0.52, 17], [480, 0.63, 14], [508, 0.77, 12], [546, 0.96, 10], [598, 1.18, 8]], jr = rng(210);
+      ROWS.forEach(([gy, s, n], row) => { for (let k = 0; k < n; k++) { const x = -50 + (k + (row % 2) * 0.5 + (jr() - 0.5) * 0.15) * (W + 100) / n; if (row < 3 && x > 1010) continue; if (row === 5 && x > 180 && x < 560) continue; xpSieve(x, gy + (jr() - 0.5) * 4 * s, s, row * 50 + k); } }); });
     D(0.6, () => { const r = rng(203); for (let k = 0; k < 40; k++) { const x2 = mod(r() * W * 1.3 + T * (160 + r() * 120), W + 200) - 100, y2 = 200 + r() * 400 + Math.sin(T * 3 + k) * 20; c.save(); c.translate(x2, y2); c.rotate(T * 4 + k); oval(0, 0, 5, 2.4, 0, mix('#c47a2a', '#9a6a2a', r(), 0.85)); c.restore(); }
-      for (let k = 0; k < 8; k++) { const u = mod(T * 0.4 + k / 8, 1); c.strokeStyle = `rgba(255,245,220,${0.18 * Math.sin(u * Math.PI)})`; c.lineWidth = 1; c.beginPath(); c.moveTo(-M + u * 1600 - 300, 300 + k * 40); c.quadraticCurveTo(u * 1600, 290 + k * 40, u * 1600 + 200, 300 + k * 40); c.stroke(); } });
-    L('fg', 0.95, () => { c.fillStyle = vg(590, H, [[0, '#a68e66'], [1, '#6d5a3e']]); c.fillRect(-M, 600, W + 2 * M, 200); });
+      for (let k = 0; k < 8; k++) { const u = mod(T * 0.4 + k / 8, 1); c.strokeStyle = `rgba(255,255,255,${0.2 * Math.sin(u * Math.PI)})`; c.lineWidth = 1; c.beginPath(); c.moveTo(-M + u * 1600 - 300, 300 + k * 40); c.quadraticCurveTo(u * 1600, 290 + k * 40, u * 1600 + 200, 300 + k * 40); c.stroke(); } });
+    L('fg', 0.95, () => { c.fillStyle = vg(596, H, [[0, '#a8a090'], [1, '#868070']]); c.fillRect(-M, 604, W + 2 * M, 200); line(-M, 604, W + M, 604, 'rgba(255,255,255,0.25)', 1); });
     D(0.95, () => { const x = 300 + lt * 30; actCat({ x, y: 612, s: 1.0, pose: 'walk', ph: walkPh(lt * 30, 1.0), rim: '255,220,170', look: 0.05, blink: blinkAt(lt, 15), shadowA: 0.3 }); });
   } });
 
