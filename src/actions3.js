@@ -89,11 +89,15 @@ function puff(x, y, u, s = 1, col = '242,240,234') {
     c.fillStyle = `rgba(${col},${a})`; c.beginPath(); c.arc(x + dx * s, y + dy * s, (6 + 18 * v) * s * (0.7 + r() * 0.5), 0, TAU); c.fill(); }
 }
 
-function bicycle(x, y, s, col = '#3f8f8a') {
-  c.save(); c.translate(x, y); c.scale(s, s); c.lineCap = 'round'; c.lineJoin = 'round';
-  [[-26, -13], [26, -13]].forEach(([wx, wy]) => { c.strokeStyle = '#2b2b2e'; c.lineWidth = 2.6; c.beginPath(); c.arc(wx, wy, 13, 0, TAU); c.stroke(); c.strokeStyle = 'rgba(80,80,85,0.6)'; c.lineWidth = 0.6; for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; line(wx, wy, wx + Math.cos(a) * 12, wy + Math.sin(a) * 12, 'rgba(90,90,95,0.6)', 0.6); } disc(wx, wy, 1.6, '#555555'); });
-  c.strokeStyle = col; c.lineWidth = 2.8; c.beginPath(); c.moveTo(-26, -13); c.lineTo(-6, -13); c.lineTo(-12, -34); c.lineTo(-26, -13); c.moveTo(-6, -13); c.lineTo(18, -34); c.lineTo(-12, -34); c.moveTo(26, -13); c.lineTo(18, -34); c.lineTo(16, -42); c.stroke();
-  c.lineWidth = 2.2; c.strokeStyle = '#2b2b2e'; line(10, -44, 24, -44, '#2b2b2e', 2.2); oval(-13, -37, 7, 2.2, 0, '#3a2a24');
+/* side-view bicycle, ground at y. o.rot spins the wheels, o.crank (angle) draws the crank and pedals, o.ride raises the bars
+   to a city-bike riding position. Without o it draws the parked bike exactly as before. */
+function bicycle(x, y, s, col = '#3f8f8a', o = {}) {
+  c.save(); c.translate(x, y); c.scale(s, s); c.lineCap = 'round'; c.lineJoin = 'round'; const rot = o.rot || 0;
+  [[-26, -13], [26, -13]].forEach(([wx, wy]) => { c.strokeStyle = '#2b2b2e'; c.lineWidth = 2.6; c.beginPath(); c.arc(wx, wy, 13, 0, TAU); c.stroke(); c.strokeStyle = 'rgba(80,80,85,0.6)'; c.lineWidth = 0.6; for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4 + rot; line(wx, wy, wx + Math.cos(a) * 12, wy + Math.sin(a) * 12, 'rgba(90,90,95,0.6)', 0.6); } disc(wx, wy, 1.6, '#555555'); });
+  c.strokeStyle = col; c.lineWidth = 2.8; c.beginPath(); c.moveTo(-26, -13); c.lineTo(-6, -13); c.lineTo(-12, -34); c.lineTo(-26, -13); c.moveTo(-6, -13); c.lineTo(18, -34); c.lineTo(-12, -34); c.moveTo(26, -13); c.lineTo(18, -34);
+  if (o.ride) { c.lineTo(23, -45); c.stroke(); line(22, -46, 30, -47, '#2b2b2e', 2.2); oval(-13, -37, 7, 2.2, 0, '#3a2a24'); }
+  else { c.lineTo(16, -42); c.stroke(); c.lineWidth = 2.2; c.strokeStyle = '#2b2b2e'; line(10, -44, 24, -44, '#2b2b2e', 2.2); oval(-13, -37, 7, 2.2, 0, '#3a2a24'); }
+  if (o.crank !== undefined) { [o.crank + Math.PI, o.crank].forEach((a, i) => { const px = -6 + Math.cos(a) * 7, py = -13 + Math.sin(a) * 7; line(-6, -13, px, py, i ? '#3a3a3e' : '#2a2a2e', 1.8); line(px - 3, py, px + 3, py, '#1e1e22', 2); }); disc(-6, -13, 2.4, '#4a4a50'); }
   c.restore();
 }
 function basket(x, y, s) { c.save(); c.translate(x, y); c.scale(s, s); poly([[-11, -16], [11, -16], [9, 0], [-9, 0]], '#b8894e'); c.strokeStyle = 'rgba(90,60,30,0.6)'; c.lineWidth = 0.8; for (let k = 1; k < 4; k++) line(-11 + k * 0.5, -16 + k * 4, 11 - k * 0.5, -16 + k * 4, 'rgba(90,60,30,0.6)', 0.8); c.restore(); }
@@ -463,8 +467,15 @@ function bgCat(o) {
       after = () => { const a = [q.x + f * s * 40, q.y - s * 46]; rakeProp(a[0], a[1], s * f, 0.1 + sw * 0.08); }; break; }
     case 'ice': { const lick = Math.max(0, Math.sin(ph * 3)); q.pose = sit3(0, { ...mood, paw: [22, -60], tongue: lick > 0.6 ? 0.5 : 0 }); after = () => { const w = sitAt(24, -66); iceProp(w[0], w[1], s * 1.1, o.col); }; break; }
     case 'look': q.pose = sit3(0, { ...mood, turn: turnAt(mod(ph, 7), [[2, 4.5, 1]]) }); break;
-    case 'bike': { const v = o.v ?? 60; q.x = o.x + f * v * t; const bx0 = q.x; q.x -= f * 8 * s; q.y = o.y - 30 * s; q.s = s * 0.8; q.shadow = false; q.pose = sit3(0, { ...ex('happy'), ts: 2 });
-      c.save(); c.translate(bx0, o.y); c.scale(f, 1); bicycle(0, 0, s, o.col); c.restore(); break; }
+    case 'bike': { // rides like a person on a city bike: seated, back half-upright, front paws on the bars, hind paws pushing the pedals round
+      const v = o.v ?? 60, d = Math.abs(v) * t; q.x = o.x + f * v * t; q.shadow = false; const k = 0.62; q.s = s * k;
+      const wr = d / (13 * s), cr = wr * 0.55 + hash(sd) * 6;                         // wheel angle from distance travelled (no skidding), crank turns slower
+      const P = (bx, by) => [bx / k / SPX, by / k / SPY];                                // bike coords -> pose units
+      const cc = P(-6, -13), R = 7 / k, bob = Math.sin(cr * 2) * 0.8, bar = P(28, -47), st = P(-13, -37);
+      const ped = a => [cc[0] + Math.cos(a) * R / SPX, cc[1] + Math.sin(a) * R / SPY, 0.5];
+      q.pose = { ...STAND3, ...ex(o.mood === 'aloof' ? 'content' : 'happy'), hip: [st[0] - 1, st[1] - 2 + bob * 0.3], sh: [st[0] + 52, st[1] - 33 + bob], arch: 3, head: [st[0] + 74, st[1] - 51 + bob], hr: -0.12,
+        fn: [bar[0] + 2, bar[1], -1], ff: [bar[0] - 1, bar[1] + 1, -1], hn: ped(cr), hf: ped(cr + Math.PI), tail: [-2.55, 0.18, 0.08, 2, 0], sb: 1, hb: 1 };
+      c.save(); c.translate(q.x, o.y); c.scale(f, 1); bicycle(0, 0, s, o.col, { rot: wr, crank: cr, ride: 1 }); c.restore(); break; }
     case 'kayak': { const bob = Math.sin(ph * 1.8) * 1.5, v = o.v ?? 10; q.x = o.x + f * v * t; q.y = o.y + bob + 4 * s; q.shadow = false; q.pose = sit3(0, { ...ex('happy') });
       after = () => { for (let w = 1; w <= 4; w++) { const wx = q.x - f * (40 + w * 26) * s, a = 0.4 * (1 - w / 5); c.strokeStyle = `rgba(255,255,255,${a})`; c.lineWidth = 1.2; c.beginPath(); c.moveTo(wx - 12 * s * w * 0.4, q.y + 2 * s + w * 2 * s); c.lineTo(wx + 12 * s, q.y + s); c.lineTo(wx - 12 * s * w * 0.4, q.y - 0 * s - w * 0.5 * s); c.stroke(); }
         c.save(); c.translate(q.x + f * 4 * s, q.y - 4 * s); c.scale(f, 1); c.fillStyle = o.col || '#e8b23a'; c.beginPath(); c.moveTo(-46 * s, -2 * s); c.quadraticCurveTo(0, 16 * s, 46 * s, -2 * s); c.quadraticCurveTo(0, 2 * s, -46 * s, -2 * s); c.fill(); c.fillStyle = 'rgba(0,0,0,0.3)'; c.beginPath(); c.ellipse(-4 * s, 0, 14 * s, 3 * s, 0, 0, Math.PI * 2); c.fill();
