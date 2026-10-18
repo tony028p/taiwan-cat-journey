@@ -548,20 +548,45 @@ SCENES.push({ county: '高雄市', place: '蓮池潭龍虎塔', en: 'Dragon & Ti
     D(0.7, () => { const x = 330 + lt * 28; actCat({ x, y: 548 + (x - 300) / 460 * 42 - 1, s: 0.6, pose: 'walk', ph: walkPh(lt * 28, 0.6), look: 0.06, blink: blinkAt(lt, 7), shadowA: 0.2 }); flock(3, 300, 230, 10, 0.6, 'rgba(50,50,60,0.8)', 87, lt); });
   } });
 
-/* 8 — 澎湖縣 七美雙心石滬 */
+/* a weir wall of piled basalt: dark base stroke, then individual stones along the path, lit on top */
+function stoneWall(pts, w, seed) {
+  const r = rng(seed); c.save(); c.lineJoin = 'round'; c.lineCap = 'round';
+  c.strokeStyle = 'rgba(20,50,55,0.35)'; c.lineWidth = w + 6; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1] + 3) : c.moveTo(p[0], p[1] + 3)); c.stroke();
+  c.strokeStyle = '#3a3a36'; c.lineWidth = w; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke(); c.restore();
+  for (let i = 1; i < pts.length; i++) { const [x0, y0] = pts[i - 1], [x1, y1] = pts[i], d = Math.hypot(x1 - x0, y1 - y0), n = Math.ceil(d / 2.2);
+    for (let k = 0; k < n; k++) { const u = k / n, x = lerp(x0, x1, u) + (r() - 0.5) * w * 0.8, y = lerp(y0, y1, u) + (r() - 0.5) * w * 0.5, rr = 0.9 + r() * w * 0.16;
+      oval(x, y, rr * 1.3, rr, r() * 3, mix('#2e2d2a', '#8a8478', r() * r())); if (r() < 0.4) oval(x - rr * 0.3, y - rr * 0.4, rr * 0.6, rr * 0.4, 0, 'rgba(235,228,205,0.35)'); } }
+}
+/* 8 — 澎湖縣 七美雙心石滬 — per photos (from the clifftop): deep blue sea beyond, a long rocky spit with surf, the shallow
+   reef flat in jade and turquoise with dark basalt showing through, and the two interlocking hearts of piled stone with a
+   long wall running off to the side; pale turquoise water trapped inside at low tide. */
 SCENES.push({ county: '澎湖縣', place: '七美雙心石滬', en: 'Twin Hearts Stone Weir, Qimei', ll: '23.21°N 119.43°E', cam: [1.02, 1.1, 0, 0, -10, 10],
   sub: ['坐船到澎湖，海裡有兩顆石頭砌成的心。', 'By ferry to Penghu, where two hearts are built of stone.'],
   draw(lt) {
     const hz = 190;
-    L('sky', 0, () => { sky([[0, '#4b8ac8'], [0.22, '#b8d6ea'], [0.27, '#e2ecef'], [1, '#e2ecef']]); cumulus(900, 160, 260, 40, 91, '#ffffff', '#d4dde8'); });
-    L('sea', 0.3, () => { c.fillStyle = vg(hz, H, [[0, '#2c6c99'], [0.35, '#2d8fb1'], [0.7, '#4fc1c6'], [1, '#86dccf']]); c.fillRect(-M, hz, W + 2 * M, H);
-      const heart = (cx, cy, s) => { const pts = []; for (let k = 0; k <= 60; k++) { const t = k / 60 * TAU, x = 16 * Math.pow(Math.sin(t), 3), y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)); pts.push([cx + x * s, cy + y * s * 0.42]); } return pts; };
-      [[560, 440, 9.5], [760, 470, 6.5]].forEach(([x, y, s]) => { const p = heart(x, y, s); poly(p); c.fillStyle = 'rgba(160,230,215,0.55)'; c.fill(); c.strokeStyle = '#6d6250'; c.lineWidth = 7; c.stroke(); c.strokeStyle = 'rgba(230,220,190,0.6)'; c.lineWidth = 2; c.stroke(); c.save(); c.translate(0, 3); c.strokeStyle = 'rgba(30,60,60,0.35)'; c.lineWidth = 3; poly(p); c.stroke(); c.restore(); });
-      const r = rng(92); for (let k = 0; k < 60; k++) oval(r() * W, 560 + r() * 60, 4 + r() * 10, 2 + r() * 4, 0, 'rgba(60,90,80,0.35)'); });
-    D(0.3, () => { shimmer(hz + 4, H, 220, '255,255,255', 93, { a: 0.5, len: 14 }); for (let k = 0; k < 5; k++) { const u = mod(lt * 0.15 + k / 5, 1), y = lerp(300, 620, u); c.strokeStyle = `rgba(255,255,255,${0.25 * Math.sin(u * Math.PI)})`; c.lineWidth = 1.5 + u * 2; c.beginPath(); for (let x = -M; x < W + M; x += 20) { const yy = y + Math.sin(x * 0.02 + k) * 4; x === -M ? c.moveTo(x, yy) : c.lineTo(x, yy); } c.stroke(); } });
-    L('cliff', 0.95, () => { const pts = [[-M, H], [-M, 520], [120, 530], [260, 548], [380, 580], [430, 640], [450, H]]; poly(pts); c.fillStyle = vg(520, H, [[0, '#7ea65a'], [0.2, '#5e7f45'], [0.3, '#8b7a5e'], [1, '#4e4232']]); c.fill(); grassTufts(522, 560, 160, ['#6f9a4c', '#8db864', '#55783c'], 94, 0, 10); });
-    D(0.95, () => { grassTufts(525, 545, 40, ['#9bc26b', '#76a050'], 95, 1.6, 12); actCat({ x: 230, y: 544, s: 1.0, pose: 'sit', rim: '255,255,245', look: 0.18, blink: blinkAt(lt, 8) }); });
-    D(0.5, () => flock(3, 900, 280, -16, 0.7, 'rgba(250,250,250,0.9)', 96, lt));
+    const heart = (cx, cy, s, rot) => { const pts = []; for (let k = 0; k <= 72; k++) { const t = k / 72 * TAU, x = 16 * Math.pow(Math.sin(t), 3), y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)), cr = Math.cos(rot), sr = Math.sin(rot); pts.push([cx + (x * cr - y * sr) * s, cy + (x * sr + y * cr) * s * 0.42]); } return pts; };
+    const H1 = heart(560, 446, 10.5, -0.3), H2 = heart(800, 462, 8, 0.22);
+    L('sky', 0, () => { sky([[0, '#3f86c8'], [0.2, '#a9cfe8'], [0.27, '#e2ecef'], [1, '#e2ecef']]); cumulus(900, 160, 260, 40, 91, '#ffffff', '#d4dde8'); });
+    L('sea', 0.3, () => { c.fillStyle = vg(hz, H, [[0, '#1f5c96'], [0.25, '#2470a8'], [0.42, '#2a8fae'], [0.6, '#3fb2ad'], [1, '#7ccfb8']]); c.fillRect(-M, hz, W + 2 * M, H);
+      // the reef flat: mottled dark basalt under shallow jade water, denser toward the shore
+      c.save(); c.filter = 'blur(2px)'; const r = rng(92); for (let k = 0; k < 1400; k++) { const pr = Math.pow(r(), 0.7), y = 330 + pr * 300, x = r() * (W + 2 * M) - M, rr = (3 + r() * 9) * (0.4 + pr);
+        const v = r(); oval(x, y, rr * (1.2 + r()), rr * (0.4 + r() * 0.3), (r() - 0.5) * 0.5, v < 0.45 ? `rgba(40,80,70,${0.1 + 0.2 * pr})` : v < 0.75 ? `rgba(90,120,80,${0.1 + 0.16 * pr})` : `rgba(170,225,200,${0.12 + 0.2 * pr})`); } c.restore();
+      // the long rocky spit beyond, surf on its seaward side
+      const ym = x => 292 + (x - 700) * 0.035, top = x => ym(x) - 20 * Math.pow(Math.sin(Math.PI * clamp((x - 140) / 1100)), 0.6) + fbm1(x * 0.02 + 5) * 8, bot = x => ym(x) + 20 * Math.pow(Math.sin(Math.PI * clamp((x - 140) / 1100)), 0.6) + fbm1(x * 0.03 + 9) * 6;
+      c.beginPath(); for (let x = 140; x <= 1240; x += 6) c.lineTo(x, top(x) - 4); for (let x = 1240; x >= 140; x -= 6) c.lineTo(x, bot(x)); c.closePath(); c.fillStyle = 'rgba(255,255,255,0.55)'; c.fill();
+      c.beginPath(); for (let x = 150; x <= 1230; x += 6) c.lineTo(x, top(x)); for (let x = 1230; x >= 150; x -= 6) c.lineTo(x, bot(x)); c.closePath(); c.fillStyle = vg(260, 330, [[0, '#7a766c'], [0.5, '#4a4844'], [1, '#2e3432']]); c.fill();
+      c.save(); c.clip(); const r3 = rng(97); for (let k = 0; k < 2600; k++) { const x = 150 + r3() * 1080, y = ym(x) - 22 + r3() * 44; oval(x, y, 1 + r3() * 2.4, 0.8 + r3() * 1.4, 0, r3() < 0.5 ? 'rgba(220,214,195,0.3)' : 'rgba(20,20,20,0.3)'); } c.restore();
+      // pale water trapped in the hearts at low tide
+      [H1, H2].forEach(p => { poly(p); c.fillStyle = 'rgba(170,236,220,0.55)'; c.fill(); c.save(); poly(p); c.clip(); const r2 = rng(98); for (let k = 0; k < 120; k++) oval(450 + r2() * 420, 380 + r2() * 140, 3 + r2() * 8, 1.5 + r2() * 3, 0, 'rgba(220,240,210,0.35)'); c.restore(); });
+      // walls: the two hearts, the long wall out to the left and the one back to shore
+      stoneWall([[H1[0][0] - 2, H1[0][1]], [470, 402], [330, 388], [200, 380]], 9, 99);
+      stoneWall([[H1[36][0], H1[36][1]], [520, 545], [500, 600]], 10, 100);
+      stoneWall(H2, 10, 102); stoneWall(H1, 11, 101); });
+    D(0.3, () => { shimmer(hz + 4, H, 220, '255,255,255', 93, { a: 0.45, len: 14 }); for (let k = 0; k < 5; k++) { const u = mod(lt * 0.15 + k / 5, 1), y = lerp(300, 620, u); c.strokeStyle = `rgba(255,255,255,${0.16 * Math.sin(u * Math.PI)})`; c.lineWidth = 1.2 + u * 1.5; c.beginPath(); for (let x = -M; x < W + M; x += 20) { const yy = y + Math.sin(x * 0.02 + k) * 4; x === -M ? c.moveTo(x, yy) : c.lineTo(x, yy); } c.stroke(); }
+      c.save(); c.globalCompositeOperation = 'lighter'; const sw = mod(lt * 0.4, 1); c.strokeStyle = `rgba(255,255,255,${0.5 * Math.sin(sw * Math.PI)})`; c.lineWidth = 3; c.beginPath(); for (let x = 150; x < 1200; x += 12) { const yy = 292 + (x - 700) * 0.035 - 24 - sw * 6 + Math.sin(x * 0.02) * 2 + (x - 700) * (x - 700) * 0.00004; x === 150 ? c.moveTo(x, yy) : c.lineTo(x, yy); } c.stroke(); c.restore(); });
+    L('cliff', 0.95, () => { const pts = [[-M, H], [-M, 520], [120, 530], [260, 548], [380, 580], [430, 640], [450, H]]; poly(pts); c.fillStyle = vg(520, H, [[0, '#8aa65a'], [0.2, '#6f8a45'], [0.3, '#8b7a5e'], [1, '#4e4232']]); c.fill(); grassTufts(522, 560, 160, ['#6f9a4c', '#c8b86a', '#8db864', '#a89a52'], 94, 0, 10, [-M, 370]); });
+    D(0.95, () => { grassTufts(525, 545, 40, ['#9bc26b', '#d2c278', '#76a050'], 95, 1.6, 12, [-M, 330]); actCat({ x: 230, y: 544, s: 1.0, pose: 'sit', rim: '255,255,245', look: 0.18, blink: blinkAt(lt, 8) }); });
+    D(0.5, () => flock(3, 900, 240, -16, 0.7, 'rgba(250,250,250,0.9)', 96, lt));
   } });
 
 /* 9 — 臺南市 井仔腳瓦盤鹽田 */
