@@ -547,8 +547,8 @@ const CROWD = {
   // Huadong valley: cyclists on the far bike path
   T4: [{ d: 0.55, x: 760, y: 526, s: 0.36, act: 'bike', v: -26, face: -1, coat: 'black', haze: HZ.day, seed: 39 }, { d: 0.55, x: 840, y: 526, s: 0.36, act: 'bike', v: -26, face: -1, coat: 'cream', col: '#d9573a', haze: HZ.day, seed: 40 }],
   T8: [{ after: 'far', d: 0.3, x: 900, y: 466, s: 0.16, act: 'bike', v: -30, face: -1, coat: 'black', haze: HZ.far, seed: 84 }],
-  // Jiji: cyclists on the same road as the hero, so at the hero's scale, riding away in the distance
-  T13: [{ d: 0.9, x: 860, y: 600, s: 1.0, act: 'bike', v: 60, coat: 'cream', col: '#d9573a', seed: 53 }],
+  // Jiji: a cyclist far down the tunnel road (small because far, on the road where it bends away, hazed)
+  T13: [{ after: 'far', d: 0.3, x: 728, y: 446, s: 0.2, act: 'bike', v: 6, coat: 'cream', col: '#d9573a', haze: HZ.day, seed: 53 }],
   T16: [{ d: 0.7, x: 700, y: 540, s: 0.45, act: 'pick', coat: 'calico', haze: HZ.day, seed: 60 }, { d: 0.6, x: 880, y: 480, s: 0.36, act: 'pick', coat: 'grey', haze: HZ.day, seed: 61 }, { d: 0.5, x: 1040, y: 440, s: 0.3, act: 'pick', coat: 'cream', haze: HZ.far, seed: 62 }],
   // Nanliao: kite fliers far down the beach
   T17: [{ d: 0.6, x: 820, y: 462, s: 0.3, act: 'kite', coat: 'grey', ky: 250, kx: 900, col: '#3fa0d8', haze: HZ.day, seed: 63 }, { d: 0.6, x: 1010, y: 466, s: 0.26, act: 'kite', coat: 'bicolor', build: 'kitten', kx: 1080, ky: 300, col: '#f2c14e', haze: HZ.day, seed: 64 }],
